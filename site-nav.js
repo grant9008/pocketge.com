@@ -26,7 +26,13 @@
     { href: '/high-alch-calculator.html', label: 'High Alch Calculator' },
     { href: '/cannonball-profit-calculator.html', label: 'Cannonball Profit' },
     { href: '/flipping-guide.html', label: 'Flipping Guide' },
-    { href: '/burnt-food-collectors.html', label: 'Burnt Food & Collectors' }
+    { href: '/burnt-food-collectors.html', label: 'Burnt Food & Collectors' },
+    /* The drawer in index.html gained these; this one -- the drawer every
+       STANDALONE page uses -- had never heard of the plugin at all, so
+       arriving on a scanner from search still could not reach it. */
+    { group: 'In game' },
+    { href: '/runelite-plugin.html', label: 'RuneLite Plugin' },
+    { href: '/flip-history.html', label: 'Flip History' }
   ];
 
   var CSS = [
@@ -38,6 +44,18 @@
        strand the brand mid-row, so pin the CTA right and let the rest sit left. */
     '.topbar{justify-content:flex-start;gap:12px}',
     '.topbar .cta{margin-left:auto}',
+    /* Adding the nav toggle made the row three items wide, and on a phone the
+       three do not fit: 36px toggle + brand + a 207px nowrap CTA overflowed a
+       393px viewport by 13px on EVERY page carrying this drawer, which made
+       the page itself scroll sideways.
+       flex-wrap rather than a smaller CTA: wrap only happens when the row
+       genuinely cannot fit, so a slightly wider phone keeps its single line
+       instead of every phone paying for the narrowest one. The trimmed
+       padding buys back enough that most do. */
+    '@media (max-width:560px){',
+    '.topbar{flex-wrap:wrap;row-gap:8px}',
+    '.topbar .cta{padding:8px 12px;font-size:12px}',
+    '}',
     '.sn-drawer{position:fixed;top:0;bottom:0;left:0;z-index:1100;width:min(290px,84vw);',
     'display:flex;flex-direction:column;gap:2px;padding:10px;background:#1B1815;',
     'border-right:1px solid #2B2621;box-shadow:8px 0 34px rgba(0,0,0,.6);overflow-y:auto;',
