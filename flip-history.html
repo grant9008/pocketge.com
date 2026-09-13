@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OSRS Flip History — Your Lifetime Ledger &amp; gp per Slot-Hour | PocketGE</title>
+<meta name="description" content="Every Grand Exchange flip you have made, read live from the PocketGE RuneLite plugin: cumulative profit, ROI, hold time, and profit per GE slot-hour. Nothing leaves your computer.">
+<meta name="keywords" content="osrs flip history, osrs flip tracker, ge profit tracker, osrs gp per hour flipping, runelite flip log, grand exchange profit history">
+<link rel="canonical" href="https://pocketge.com/flip-history.html">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link rel="shortcut icon" href="/favicon.png">
+<meta property="og:title" content="OSRS Flip History — Your Lifetime Ledger | PocketGE">
+<meta property="og:description" content="Every flip you have made, read live from the PocketGE RuneLite plugin. Cumulative profit, ROI, hold time, and profit per GE slot-hour.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pocketge.com/flip-history.html">
+<meta property="og:image" content="https://pocketge.com/og-image-v2.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="PocketGE">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="OSRS Flip History — Your Lifetime Ledger | PocketGE">
+<meta name="twitter:description" content="Every flip you have made, read live from the PocketGE RuneLite plugin.">
+<meta name="twitter:image" content="https://pocketge.com/og-image-v2.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "PocketGE", "item": "https://pocketge.com/" },
+    { "@type": "ListItem", "position": 2, "name": "Flip History", "item": "https://pocketge.com/flip-history.html" }
+  ]
+}
+</script>
+<style>
+  :root { --bg:#0C0B09; --panel:#1B1815; --border:#2B2621; --text:#D0CABD; --head:#fff; --muted:#8A8274; --accent:#C9A64D; --gold:#FFB300; --pos:#1FB85C; --neg:#EF5350; --input:#151310; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Trebuchet MS',Roboto,sans-serif; -webkit-font-smoothing:antialiased; line-height:1.6; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
+  .topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:20px; }
+  .brand { display:flex; align-items:center; gap:8px; font-weight:800; color:var(--head); font-size:18px; text-decoration:none; }
+  .brand img { width:26px; height:26px; image-rendering:pixelated; }
+  .cta { background:var(--accent); color:#1C1300; text-decoration:none; font-weight:700; font-size:13px; padding:9px 16px; border-radius:6px; white-space:nowrap; }
+  .cta:hover { background:#E5C158; }
+  h1 { color:var(--head); font-size:26px; line-height:1.25; margin:0 0 6px; letter-spacing:-0.5px; }
+  h2 { color:var(--head); font-size:18px; margin:30px 0 8px; }
+  .sub { color:var(--muted); font-size:14px; margin:0 0 20px; max-width:70ch; }
+  p, li { font-size:14.5px; }
+  a { color:var(--accent); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+
+  /* Connection state. Three shapes, because they mean genuinely different
+     things: still looking, connected, and "the bridge is off" — which is the
+     likely one, since it ships off by default. */
+  .fh-status { border-radius:6px; padding:11px 14px; font-size:13px; margin:0 0 18px; border-left:3px solid var(--muted); background:var(--panel); }
+  .fh-status.fh-ok { border-left-color:var(--pos); }
+  .fh-status.fh-wait { border-left-color:var(--muted); }
+  .fh-status.fh-warn { border-left-color:var(--gold); background:rgba(255,179,0,0.08); }
+  .fh-status.fh-off { border-left-color:var(--gold); background:rgba(255,179,0,0.08); }
+  .fh-status b { color:var(--head); }
+
+  .fh-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin:0 0 16px; }
+  .fh-stat { background:var(--panel); border:1px solid var(--border); border-radius:6px; padding:10px 12px; }
+  .fh-stat-label { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+  .fh-stat-val { font-size:19px; font-weight:900; letter-spacing:-0.5px; margin-top:2px; font-variant-numeric:tabular-nums; color:var(--head); }
+  .fh-stat.pos .fh-stat-val { color:var(--pos); }
+  .fh-stat.neg .fh-stat-val { color:var(--neg); }
+  .fh-stat-note { font-size:9.5px; color:var(--muted); margin-top:3px; line-height:1.35; }
+
+  .fh-sparse { background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--muted); border-radius:6px; padding:9px 12px; font-size:12px; color:var(--muted); margin:0 0 18px; }
+  .fh-sparse b { color:var(--text); }
+
+  .fh-chart-wrap { background:var(--panel); border:1px solid var(--border); border-radius:6px; padding:10px 10px 4px; margin:0 0 18px; }
+  #fhChart { display:block; width:100%; }
+
+  /* Eleven columns will not fit a phone and should not try. Its own scroller,
+     so the PAGE never scrolls sideways — the rest of the site was just fixed
+     for exactly that. */
+  .fh-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; border:1px solid var(--border); border-radius:6px; background:var(--panel); }
+  table.fh { border-collapse:collapse; width:100%; font-size:12.5px; font-variant-numeric:tabular-nums; }
+  table.fh th, table.fh td { padding:7px 10px; text-align:right; white-space:nowrap; border-bottom:1px solid rgba(60,53,43,0.55); }
+  table.fh th.l, table.fh td.l { text-align:left; }
+  table.fh thead th { position:sticky; top:0; background:#211D19; color:var(--muted); font-size:9.5px; text-transform:uppercase; letter-spacing:0.5px; cursor:pointer; user-select:none; z-index:1; }
+  table.fh thead th:hover { color:var(--head); }
+  table.fh thead th.sorted { color:var(--accent); }
+  .fh-arrow { font-size:8px; margin-left:3px; }
+  table.fh tbody tr:hover { background:rgba(255,255,255,0.03); }
+  table.fh td.pos { color:var(--pos); font-weight:700; }
+  table.fh td.neg { color:var(--neg); font-weight:700; }
+  table.fh td.fh-dim { color:var(--muted); }
+  .fh-item { display:flex; align-items:center; gap:7px; }
+  .fh-item img { width:20px; height:20px; image-rendering:pixelated; flex:0 0 auto; }
+  .fh-item span { overflow:hidden; text-overflow:ellipsis; max-width:200px; }
+
+  #fhPager { display:flex; align-items:center; justify-content:center; gap:14px; padding:12px 0 0; font-size:12px; color:var(--muted); }
+  #fhPager button { background:var(--input); border:1px solid var(--border); color:var(--text); border-radius:4px; padding:6px 12px; font-size:12px; cursor:pointer; }
+  #fhPager button:hover:not(:disabled) { border-color:var(--accent); color:var(--head); }
+  #fhPager button:disabled { opacity:0.4; cursor:default; }
+
+  .footer { margin-top:44px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:12px; }
+  @media (max-width:640px) { .wrap { padding:16px 12px 48px; } h1 { font-size:22px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="brand" href="/"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo">PocketGE</a>
+    <a class="cta" href="/">Open the trading terminal →</a>
+  </div>
+
+  <h1>Flip history</h1>
+  <p class="sub">Every Grand Exchange flip you have completed, read straight off the PocketGE Flip Tracker plugin running on this computer. Profit is already net of the 2% GE tax. Nothing is uploaded and no account is involved — the page reads your own machine on <code>127.0.0.1</code> and nowhere else.</p>
+
+  <div class="fh-status fh-wait" id="fhStatus" hidden></div>
+
+  <div id="fhLive" hidden>
+    <div class="fh-stats" id="fhStats"></div>
+    <div class="fh-sparse" id="fhSparse" hidden></div>
+
+    <h2>Cumulative profit</h2>
+    <div class="fh-chart-wrap"><canvas id="fhChart" height="220"></canvas></div>
+
+    <h2>Every flip</h2>
+    <p class="sub" style="margin-bottom:10px">Click any column to sort. <b>gp/hr</b> is the one worth sorting by: you have three Grand Exchange slots free-to-play and eight as a member, so slot time — not gold — is what you actually run out of.</p>
+    <div class="fh-table-wrap">
+      <table class="fh">
+        <thead id="fhHead"></thead>
+        <tbody id="fhBody"></tbody>
+      </table>
+    </div>
+    <div id="fhPager"></div>
+  </div>
+
+  <h2>What this page is</h2>
+  <p>The Grand Exchange tells you what an item costs. It does not tell you what <em>you</em> made on it. This page is the other half: the complete ledger of flips the <a href="/runelite-plugin.html">PocketGE Flip Tracker</a> plugin has booked for you, with the tax already taken off and the arithmetic done.</p>
+  <p>It is not a leaderboard and there is nothing to sign up for. The plugin keeps the ledger in RuneLite's own config on your computer, and this page asks for it over a loopback connection that only your own browser can make. If RuneLite is not running, there is simply nothing to show.</p>
+
+  <h2>Why profit per slot-hour is the number that matters</h2>
+  <p>Most flipping advice ranks items by margin, which quietly assumes gold is the constraint. For most players it is not. You get <b>three</b> Grand Exchange slots free-to-play and <b>eight</b> as a member, and an offer sitting unfilled is occupying one of them whether or not it ever completes.</p>
+  <p>That makes slot-time the scarce resource. A 400k margin that takes two days to fill is worth less than a 20k margin that turns over in twenty minutes, and a margin table will tell you the opposite. Sorting this page by <b>gp/hr</b> answers the question a margin cannot: is this item worth giving a slot to?</p>
+  <p>Read it alongside the <a href="/flipping-guide.html">flipping guide</a> for how buy limits and the 2% tax shape the same decision.</p>
+
+  <h2>Why some rows show a dash</h2>
+  <p>Hold time needs to know when a buy actually filled, and the plugin has only recorded that since a recent release. Anything booked before then — and anything bought before then but sold after — has no buy time to work from.</p>
+  <p>Those rows show <b>—</b> for hold and gp/hr rather than a made-up number, and they are left out of the averages entirely. A missing buy time could just as easily be printed as zero, which would read as "filled instantly" and flatter the trade; that is the one thing this page will not do. Every other figure on those rows — cost, quantity, profit — is real. The dashes thin out as you keep flipping.</p>
+
+  <div class="footer">
+    PocketGE is a free, independent fan tool. Not affiliated with Jagex Ltd. or the RuneLite project. RuneScape and Old School RuneScape are trademarks of Jagex. · <a href="/">Home</a> · <a href="/runelite-plugin.html">RuneLite Plugin</a> · <a href="/flipping-guide.html">Flipping Guide</a>
+  </div>
+</div>
+<script src="site-nav.js"></script>
+<script src="flip-history.js"></script>
+</body>
+</html>

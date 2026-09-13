@@ -115,6 +115,7 @@ PAGE_WEIGHTS = {
     # than a placeholder saying the plugin is not out yet, and it had no
     # inbound links at all until the drawer got an entry.
     "runelite-plugin.html": ("weekly", "0.8"),
+    "flip-history.html": ("monthly", "0.6"),
     "burnt-food-collectors.html": ("monthly", "0.6"),
 }
 # index.html is the "/" row, added separately. og-image.source.html is the
