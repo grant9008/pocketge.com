@@ -147,7 +147,7 @@ _LUXURY = re.compile(
 # "Blue dark bow paint" and "Ring of wealth scroll", which is how a pin list
 # quietly turns into 118 pages nobody asked for.
 _STAPLES = {n.lower() for n in [
-    "Abyssal whip", "Abyssal dagger", "Abyssal bludgeon", "Abyssal tentacle",
+    "Abyssal whip", "Abyssal dagger", "Abyssal bludgeon",
     "Dragon scimitar", "Dragon boots", "Dragon pickaxe", "Dragon axe", "Dragon mace",
     "Dragon halberd", "Dragon 2h sword", "Dragon battleaxe", "Dragon chainbody",
     "Dragon med helm", "Dragon sq shield", "Dragon plateskirt", "Dragon platelegs",
@@ -158,7 +158,13 @@ _STAPLES = {n.lower() for n in [
     "Granite boots", "Granite ring", "Seers ring", "Warrior ring", "Archers ring",
     "Berserker ring", "Trident of the seas (full)", "Toxic blowpipe (empty)",
     "Dragonfire shield", "Dragonfire ward", "Zamorakian hasta", "Zamorakian spear",
-    "Staff of the dead", "Toxic staff of the dead", "Serpentine helm",
+    # (uncharged), not the charged names: charging these makes them
+    # untradeable, so the charged form has no GE price and can never produce a
+    # page. Abyssal tentacle was dropped outright for the same reason — it
+    # degrades, and is not GE-tradeable at all. Third time this bit: Fire cape,
+    # Barrows gloves and the charged trident went the same way. Audited the
+    # whole list against tradeable_on_ge rather than fixing them one at a time.
+    "Staff of the dead", "Toxic staff (uncharged)", "Serpentine helm (uncharged)",
     "Ahrim's hood", "Ahrim's staff", "Ahrim's robetop", "Ahrim's robeskirt",
     "Karil's coif", "Karil's crossbow", "Karil's leathertop", "Karil's leatherskirt",
     "Dharok's helm", "Dharok's greataxe", "Dharok's platebody", "Dharok's platelegs",
