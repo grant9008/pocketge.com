@@ -659,7 +659,28 @@ let buyOverridden = false, sellOverridden = false;
    not a percentage of the item's price. Shift and Ctrl/Cmd multiply this by
    10 and 100 at the click site (priceStepMultiplier), so the base unit stays
    one gp no matter how far you're travelling. */
-function priceStepFor(price) { return 1; }
+/* How far one −/+ click moves a target. A flat 1 gp regardless of price meant
+   the control worked on a 2k necklace and was useless above it: on a 1.25M
+   item one click is 0.00008% of the price, and even Ctrl (x100) only moves
+   0.008% — thirty Ctrl-clicks to shift an ask by 3,000 gp, which is the size
+   of nudge people actually make on items that expensive.
+   Roughly 0.02–0.2% per click across the range, on decade boundaries so the
+   resulting price stays a round number a human would type. Below 5k it stays
+   at 1: a gp genuinely matters there, and those are the items where the whole
+   margin is a handful of gp. Shift (x10) and Ctrl (x100) still multiply. */
+function priceStepFor(price) {
+  if (!(price > 0)) return 1;
+  if (price < 5000) return 1;
+  if (price < 50000) return 10;
+  if (price < 500000) return 100;
+  if (price < 5000000) return 1000;
+  if (price < 50000000) return 10000;
+  if (price < 500000000) return 100000;
+  /* The top rung exists for the handful of items above half a billion — a
+     Twisted bow at 1.4B stepped 0.007% a click without it, which is the same
+     uselessness this function was fixed for, just further up. */
+  return 1000000;
+}
 let liveBuyRaw = null, liveSellRaw = null;
 /* When those two prints actually TRADED — node.lowTime / node.highTime from
    the API, which is a different clock from lastLiveFetchAt (when we polled).
