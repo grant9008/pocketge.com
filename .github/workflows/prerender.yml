@@ -168,6 +168,19 @@ jobs:
           assert not stubless, f"{len(stubless)} item pages have no glossary stub: {sorted(stubless)[:10]}"
           print(f"glossary stripped from all {len(files):,} item pages, stub on every one")
 
+          # Hand-written item links on the static pages. prerender_items.py
+          # rewrites /?q=Name to /item/<slug>/ as soon as a page exists, which
+          # means those links now 404 rather than degrade if a page ever stops
+          # being generated. An item link the site makes itself must resolve.
+          # (slugs is the published set, built for the related-link check above.)
+          for name in ('index.html', 'flipping-guide.html'):
+              p = pathlib.Path(name)
+              if not p.exists():
+                  continue
+              broken = set(re.findall(r'href="/item/([^/"]+)/"', p.read_text())) - slugs
+              assert not broken, f"{name} links to missing item pages: {sorted(broken)[:10]}"
+          print("every hand-written /item/ link resolves")
+
           # The pinned categories are the whole point of pinning: if one stops
           # matching -- a rename, a regex edit -- the set silently reverts to
           # "top N by volume" and nobody notices until someone searches for a
@@ -206,7 +219,11 @@ jobs:
           set -euo pipefail
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add item item-pages.js sitemap.xml
+          # glossary.html is generated from index.html's Help modal, and
+          # index.html / flipping-guide.html get their /?q= item links
+          # rewritten to /item/<slug>/ as soon as a page exists. Both are
+          # outputs of this run: staging only item/ silently threw them away.
+          git add item item-pages.js sitemap.xml glossary.html index.html flipping-guide.html
           if git diff --cached --quiet; then
             echo "nothing changed"
             exit 0
