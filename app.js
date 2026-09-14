@@ -1115,6 +1115,23 @@ function updateCalculator() {
     headline.textContent = 'No margin';
     headline.style.color = 'var(--text-muted)';
   }
+  /* Say WHY in the collapsed state. "No margin" on its own reads as a verdict
+     with no reasoning, and the observed behaviour is that people open the
+     breakdown purely to find out what it means -- the answer is one
+     subtraction, and it fits where the units/limit line already sits.
+     That line rather than the headline: it exists in every view, is already
+     sized for this much text, and the reason string is SHORTER than the text
+     it replaces ("spread 17 < 40 tax" against "18,000 units - 4h limit"), so
+     no layout can move. Abbreviated on both sides to keep it that way when
+     the numbers are millions.
+     Restored from data-default rather than recomputed, so the profitable case
+     renders the exact string renderSideModule wrote. */
+  const subEl = $('#calcHeadlineSub');
+  if (subEl) {
+    subEl.textContent = totalProfit > 0
+      ? (subEl.dataset.default || subEl.textContent)
+      : `spread ${abbreviateNumber(Math.max(0, sell - buy))} < ${abbreviateNumber(taxPerItem)} tax`;
+  }
   const color = totalProfit > 0 ? 'var(--rs-green-deep)' : (totalProfit < 0 ? 'var(--negative)' : 'var(--text-main)');
   const sign = totalProfit > 0 ? '+' : '';
   const bd = $('#calcBreakdown');
@@ -1151,7 +1168,7 @@ function restoreCalculator(itemLimit, recBuy, recSell) {
     <div class="calc-headline" id="calcToggle" role="button" tabindex="0" aria-expanded="${isCalcOpen}">
       <div class="calc-headline-left">
         <span class="calc-headline-label">Potential Profit</span>
-        <span class="calc-headline-sub">${subText}</span>
+        <span class="calc-headline-sub" id="calcHeadlineSub" data-default="${subText}">${subText}</span>
       </div>
       <div class="calc-headline-right">
         <span class="res-profit" id="calcProfitValue">—</span>
