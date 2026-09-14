@@ -145,18 +145,21 @@ function computeHighAlchRows(data) {
    it so it's auditable rather than a black box. Add to this list only for
    methods that are genuinely this certain — a wrong ratio here is worse
    than the page not existing. */
-const STEEL_BAR_ID = 2353, CANNONBALL_ID = 2, CANNONBALLS_PER_BAR = 4;
+/* Item 2 was plain "Cannonball" until cannonballs were split per metal; it is
+   now "Steel cannonball", which is still the one a steel bar smiths into, so
+   the id and the 1:4 ratio both still hold. Named for what it is today. */
+const STEEL_BAR_ID = 2353, STEEL_CANNONBALL_ID = 2, CANNONBALLS_PER_BAR = 4;
 
-/** Smithing: steel bar -> 4 cannonballs at a furnace (Dwarf Cannon quest,
+/** Smithing: steel bar -> 4 steel cannonballs at a furnace (Dwarf Cannon quest,
  *  35 Smithing). Both sides are GE-tradeable, so this is pure price math
  *  once the 1:4 ratio is fixed — no external recipe dataset needed. */
 function computeCannonballProfit(data) {
   const barNode = data.latest.data[String(STEEL_BAR_ID)];
-  const ballNode = data.latest.data[String(CANNONBALL_ID)];
+  const ballNode = data.latest.data[String(STEEL_CANNONBALL_ID)];
   if (!barNode || !(barNode.low > 0) || !ballNode || !(ballNode.high > 0)) return null;
   const barCost = barNode.low;
   const ballSell = ballNode.high;
-  const tax = calculateTax(ballSell, CANNONBALL_ID);
+  const tax = calculateTax(ballSell, STEEL_CANNONBALL_ID);
   const netPerBall = ballSell - tax;
   const revenuePerBar = CANNONBALLS_PER_BAR * netPerBall;
   const profitPerBar = revenuePerBar - barCost;
@@ -168,4 +171,18 @@ function itemIconUrl(id) {
   // by numeric id (its image filenames are per-item names), so this has to
   // be RuneLite's own item-icon cache, not oldschool.runescape.wiki.
   return `https://static.runelite.net/cache/item/icon/${id}.png`;
+}
+
+/* Static item pages exist for a subset of the GE. Link to one when it exists:
+   it is the canonical URL and the document search engines actually index, and
+   /?q=Name resolves to the homepage for anything that doesn't render JS.
+   Mirrors itemPagePath()/itemSlug() in app.js — keep the three in step. */
+function itemHref(name) {
+  const n = String(name || '');
+  const set = window.__PGE_PAGES_SET__ || (window.__PGE_PAGES_SET__ =
+    new Set((window.__PGE_PAGES__ || []).map(x => String(x).toLowerCase())));
+  if (!set.has(n.toLowerCase())) return '/?q=' + encodeURIComponent(n);
+  return '/item/' + n.toLowerCase()
+    .replace(/\(-\)/g, ' minus ').replace(/\+/g, ' plus ')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '/';
 }
