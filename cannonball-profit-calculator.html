@@ -47,12 +47,12 @@
     {
       "@type": "Question",
       "name": "How many cannonballs do you get from one steel bar in OSRS?",
-      "acceptedAnswer": { "@type": "Answer", "text": "One steel bar makes 4 cannonballs at a furnace. It requires completion of the Dwarf Cannon quest and 35 Smithing." }
+      "acceptedAnswer": { "@type": "Answer", "text": "One steel bar makes 4 steel cannonballs at a furnace. It requires completion of the Dwarf Cannon quest and 35 Smithing." }
     },
     {
       "@type": "Question",
       "name": "How is cannonball smithing profit calculated?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Profit per steel bar = (4 x the live cannonball sell price, minus the 2% GE tax) minus the live steel bar buy price. Both items are Grand Exchange tradeable, so this recalculates from real-time prices." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Profit per steel bar = (4 x the live steel cannonball sell price, minus the 2% GE tax) minus the live steel bar buy price. Both items are Grand Exchange tradeable, so this recalculates from real-time prices." }
     }
   ]
 }
@@ -67,9 +67,11 @@
   </div>
 
   <h1>OSRS Cannonball Profit Calculator</h1>
-  <p class="sub">One of the most well-known Smithing money makers in Old School RuneScape: buy steel bars, smith them into cannonballs at a furnace, sell the cannonballs. Live profit per bar below, recalculated from real-time Grand Exchange prices every time this page loads.</p>
+  <p class="sub">One of the most well-known Smithing money makers in Old School RuneScape: buy steel bars, smith them into steel cannonballs at a furnace, sell the cannonballs. Live profit per bar below, recalculated from real-time Grand Exchange prices every time this page loads.</p>
 
-  <div class="callout">The recipe this page assumes, so it's checkable rather than a black box: <strong>1 steel bar → 4 cannonballs</strong>, at a furnace, after completing the Dwarf Cannon quest with 35 Smithing. Both items are Grand Exchange tradeable, so profit here is pure live price math — no invented numbers, no static table.</div>
+  <div class="callout">The recipe this page assumes, so it's checkable rather than a black box: <strong>1 steel bar → 4 steel cannonballs</strong>, at a furnace, after completing the Dwarf Cannon quest with 35 Smithing. Both items are Grand Exchange tradeable, so profit here is pure live price math — no invented numbers, no static table.</div>
+
+  <p class="note">A note on the name: cannonballs are now listed per metal, so the item this page prices is <a href="/item/steel-cannonball/"><strong>Steel cannonball</strong></a> — the one a steel bar smiths into, and the one the standard Dwarf Cannon method uses. The other grades (bronze, iron, mithril, adamant, rune, plus the chainshot and incendiary variants) are separate GE items with their own prices.</p>
 
   <div id="liveCalc" class="live-list">
     <div class="live-loading">Loading live prices…</div>
@@ -82,9 +84,9 @@
 
   <h2>FAQ</h2>
   <h3>How many cannonballs does one steel bar make?</h3>
-  <p>4, at a furnace, after the Dwarf Cannon quest with 35 Smithing.</p>
+  <p>4 steel cannonballs, at a furnace, after the Dwarf Cannon quest with 35 Smithing.</p>
   <h3>How is the profit calculated?</h3>
-  <p>(4 × live cannonball sell price, after the 2% GE tax) − live steel bar buy price. Recalculated from real-time prices, not a fixed table.</p>
+  <p>(4 × live steel cannonball sell price, after the 2% GE tax) − live steel bar buy price. Recalculated from real-time prices, not a fixed table.</p>
 
   <div class="footer">
     Prices update live from the OSRS Wiki Grand Exchange API. PocketGE is a free, independent fan tool — not affiliated with Jagex Ltd. If this recipe or ratio is ever wrong, <a href="https://github.com/grant9008/pocketge.com/issues/new?labels=bug&title=Cannonball%20recipe%3A%20" rel="noopener" target="_blank">tell us</a>. · <a href="/">Home</a> · <a href="/high-alch-calculator.html">High Alch Calculator</a> · <a href="/flipping-guide.html">Flipping Guide</a>
@@ -97,7 +99,7 @@
   try {
     const data = await loadFinderData();
     const r = computeCannonballProfit(data);
-    if (!r) { host.innerHTML = '<div class="live-loading">Live prices for steel bar or cannonball are unavailable right now.</div>'; return; }
+    if (!r) { host.innerHTML = '<div class="live-loading">Live prices for steel bar or steel cannonball are unavailable right now.</div>'; return; }
     const perK = r.profitPerBar * 1000;
     host.innerHTML = `
       <div class="live-row" style="cursor:default">
@@ -105,7 +107,7 @@
         <span class="lr-vol">${fmtGp(r.barCost)} gp</span>
       </div>
       <div class="live-row" style="cursor:default">
-        <span class="lr-name">Cannonball (sell, after tax)</span>
+        <span class="lr-name">Steel cannonball (sell, after tax)</span>
         <span class="lr-vol">${fmtGp(r.netPerBall)} gp each</span>
       </div>
       <div class="live-row" style="cursor:default">
