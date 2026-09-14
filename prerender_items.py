@@ -43,7 +43,9 @@ import shutil
 import sys
 import urllib.request
 from datetime import date, datetime
+from functools import lru_cache
 from pathlib import Path
+from urllib.parse import unquote_plus
 
 SITE = "https://pocketge.com"
 API = "https://prices.runescape.wiki/api/v1/osrs"
@@ -174,11 +176,37 @@ _STAPLES = {n.lower() for n in [
 ]}
 
 
+@lru_cache(maxsize=1)
+def home_linked_slugs():
+    """Slugs of every item the homepage links to.
+
+    The "New & recent items" grid names the newest drops — Araxyte fang,
+    Emberlight, Eye of ayak, the Oathplate set — and none of them came near
+    the volume or value cutoffs, so twelve of those links pointed at items
+    with no page. A link the site makes itself should always resolve, and
+    hardcoding the twelve names would go stale the next time the grid is
+    edited, so the grid IS the pin list.
+
+    Both link forms are read: /item/<slug>/ for the ones that already have a
+    page, and the legacy /?q=Name for the ones that do not yet.
+    """
+    try:
+        src = TEMPLATE.read_text()
+    except OSError:
+        return frozenset()
+    slugs = set(re.findall(r'href="/item/([^"/]+)/"', src))
+    for raw in re.findall(r'href="/\?q=([^"]*)"', src):
+        slugs.add(slugify(unquote_plus(raw)))
+    return frozenset(slugs)
+
+
 def is_pinned(name):
     n = name.lower()
     return bool(
+        # anything the homepage links to, so an internal link always resolves
+        slugify(name) in home_linked_slugs()
         # runes: the F2P four are high-volume anyway, this is for the rest
-        (n.endswith(" rune") and n not in _F2P_RUNES and "essence" not in n)
+        or (n.endswith(" rune") and n not in _F2P_RUNES and "essence" not in n)
         or "sunfire splinter" in n or "zulrah" in n or "demon tear" in n
         or "revenant ether" in n or "cannonball" in n
         or _LUXURY.search(name)
@@ -704,7 +732,41 @@ def build_page(tpl, it, slug, buy, sell, vol, related, avg24=0, nature=0, when="
     # that is not visible to the reader. Wrong on 1,694 pages, and ~15MB of the
     # set. The homepage, which does show the FAQ, keeps it.
     s = drop_faq_jsonld(s)
+    s = lazy_glossary(s)
     return s
+
+
+def lazy_glossary(s):
+    """Replace the Help modal's 23 glossary rows with a lazy-load stub.
+
+    Same problem the about-section cut above solves, and the same fix: 12.5KB
+    of prose identical on every page, 22.9MB across the set, none of it about
+    the item. It differs in that it is real UI -- the Help button opens it --
+    so it is replaced rather than dropped, and app.js fetches /glossary.html
+    the first time someone opens Help. The homepage keeps its copy inline.
+
+    Depth-counted rather than regexed: the body is 12KB of nested divs and
+    ``.*?</div>`` stops at the first inner close.
+    """
+    m = re.search(r'<div id="helpModal"[\s>]', s)
+    if not m:
+        raise SystemExit("index.html has no #helpModal — markup changed?")
+    body = re.compile(r'<div class="modal-body"[\s>]').search(s, m.start())
+    if not body:
+        raise SystemExit("#helpModal has no .modal-body — markup changed?")
+    open_end = s.index(">", body.start()) + 1
+    depth = 1
+    for tok in re.finditer(r"<div\b|</div>", s[open_end:]):
+        depth += 1 if tok.group(0) == "<div" else -1
+        if depth == 0:
+            inner_end = open_end + tok.start()
+            break
+    else:
+        raise SystemExit("#helpModal .modal-body is unbalanced — markup changed?")
+    stub = ('\n      <p class="glossary-lazy">Loading the glossary… if it does not appear, '
+            '<a href="/glossary.html">read it on its own page</a>.</p>\n    ')
+    return (s[:body.start()] + '<div class="modal-body" data-glossary-src="/glossary.html">'
+            + stub + s[inner_end:])
 
 
 def drop_faq_jsonld(s):
@@ -862,6 +924,45 @@ def main():
     total = sum(f.stat().st_size for f in OUT_DIR.rglob("*.html"))
     print(f"wrote {n:,} pages under {OUT_DIR}/  ({total/1e6:.1f} MB)")
     print(f"wrote {PAGES_JS} ({PAGES_JS.stat().st_size/1024:.0f} KB)")
+
+    relink_static_pages(set(pages))
+
+
+# Pages whose item links are written by hand. The scanners build theirs in JS
+# and go through itemHref() in finder-common.js instead.
+RELINK = ["index.html", "flipping-guide.html"]
+
+
+def relink_static_pages(slugs):
+    """Point hand-written /?q=Name links at /item/<slug>/ once a page exists.
+
+    /?q= is served by GitHub Pages as index.html verbatim, so those links all
+    resolved to the homepage and none of them reached the page written for the
+    item. They were rewritten in bulk once; this keeps them rewritten, because
+    the newest items are exactly the ones a hand-edited grid adds and the pin
+    rule above only just gave them pages. An item with no page keeps ?q=, which
+    still resolves for a visitor.
+    """
+    for name in RELINK:
+        path = Path(f"./{name}")
+        if not path.exists():
+            continue
+        src = path.read_text()
+        done = []
+
+        def swap(m):
+            item = unquote_plus(m.group(1))
+            slug = slugify(item)
+            if slug not in slugs:
+                return m.group(0)
+            done.append(item)
+            return f'href="/item/{slug}/"'
+
+        out = re.sub(r'href="/\?q=([^"]*)"', swap, src)
+        if done:
+            path.write_text(out)
+            print(f"  relinked {len(done)} ?q= link(s) in {name}: "
+                  + ", ".join(sorted(done)[:6]) + ("…" if len(done) > 6 else ""))
 
 
 if __name__ == "__main__":

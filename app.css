@@ -470,6 +470,11 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 .modal-body { padding: 14px 16px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .glossary-section { margin-top: 14px; margin-bottom: 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 4px; border-bottom: 1px solid var(--border-main); }
 .glossary-section:first-of-type { margin-top: 0; }
+/* Item pages carry a stub instead of the glossary's 23 rows (12.5KB of
+   prose identical on all of them) and fetch /glossary.html on first open.
+   This is what shows while that is in flight, and what stays if it fails. */
+.glossary-lazy { margin: 0; padding: 8px 4px; font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+.glossary-lazy a { color: var(--accent-bright); }
 .glossary-row { display: grid; grid-template-columns: 110px 1fr; gap: 12px; padding: 8px 4px; font-size: 12px; color: var(--text-main); align-items: center; line-height: 1.4; }
 .glossary-row > :first-child { justify-self: start; }
 /* RuneLite bridge section inside the Bank modal. */
