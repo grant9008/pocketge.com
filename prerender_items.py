@@ -133,6 +133,41 @@ _LUXURY = re.compile(
     re.I)
 
 
+# Famous gear people search BY NAME, that the two automatic rules both miss.
+# Selection is top-800 by volume plus top-400 by price, and an Abyssal whip is
+# neither: it trades a few thousand a day, far under the volume cutoff, and at
+# ~1.5M it is nowhere near the top 400 by price. So the single most-searched
+# weapon in the game had no page and could only ever be a /?q= URL — which is
+# served index.html verbatim and cannot rank.
+#
+# Search Console confirmed it rather than it being a hunch: /?q=Abyssal whip was
+# taking impressions as its own URL, alongside Fat snail and Trident of the seas
+# (full), because for an item with no page /?q= IS what the app canonicalises
+# to. Exact names rather than a regex — a first pass matched "Dark bow tie",
+# "Blue dark bow paint" and "Ring of wealth scroll", which is how a pin list
+# quietly turns into 118 pages nobody asked for.
+_STAPLES = {n.lower() for n in [
+    "Abyssal whip", "Abyssal dagger", "Abyssal bludgeon", "Abyssal tentacle",
+    "Dragon scimitar", "Dragon boots", "Dragon pickaxe", "Dragon axe", "Dragon mace",
+    "Dragon halberd", "Dragon 2h sword", "Dragon battleaxe", "Dragon chainbody",
+    "Dragon med helm", "Dragon sq shield", "Dragon plateskirt", "Dragon platelegs",
+    "Dragon spear", "Dragon hasta", "Dragon crossbow", "Dragon longsword", "Dragon dagger",
+    "Occult necklace", "Amulet of magic", "Amulet of defence", "Amulet of power",
+    "Robin hood hat", "Ranger boots", "Dark bow", "Rune crossbow", "Magic shortbow",
+    "Granite maul", "Granite body", "Granite shield", "Granite helm", "Granite legs",
+    "Granite boots", "Granite ring", "Seers ring", "Warrior ring", "Archers ring",
+    "Berserker ring", "Trident of the seas (full)", "Toxic blowpipe (empty)",
+    "Dragonfire shield", "Dragonfire ward", "Zamorakian hasta", "Zamorakian spear",
+    "Staff of the dead", "Toxic staff of the dead", "Serpentine helm",
+    "Ahrim's hood", "Ahrim's staff", "Ahrim's robetop", "Ahrim's robeskirt",
+    "Karil's coif", "Karil's crossbow", "Karil's leathertop", "Karil's leatherskirt",
+    "Dharok's helm", "Dharok's greataxe", "Dharok's platebody", "Dharok's platelegs",
+    "Guthan's helm", "Guthan's warspear", "Guthan's platebody", "Guthan's chainskirt",
+    "Torag's helm", "Torag's hammers", "Torag's platebody", "Torag's platelegs",
+    "Verac's helm", "Verac's flail", "Verac's brassard", "Verac's plateskirt",
+]}
+
+
 def is_pinned(name):
     n = name.lower()
     return bool(
@@ -141,6 +176,7 @@ def is_pinned(name):
         or "sunfire splinter" in n or "zulrah" in n or "demon tear" in n
         or "revenant ether" in n or "cannonball" in n
         or _LUXURY.search(name)
+        or n in _STAPLES
         # Bonds trade too thinly to clear the volume cutoff and are one of the
         # most searched prices in the game -- the case pinning is for. The word
         # boundary keeps it to the two bond items and nothing else.
