@@ -635,6 +635,19 @@ def build_page(tpl, it, slug, buy, sell, vol, related, avg24=0, nature=0, when="
     s = re.sub(r'(<h1 class="sr-only" id="seoH1">).*?(</h1>)',
                lambda m: m.group(1) + f"{name} price in OSRS — live Grand Exchange data" + m.group(2),
                s, count=1, flags=re.S)
+    # The ticker heading. The h1 above is sr-only, so this is the first VISIBLE
+    # heading on the page -- and it shipped as the literal string "Loading..."
+    # on all 1,829 of them, with the item's own <h2>About X</h2> only sixth in
+    # the outline. The app overwrites it with the same name a moment later
+    # (setItem -> #tickerName.textContent), so this only changes what is there
+    # before the JS runs: what a crawler reads, and what a reader sees first on
+    # a slow connection. The homepage keeps "Loading..." -- it has no item yet.
+    ticker, n_ticker = re.subn(r'(<h2 id="tickerName">).*?(</h2>)',
+                               lambda m: m.group(1) + name + m.group(2),
+                               s, count=1, flags=re.S)
+    if not n_ticker:
+        raise SystemExit("index.html has no #tickerName heading to fill — markup changed?")
+    s = ticker
     # The SEO block, filled and visible. Matched as a whole section rather than
     # as one exact multi-line literal: the literal had to be kept byte-identical
     # to the markup, so adding a line to the block in index.html (the guide
