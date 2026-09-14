@@ -82,6 +82,9 @@ jobs:
           set -euo pipefail
           python3 prerender_items.py --limit "${{ github.event.inputs.limit || '800' }}" \
                                      --snapshot /tmp/snapshot.json
+          # Before the sitemap, so a glossary edit in index.html reaches
+          # glossary.html in the same run that lists it.
+          python3 generate_glossary.py
           python3 generate_sitemap.py --snapshot /tmp/snapshot.json
 
       # A page that names the wrong item, or an empty summary, is worse than
@@ -151,6 +154,19 @@ jobs:
           dangling = {h for f in files for h in re.findall(r'href="/item/([^/"]+)/"', f.read_text())} - slugs
           assert not dangling, f"related links to missing pages: {sorted(dangling)[:10]}"
           print("no related link points at a missing page")
+
+          # The glossary is 12.5KB of prose identical on every page — 22.9MB
+          # across the set — and none of it is about the item. Item pages carry
+          # a stub and fetch /glossary.html on first Help open, so if the strip
+          # ever stops matching, say so rather than ship the bulk again.
+          gloss = pathlib.Path('glossary.html')
+          assert gloss.exists(), "glossary.html missing — run generate_glossary.py"
+          assert gloss.read_text().count('glossary-row') >= 10, "glossary.html has no rows"
+          fat = [f.parent.name for f in files if 'glossary-row' in f.read_text()]
+          assert not fat, f"{len(fat)} item pages still inline the glossary: {sorted(fat)[:10]}"
+          stubless = [f.parent.name for f in files if 'data-glossary-src' not in f.read_text()]
+          assert not stubless, f"{len(stubless)} item pages have no glossary stub: {sorted(stubless)[:10]}"
+          print(f"glossary stripped from all {len(files):,} item pages, stub on every one")
 
           # The pinned categories are the whole point of pinning: if one stops
           # matching -- a rename, a regex edit -- the set silently reverts to

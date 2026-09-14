@@ -26,6 +26,7 @@
     { href: '/high-alch-calculator.html', label: 'High Alch Calculator' },
     { href: '/cannonball-profit-calculator.html', label: 'Cannonball Profit' },
     { href: '/flipping-guide.html', label: 'Flipping Guide' },
+    { href: '/glossary.html', label: 'Badge & Signal Glossary' },
     { href: '/burnt-food-collectors.html', label: 'Burnt Food & Collectors' },
     /* The drawer in index.html gained these; this one -- the drawer every
        STANDALONE page uses -- had never heard of the plugin at all, so

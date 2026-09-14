@@ -8832,9 +8832,32 @@ setItem._userPicked = false;
     $('#notifCenterModal').addEventListener('click', (ev) => { if (ev.target === $('#notifCenterModal')) closeNotifCenter(); });
 
     /* Help / glossary modal wiring. */
-    $('#btnHelp').onclick = () => { $('#helpModal').style.display = 'flex'; };
+    $('#btnHelp').onclick = () => { openHelp(); };
     $('#closeHelp').onclick = () => { $('#helpModal').style.display = 'none'; };
     $('#helpModal').addEventListener('click', (ev) => { if (ev.target === $('#helpModal')) $('#helpModal').style.display = 'none'; });
+
+    /* The item pages don't carry the glossary's 23 rows — it's 12.5KB of prose
+       identical on all 1,829 of them, so prerender_items.py swaps it for a
+       stub and it's fetched from /glossary.html the first time Help is
+       opened. The homepage has it inline and never fetches. On failure the
+       stub's link to the page stays put, so Help is never a dead end. */
+    function openHelp() {
+      const modal = $('#helpModal');
+      modal.style.display = 'flex';
+      const body = modal.querySelector('.modal-body[data-glossary-src]');
+      if (!body || body.dataset.glossaryState) return;
+      body.dataset.glossaryState = 'loading';
+      fetch(body.dataset.glossarySrc)
+        .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+        .then(html => {
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          const rows = doc.querySelector('.glossary-body');
+          if (!rows || !rows.querySelector('.glossary-row')) throw new Error('no glossary in page');
+          body.innerHTML = rows.innerHTML;
+          body.dataset.glossaryState = 'loaded';
+        })
+        .catch(() => { body.dataset.glossaryState = ''; });
+    }
 
     /* Mobile ⋯ overflow menu. On desktop the wrapper is display:contents so
        this just no-ops visually (the buttons are inline). On mobile, tap the
@@ -8894,7 +8917,7 @@ setItem._userPicked = false;
     document.addEventListener('click', (ev) => {
       if (ev.target.classList && ev.target.classList.contains('pg-help')) {
         ev.stopPropagation();
-        $('#helpModal').style.display = 'flex';
+        openHelp();
       }
     }, true);
 

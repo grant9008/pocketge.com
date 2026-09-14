@@ -116,6 +116,9 @@ PAGE_WEIGHTS = {
     # inbound links at all until the drawer got an entry.
     "runelite-plugin.html": ("weekly", "0.8"),
     "flip-history.html": ("monthly", "0.6"),
+    # Generated from the Help modal. Changes only when that copy does,
+    # which is rarely, but it is a real reference page rather than chrome.
+    "glossary.html": ("monthly", "0.6"),
     "burnt-food-collectors.html": ("monthly", "0.6"),
 }
 # index.html is the "/" row, added separately. og-image.source.html is the

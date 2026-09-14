@@ -704,7 +704,41 @@ def build_page(tpl, it, slug, buy, sell, vol, related, avg24=0, nature=0, when="
     # that is not visible to the reader. Wrong on 1,694 pages, and ~15MB of the
     # set. The homepage, which does show the FAQ, keeps it.
     s = drop_faq_jsonld(s)
+    s = lazy_glossary(s)
     return s
+
+
+def lazy_glossary(s):
+    """Replace the Help modal's 23 glossary rows with a lazy-load stub.
+
+    Same problem the about-section cut above solves, and the same fix: 12.5KB
+    of prose identical on every page, 22.9MB across the set, none of it about
+    the item. It differs in that it is real UI -- the Help button opens it --
+    so it is replaced rather than dropped, and app.js fetches /glossary.html
+    the first time someone opens Help. The homepage keeps its copy inline.
+
+    Depth-counted rather than regexed: the body is 12KB of nested divs and
+    ``.*?</div>`` stops at the first inner close.
+    """
+    m = re.search(r'<div id="helpModal"[\s>]', s)
+    if not m:
+        raise SystemExit("index.html has no #helpModal — markup changed?")
+    body = re.compile(r'<div class="modal-body"[\s>]').search(s, m.start())
+    if not body:
+        raise SystemExit("#helpModal has no .modal-body — markup changed?")
+    open_end = s.index(">", body.start()) + 1
+    depth = 1
+    for tok in re.finditer(r"<div\b|</div>", s[open_end:]):
+        depth += 1 if tok.group(0) == "<div" else -1
+        if depth == 0:
+            inner_end = open_end + tok.start()
+            break
+    else:
+        raise SystemExit("#helpModal .modal-body is unbalanced — markup changed?")
+    stub = ('\n      <p class="glossary-lazy">Loading the glossary… if it does not appear, '
+            '<a href="/glossary.html">read it on its own page</a>.</p>\n    ')
+    return (s[:body.start()] + '<div class="modal-body" data-glossary-src="/glossary.html">'
+            + stub + s[inner_end:])
 
 
 def drop_faq_jsonld(s):
