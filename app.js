@@ -6433,6 +6433,19 @@ function openPortfolio() {
 }
 function closePortfolio() { $('#portfolioModal').style.display = 'none'; rlSync(); }
 
+/* #bank opens the Bank of Gielinor directly, so /flip-history.html can link
+   back into it and the two halves of "what am I holding / what have I made"
+   are one hop apart in both directions. The hash is cleared on open so the
+   back button returns to the page rather than re-opening the modal, and a
+   later #bank still fires because hashchange only ignores a repeat of the
+   SAME hash. */
+function openBankFromHash() {
+  if (location.hash !== '#bank') return;
+  history.replaceState(null, '', location.pathname + location.search);
+  try { openPortfolio(); } catch (e) {}
+}
+window.addEventListener('hashchange', openBankFromHash);
+
 /* ── RuneLite bridge (PocketGE Flip Tracker plugin) ──────────────────────
    The plugin can serve this session on 127.0.0.1 (opt-in, loopback only —
    see github.com/grant9008/pocketge-flip-tracker). Once the user opts in (the Bank modal's Connect
@@ -9217,6 +9230,10 @@ setItem._userPicked = false;
         openHelp();
       }
     }, true);
+
+    /* A /#bank arrival has no hashchange to fire, so it is handled once here
+       as well, after the wiring above exists. */
+    openBankFromHash();
 
     /* Portfolio wiring. */
     $('#btnPortfolio').onclick = () => openPortfolio();

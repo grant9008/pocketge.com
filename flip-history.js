@@ -31,6 +31,10 @@
     sortKey: 'closed',
     sortDir: -1,      // newest first
     page: 0,
+    group: true,      // merge partial fills — see groupFills()
+    q: '',            // item-name filter
+    range: 'all',     // all | 7 | 30 days
+
     pollTimer: null,
   };
 
@@ -308,6 +312,71 @@
     g.fillText(when(t1).split(' ').slice(0, 3).join(' '), cssW - padR, cssH - 6);
   }
 
+  // ── grouping ────────────────────────────────────────────────────────────
+  /* The Grand Exchange settles a large offer in pieces and the plugin books
+     each piece as its own flip. Four Adamantite bar rows closing 10:41-10:44,
+     all at 1,891 in and 1,940 out, are one 8,117-bar trade the GE happened to
+     fill in four parts — and split across four rows the quantities read 549, 2,
+     8 and 7,558, which tells you nothing about the trade you actually made.
+
+     Merged only when all three hold: same item, identical unit prices both
+     sides, and closed within GROUP_WINDOW_MS of the running group. The price
+     test is what keeps genuinely separate trades apart, and the window is what
+     separates a re-entry at the same price later in the day: the two Wine of
+     Zamorak flips share 925/972 but sit 3h22m apart, so they stay two rows.
+
+     Merging is presentation only. The ledger, the summary tiles and the chart
+     all stay on what the plugin booked — this never invents or drops gp. */
+  var GROUP_WINDOW_MS = 15 * 60 * 1000;
+
+  function groupFills(flips) {
+    var byTime = flips.slice().sort(function (a, b) { return a.closedAt - b.closedAt; });
+    var open = {}, out = [];
+    byTime.forEach(function (f) {
+      var q = f.quantity > 0 ? f.quantity : 0;
+      var buyU = q ? Math.round(f.buySpent / q) : 0;
+      var sellU = q ? Math.round(f.sellGross / q) : 0;
+      var key = f.itemId + '|' + buyU + '|' + sellU;
+      var g = open[key];
+      if (g && f.closedAt - g.closedAt <= GROUP_WINDOW_MS) {
+        g.quantity += f.quantity; g.buySpent += f.buySpent;
+        g.sellGross += f.sellGross; g.tax += f.tax; g.profit += f.profit;
+        g.closedAt = Math.max(g.closedAt, f.closedAt);
+        /* One unknown open time makes the whole group's hold unknown: a part
+           with no buy time could have been bought at any point, so the earliest
+           KNOWN time would understate the hold rather than estimate it. */
+        if (!f.openedAt || f.openedAt <= 0) g.openedAt = 0;
+        else if (g.openedAt > 0) g.openedAt = Math.min(g.openedAt, f.openedAt);
+        g.parts += 1;
+        return;
+      }
+      g = { itemId: f.itemId, itemName: f.itemName, quantity: f.quantity,
+            buySpent: f.buySpent, sellGross: f.sellGross, tax: f.tax,
+            profit: f.profit, openedAt: f.openedAt, closedAt: f.closedAt, parts: 1 };
+      open[key] = g;
+      out.push(g);
+    });
+    return out;
+  }
+
+  /* Filter BEFORE grouping, so a narrowed view never merges rows it is not
+     showing, and sort last. */
+  function visibleRows() {
+    var rows = state.flips;
+    if (state.range !== 'all') {
+      var cutoff = Date.now() - Number(state.range) * 86400000;
+      rows = rows.filter(function (f) { return f.closedAt >= cutoff; });
+    }
+    var q = state.q.trim().toLowerCase();
+    if (q) {
+      rows = rows.filter(function (f) {
+        return String(f.itemName || '').toLowerCase().indexOf(q) !== -1;
+      });
+    }
+    if (state.group) rows = groupFills(rows);
+    return rows;
+  }
+
   // ── table ───────────────────────────────────────────────────────────────
   var COLS = [
     { key: 'item',  label: 'Item',   align: 'left' },
@@ -342,7 +411,7 @@
 
   function sorted() {
     var key = state.sortKey, dir = state.sortDir;
-    var copy = state.flips.slice();
+    var copy = visibleRows().slice();
     copy.sort(function (a, b) {
       var av = valueOf(a, key), bv = valueOf(b, key);
       /* Unknowns sink to the bottom in BOTH directions. Sorting by gp/hr is the
@@ -382,7 +451,10 @@
       return '<tr>' +
         '<td class="l fh-item"><img src="https://static.runelite.net/cache/item/icon/' +
           encodeURIComponent(f.itemId) + '.png" alt="" loading="lazy" width="20" height="20">' +
-          '<span>' + esc(f.itemName) + '</span></td>' +
+          '<span>' + esc(f.itemName) + '</span>' +
+          (f.parts > 1 ? '<span class="fh-parts" title="' + f.parts +
+            ' partial fills merged into this row">\u00d7' + f.parts + '</span>' : '') +
+          '</td>' +
         '<td class="l fh-dim">' + when(f.closedAt) + '</td>' +
         '<td>' + Number(f.quantity || 0).toLocaleString() + '</td>' +
         '<td>' + gp(f.quantity > 0 ? f.buySpent / f.quantity : null) + '</td>' +
@@ -401,6 +473,14 @@
     $('#fhHead').innerHTML = head;
     $('#fhBody').innerHTML = body ||
       '<tr><td class="l fh-dim" colspan="' + COLS.length + '">No flips to show.</td></tr>';
+
+    var fills = state.flips.length;
+    var cap = $('#fhCount');
+    if (cap) {
+      cap.textContent = rows.length === fills
+        ? rows.length.toLocaleString() + ' flips'
+        : rows.length.toLocaleString() + ' flips from ' + fills.toLocaleString() + ' fills';
+    }
 
     $('#fhPager').innerHTML = rows.length > PAGE_SIZE
       ? '<button type="button" id="fhPrev"' + (state.page === 0 ? ' disabled' : '') + '>← Newer</button>' +
@@ -434,6 +514,15 @@
       }
       if (e.target.id === 'fhPrev') { state.page = Math.max(0, state.page - 1); renderTable(); }
       if (e.target.id === 'fhNext') { state.page += 1; renderTable(); }
+      if (e.target.id === 'fhGroup') { state.group = e.target.checked; state.page = 0; renderTable(); }
+    });
+    var fq = $('#fhQuery');
+    if (fq) fq.addEventListener('input', function () {
+      state.q = fq.value; state.page = 0; renderTable();
+    });
+    var fr = $('#fhRange');
+    if (fr) fr.addEventListener('change', function () {
+      state.range = fr.value; state.page = 0; renderTable();
     });
     document.addEventListener('keydown', function (e) {
       if ((e.key === 'Enter' || e.key === ' ') && e.target.matches &&
