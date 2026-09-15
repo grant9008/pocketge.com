@@ -14,6 +14,7 @@
 (function () {
   'use strict';
 
+  var root = window;
   var BRIDGE = 'http://127.0.0.1:8477';
   var POLL_MS = 5000;
   var PAGE_SIZE = 50;
@@ -36,6 +37,7 @@
     range: 'all',     // all | 7 | 30 days
 
     pollTimer: null,
+    bank: null,     // the /flips payload — wealth, not the ledger
   };
 
   var $ = function (sel) { return document.querySelector(sel); };
@@ -149,6 +151,7 @@
   /* The poll exists only to notice that the ledger grew. It never fetches the
      ledger itself. */
   async function pollForGrowth() {
+    loadBank();
     try {
       var res = await fetch(BRIDGE + '/flips', { cache: 'no-store', mode: 'cors' });
       if (!res.ok) return;
@@ -231,6 +234,82 @@
   }
 
   // ── cumulative profit ───────────────────────────────────────────────────
+  // ── bank ────────────────────────────────────────────────────────────────
+  /* The ledger answers "what have I made"; this answers "what am I holding".
+     They were split across two surfaces — the Bank of Gielinor modal in the
+     app and this page — so seeing both meant leaving one of them. Both come
+     off the same bridge, so this page can simply ask for the other half.
+
+     A separate endpoint from /history: /flips is the light poll payload
+     (wealth, the recent window, flipCount) while /history is the whole
+     append-only ledger. Wealth changes constantly and the ledger only when a
+     flip closes, which is why they are fetched differently. */
+  async function loadBank() {
+    try {
+      var res = await fetch(BRIDGE + '/flips', { cache: 'no-store', mode: 'cors' });
+      if (!res.ok) return;
+      var d = await res.json();
+      state.bank = d && typeof d === 'object' ? d : null;
+      renderBank();
+    } catch (e) { /* no bridge: the section simply stays hidden */ }
+  }
+
+  function renderBank() {
+    var el = $('#fhBank');
+    if (!el) return;
+    var d = state.bank;
+    var hasWealth = d && (Number(d.portfolioValue) > 0 || Number(d.cash) > 0);
+    if (!hasWealth) { el.hidden = true; return; }
+
+    var stacks = Array.isArray(d.bankStacks) ? d.bankStacks.slice() : [];
+    stacks.sort(function (a, b) { return (b.value || 0) - (a.value || 0); });
+
+    var tile = function (label, val, note, cls) {
+      return '<div class="fh-stat' + (cls ? ' ' + cls : '') + '">' +
+             '<div class="fh-stat-label">' + label + '</div>' +
+             '<div class="fh-stat-val">' + val + '</div>' +
+             (note ? '<div class="fh-stat-note">' + note + '</div>' : '') + '</div>';
+    };
+
+    var html = '<div class="fh-stats">' +
+      tile('Portfolio', abbrev(d.portfolioValue) + ' gp', 'cash + bank + inventory + worn + open offers') +
+      tile('Liquid cash', abbrev(d.cash) + ' gp', 'coins + platinum tokens') +
+      tile('Lifetime profit', signed(d.lifetimeProfit) + ' gp',
+           'every flip the plugin has booked', Number(d.lifetimeProfit) >= 0 ? 'pos' : 'neg') +
+      '</div>';
+
+    /* The bank total only refreshes when the bank is opened in game, so a
+       figure from hours ago is normal and needs saying rather than hiding —
+       otherwise "Portfolio" reads as live when it is not. */
+    if (d.bankSeen && d.bankSeenAt) {
+      html += '<div class="fh-sparse" style="display:block">Bank last read <b>' +
+        duration(Date.now() - Number(d.bankSeenAt)) +
+        '</b> ago — open your bank in game to refresh the portfolio figure.</div>';
+    } else if (!d.bankSeen) {
+      html += '<div class="fh-sparse" style="display:block">The plugin has not seen your bank yet, so ' +
+        '<b>Portfolio</b> counts only what it can see — inventory, worn items, open offers and coins. ' +
+        'Open your bank in game once and it will fill in.</div>';
+    }
+
+    if (stacks.length) {
+      html += '<h3 class="fh-bank-h">Biggest stacks</h3><div class="fh-stacks">' +
+        stacks.slice(0, 10).map(function (st) {
+          return '<div class="fh-stack"><span class="fh-stack-n">' + esc(st.name) +
+            '<span class="fh-dim"> \u00d7' + Number(st.quantity || 0).toLocaleString() + '</span></span>' +
+            '<span class="fh-stack-v">' + abbrev(st.value) + ' gp</span></div>';
+        }).join('') +
+        (stacks.length > 10 ? '<div class="fh-dim fh-stack-more">+ ' +
+          (stacks.length - 10).toLocaleString() + ' more stacks</div>' : '') +
+        '</div>';
+    }
+
+    html += '<p class="fh-bank-link"><a href="/#bank">Open Bank of Gielinor →</a>' +
+      '<span>add your own stacks, set alerts, see live values</span></p>';
+
+    el.innerHTML = html;
+    el.hidden = false;
+  }
+
   function renderChart() {
     var cv = $('#fhChart');
     if (!cv) return;
@@ -313,50 +392,13 @@
   }
 
   // ── grouping ────────────────────────────────────────────────────────────
-  /* The Grand Exchange settles a large offer in pieces and the plugin books
-     each piece as its own flip. Four Adamantite bar rows closing 10:41-10:44,
-     all at 1,891 in and 1,940 out, are one 8,117-bar trade the GE happened to
-     fill in four parts — and split across four rows the quantities read 549, 2,
-     8 and 7,558, which tells you nothing about the trade you actually made.
-
-     Merged only when all three hold: same item, identical unit prices both
-     sides, and closed within GROUP_WINDOW_MS of the running group. The price
-     test is what keeps genuinely separate trades apart, and the window is what
-     separates a re-entry at the same price later in the day: the two Wine of
-     Zamorak flips share 925/972 but sit 3h22m apart, so they stay two rows.
-
-     Merging is presentation only. The ledger, the summary tiles and the chart
-     all stay on what the plugin booked — this never invents or drops gp. */
-  var GROUP_WINDOW_MS = 15 * 60 * 1000;
-
+  /* Shared with the Bank of Gielinor panel in the app — see flip-group.js for
+     the rule and why it lives in its own file. Falls back to no grouping if
+     that script did not load, rather than throwing and blanking the table. */
   function groupFills(flips) {
-    var byTime = flips.slice().sort(function (a, b) { return a.closedAt - b.closedAt; });
-    var open = {}, out = [];
-    byTime.forEach(function (f) {
-      var q = f.quantity > 0 ? f.quantity : 0;
-      var buyU = q ? Math.round(f.buySpent / q) : 0;
-      var sellU = q ? Math.round(f.sellGross / q) : 0;
-      var key = f.itemId + '|' + buyU + '|' + sellU;
-      var g = open[key];
-      if (g && f.closedAt - g.closedAt <= GROUP_WINDOW_MS) {
-        g.quantity += f.quantity; g.buySpent += f.buySpent;
-        g.sellGross += f.sellGross; g.tax += f.tax; g.profit += f.profit;
-        g.closedAt = Math.max(g.closedAt, f.closedAt);
-        /* One unknown open time makes the whole group's hold unknown: a part
-           with no buy time could have been bought at any point, so the earliest
-           KNOWN time would understate the hold rather than estimate it. */
-        if (!f.openedAt || f.openedAt <= 0) g.openedAt = 0;
-        else if (g.openedAt > 0) g.openedAt = Math.min(g.openedAt, f.openedAt);
-        g.parts += 1;
-        return;
-      }
-      g = { itemId: f.itemId, itemName: f.itemName, quantity: f.quantity,
-            buySpent: f.buySpent, sellGross: f.sellGross, tax: f.tax,
-            profit: f.profit, openedAt: f.openedAt, closedAt: f.closedAt, parts: 1 };
-      open[key] = g;
-      out.push(g);
-    });
-    return out;
+    return (root.PGEFlipGroup && root.PGEFlipGroup.groupFills)
+      ? root.PGEFlipGroup.groupFills(flips)
+      : flips.slice();
   }
 
   /* Filter BEFORE grouping, so a narrowed view never merges rows it is not
@@ -496,6 +538,7 @@
     setStatus('ok', 'Connected to RuneLite · <b>' + state.flips.length.toLocaleString() +
       '</b> flips in the ledger · read ' + when(state.generatedAt));
     renderSummary();
+    renderBank();
     renderChart();
     renderTable();
   }
@@ -536,6 +579,7 @@
     });
 
     setStatus('wait', 'Looking for RuneLite on this computer…');
+    loadBank();
     loadHistory().then(function () {
       /* Polls regardless of whether the first load worked: the client may not
          be running yet, and this is also how the page notices a ledger that
