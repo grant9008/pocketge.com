@@ -802,15 +802,16 @@ const SUPPORT_URL = 'https://ko-fi.com/pocketge';
 (function supportLinks() {
   const mount = () => {
     if (!SUPPORT_URL) return;
-    const dev = document.getElementById('supportDev');
-    const foot = document.getElementById('supportFoot');
+    ['supportDev', 'supportFoot', 'supportDrawer'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.hidden = false;
+    });
     const sep = document.querySelector('.support-foot-sep');
-    [dev, foot, sep].forEach(el => { if (el) el.hidden = false; });
-    document.querySelectorAll('.support-link, .support-foot').forEach(a => {
+    if (sep) sep.hidden = false;
+    const WHERE = { supportDrawer: 'drawer', supportFoot: 'footer' };
+    document.querySelectorAll('.support-link, .support-foot, #supportDrawer').forEach(a => {
       a.href = SUPPORT_URL;
-      a.addEventListener('click', () => track('support_click', {
-        via: a.classList.contains('support-foot') ? 'footer' : 'dev_note',
-      }));
+      a.addEventListener('click', () => track('support_click', { via: WHERE[a.id] || 'dev_note' }));
     });
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
