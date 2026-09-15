@@ -6440,6 +6440,11 @@ let rlFavoriteListsByName = new Map();
    the moment you hit Connect. So the first payload only records the seq —
    navigation starts from the next increment. */
 let rlLastNavSeq = null;
+/* The most recent poll payload, kept so the modal can re-render itself
+   between ticks — turning a history page, or the ledger download landing,
+   both need to redraw and neither should have to wait up to five seconds
+   for the next poll to supply the surrounding data again. */
+let rlLast = null;
 function rlMatchedFavIds() {
   const l = rlFavoriteListsByName.get(activeFavList().name.trim().toLowerCase());
   return l ? l.itemIds : [];
@@ -6529,10 +6534,25 @@ function rlRenderModal(data) {
       html += `<div class="rl-hint" style="margin:4px 0 0">+ ${rest.toLocaleString()} more ${rest === 1 ? 'stack' : 'stacks'}</div>`;
     }
   }
-  if (!flips.length) {
+  /* The ledger's own total, which is what the plugin's "Flip history ↗"
+     link is pointing at. It is separate from data.flips, the short recent
+     window the poll carries. */
+  const ledgerCount = data.flipCount != null ? Number(data.flipCount) : 0;
+  if (rlHistoryOpen) {
+    html += `<div class="bk-section-title bk-rl-head" id="rlHistoryHead">`
+      + `<span>All flips</span>`
+      + `<button type="button" class="wl-sort-btn" id="rlHistoryBack">← Back</button>`
+      + `</div>`;
+    html += rlHistoryHtml();
+  } else if (!flips.length) {
     html += `<div class="rl-hint" style="margin-top:8px">Connected — waiting for your first completed flip.</div>`;
   } else {
-    html += `<div class="bk-section-title">Recent flips</div>`;
+    html += `<div class="bk-section-title bk-rl-head">`
+      + `<span>Recent flips</span>`
+      + (ledgerCount > flips.length
+        ? `<button type="button" class="wl-sort-btn" id="rlHistoryOpen">All ${ledgerCount.toLocaleString()} →</button>`
+        : '')
+      + `</div>`;
     html += flips.map(f => `
       <div class="rl-flip" data-rl-item="${(f.itemName || '').replace(/"/g, '&quot;')}" title="Open the live chart">
         <span class="rl-name">${f.itemName} ×${Number(f.quantity).toLocaleString()}</span>
@@ -6550,6 +6570,21 @@ function rlRenderModal(data) {
       const name = el.getAttribute('data-rl-item');
       const item = mapping.find(x => x.name && x.name.toLowerCase() === name.toLowerCase());
       if (item) { closePortfolio(); setItem(item); }
+    };
+  });
+  const open = body.querySelector('#rlHistoryOpen');
+  if (open) open.onclick = () => { track('rl_history_open', {}); rlOpenHistory(); };
+  const back = body.querySelector('#rlHistoryBack');
+  if (back) back.onclick = () => { rlHistoryOpen = false; rlRenderModal(rlLast); };
+  body.querySelectorAll('[data-rl-page]').forEach(el => {
+    el.onclick = () => {
+      rlHistoryPage = Number(el.getAttribute('data-rl-page')) || 0;
+      rlRenderModal(rlLast);
+      /* Back to the top of the list, not wherever the previous page's
+         scroll happened to leave you — a pager that keeps its offset drops
+         you into the middle of the new page. */
+      const head = body.querySelector('#rlHistoryHead');
+      if (head && head.scrollIntoView) head.scrollIntoView({ block: 'nearest' });
     };
   });
 }
@@ -6583,6 +6618,7 @@ function rlApply(data) {
     });
   }
   rlHandleNavRequest(data && data.navRequest);
+  rlLast = data;
   rlRenderModal(data);
   if (rlConnected) rlReconcileFavorites();
   // Only re-render the (potentially large) watchlist when something it
@@ -6836,6 +6872,132 @@ async function rlPoll() {
   } catch (e) {
     rlApply(null);
   }
+}
+
+/* ── Lifetime flip history ───────────────────────────────────────────────
+   The /flips poll carries only a recent window — eight rows, deliberately,
+   because it runs every five seconds and shipping a year of trades on each
+   tick would be absurd. The plugin also serves GET /history: the whole
+   append-only ledger, every flip it has ever booked, read fresh from disk.
+
+   Nothing on this site asked for it until now. The plugin's own "Flip
+   history ↗" link opened the front page, which showed whatever chart was
+   loaded and no flips at all — the history was on the machine, served over
+   loopback, and simply never rendered.
+
+   Downloaded once and kept, rather than re-fetched: it is a file read of
+   what can be thousands of rows, and it only changes when a flip closes.
+   The poll payload carries flipCount so we can tell when that has happened
+   without asking for the file again. */
+let rlHistory = null;        // the full ledger, newest first, or null
+let rlHistoryCount = -1;     // flipCount the cached copy was built at
+let rlHistoryPage = 0;
+let rlHistoryOpen = false;
+let rlHistoryLoading = false;
+const RL_HISTORY_PAGE = 25;
+
+async function rlFetchHistory() {
+  if (rlHistoryLoading) return;
+  rlHistoryLoading = true;
+  try {
+    const res = await fetch(RL_BRIDGE_URL + '/history', { cache: 'no-store', mode: 'cors' });
+    if (!res.ok) throw new Error('bridge ' + res.status);
+    const data = await res.json();
+    const flips = Array.isArray(data.flips) ? data.flips : [];
+    /* The ledger is append-only, so it arrives oldest-first. Reversed once
+       here rather than per render — the list is the same every time and
+       sorting thousands of rows on each page turn is work for nothing. */
+    rlHistory = flips.slice().reverse();
+    rlHistoryCount = flips.length;
+  } catch (e) {
+    rlHistory = null;
+  } finally {
+    rlHistoryLoading = false;
+    rlRenderModal(rlLast);
+  }
+}
+
+/** Open the history list, downloading it first if this tab has not got it
+ *  or a flip has closed since it did. */
+function rlOpenHistory() {
+  rlHistoryOpen = true;
+  rlHistoryPage = 0;
+  const known = rlLast && rlLast.flipCount != null ? Number(rlLast.flipCount) : -1;
+  if (rlHistory === null || (known >= 0 && known !== rlHistoryCount)) {
+    rlFetchHistory();
+  }
+  rlRenderModal(rlLast);
+}
+
+function rlHistoryHtml() {
+  if (rlHistoryLoading && rlHistory === null) {
+    return `<div class="rl-hint">Reading your flip ledger…</div>`;
+  }
+  if (rlHistory === null) {
+    return `<div class="rl-hint">Could not read the flip ledger from the plugin. It needs version 0.6.3 or newer — older builds serve the live session but not the full history.</div>`;
+  }
+  if (!rlHistory.length) {
+    return `<div class="rl-hint">No completed flips on the ledger yet. A flip lands here once its sell offer fills.</div>`;
+  }
+  /* Totals over the WHOLE ledger, not the page. A history page whose
+     summary changed as you turned pages would be worse than no summary. */
+  let profit = 0, tax = 0, turnover = 0, wins = 0;
+  for (const f of rlHistory) {
+    profit += Number(f.profit || 0);
+    tax += Number(f.tax || 0);
+    turnover += Number(f.buySpent || 0);
+    if (Number(f.profit || 0) > 0) wins++;
+  }
+  const pages = Math.ceil(rlHistory.length / RL_HISTORY_PAGE);
+  const page = Math.min(Math.max(0, rlHistoryPage), pages - 1);
+  const rows = rlHistory.slice(page * RL_HISTORY_PAGE, (page + 1) * RL_HISTORY_PAGE);
+  const signed = n => (n >= 0 ? '+' : '') + abbreviateNumber(n) + ' gp';
+  const tile = (label, val, note, cls) =>
+    `<div class="rl-stat${cls ? ' ' + cls : ''}">` +
+    `<div class="bk-stat-label">${label}</div>` +
+    `<div class="rl-stat-val">${val}</div>` +
+    (note ? `<div class="rl-stat-note">${note}</div>` : '') +
+    `</div>`;
+
+  let html = `<div class="rl-stats">`
+    + tile('All-time profit', signed(profit), 'after the 2% tax', profit >= 0 ? 'pos' : 'neg')
+    + tile('Flips', rlHistory.length.toLocaleString(),
+           Math.round(100 * wins / rlHistory.length) + '% of them made money')
+    + tile('Tax paid', abbreviateNumber(tax) + ' gp', 'what the Exchange took')
+    + tile('Turnover', abbreviateNumber(turnover) + ' gp', 'gold put through the market')
+    + `</div>`;
+
+  html += rows.map(f => {
+    const qty = Number(f.quantity || 0) || 1;
+    const buy = Math.round(Number(f.buySpent || 0) / qty);
+    const sell = Math.round(Number(f.sellGross || 0) / qty);
+    const p = Number(f.profit || 0);
+    /* The hold is stated only when the plugin actually watched the buy.
+       openedAt is 0 for a lot it met part-filled, and "held 56 years" —
+       which is what epoch zero renders as — is worse than saying nothing. */
+    const held = Number(f.openedAt || 0) > 0 && Number(f.closedAt || 0) > 0
+      ? ' · held ' + rlAgeText(Math.max(1, Math.round((Number(f.closedAt) - Number(f.openedAt)) / 60000)))
+      : '';
+    const when = Number(f.closedAt || 0) > 0
+      ? new Date(Number(f.closedAt)).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+      : '';
+    return `
+      <div class="rl-flip" data-rl-item="${escapeHtml(String(f.itemName || ''))}" title="Open the live chart">
+        <span class="rl-name">${escapeHtml(String(f.itemName || ''))} ×${qty.toLocaleString()}
+          <span class="rl-flip-when">${when}${held}</span></span>
+        <span class="rl-nums">${abbreviateNumber(buy)} → ${abbreviateNumber(sell)}
+          <span class="${p >= 0 ? 'pos' : 'neg'}">${p >= 0 ? '+' : ''}${abbreviateNumber(p)}</span></span>
+      </div>`;
+  }).join('');
+
+  if (pages > 1) {
+    html += `<div class="rl-pager">`
+      + `<button type="button" class="wl-sort-btn" data-rl-page="${page - 1}"${page === 0 ? ' disabled' : ''}>← Newer</button>`
+      + `<span class="rl-hint">Page ${page + 1} of ${pages.toLocaleString()}</span>`
+      + `<button type="button" class="wl-sort-btn" data-rl-page="${page + 1}"${page >= pages - 1 ? ' disabled' : ''}>Older →</button>`
+      + `</div>`;
+  }
+  return html;
 }
 /* Background poll whenever opted in — independent of the Bank modal being
    open, since the sidebar link is the whole point now, not just a modal
@@ -9220,6 +9382,18 @@ setItem._userPicked = false;
       if (document.visibilityState !== 'visible') return;
       try { jumpToQueryItem(new URLSearchParams(window.location.search).get('q')); } catch (e) {}
     });
+
+    /* ?flips=1 — the plugin's "Flip history ↗" link. It used to point at the
+       bare front page, which opened on whatever chart was current and showed
+       no flips at all: the history was sitting on the same machine, served
+       over loopback, with nothing on this end asking for it. The link now
+       names where it wants to go and this opens it. */
+    try {
+      if (new URLSearchParams(window.location.search).get('flips')) {
+        openPortfolio();
+        rlOpenHistory();
+      }
+    } catch (e) {}
 
     updateFootFresh();
     updateFootUpdated();

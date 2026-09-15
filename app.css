@@ -533,6 +533,14 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 .rl-flip .rl-nums { flex-shrink: 0; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 .rl-flip .pos { color: var(--rs-green-deep); font-weight: 700; }
 .rl-flip .neg { color: var(--negative); font-weight: 700; }
+/* The date and hold time on an all-flips row. Quiet and on its own line:
+   in the lifetime list the item and the money are what you scan down, and
+   "Mar 4 · held 2 hours" is the answer to a question you ask about one row
+   at a time. */
+.rl-flip .rl-flip-when { display: block; font-size: 9.5px; color: var(--text-muted); font-weight: 400; margin-top: 1px; }
+.rl-pager { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; }
+.rl-pager .rl-hint { margin: 0; }
+.rl-pager button[disabled] { opacity: 0.4; cursor: default; }
 /* Small "Linked" pill on the sidebar's Favorites title when the RuneLite
    bridge is actively merging in plugin favorites — reuses .rl-dot so the
    same green pulse means the same thing in both places. */
