@@ -891,6 +891,25 @@ function applyTheme(id, persist) {
    Read per draw, not cached: applyTheme() changes these at runtime and the next
    redraw has to pick the change up. Falls back to the default so a missing
    stylesheet degrades to today's colours rather than transparent. */
+/* One reader for the palette's custom properties. Was a const arrow inside the
+   share-card function, which put it 148 lines BELOW the badge colours once
+   those started reading the palette too — a temporal dead zone throw, not a
+   wrong colour. A function declaration hoists, so order stops mattering. */
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+/* Mix a hex toward black. Used where a canvas needs readable dark text on a
+   fill whose colour comes from the palette — the CSS equivalent is
+   color-mix(in srgb, <c> 16%, #000), which a canvas cannot use. */
+function darken(hex, keep) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim());
+  if (!m) return '#0A0908';
+  const n = parseInt(m[1], 16);
+  const c = i => Math.round(((n >> i) & 255) * keep);
+  return `rgb(${c(16)}, ${c(8)}, ${c(0)})`;
+}
+
 function paletteRgb(side) {
   const v = getComputedStyle(document.documentElement)
     .getPropertyValue(side === 'buy' ? '--buy-rgb' : '--sell-rgb').trim();
@@ -1580,7 +1599,11 @@ async function buildShareCardCanvas() {
   const shareP24 = past24h && past24h.data ? past24h.data[String(selected.id)] : null;
   const hlState = dayState(shareNode, shareP24, selected.id);
   const isHigh5d = hlState === 'high5d', isLow5d = hlState === 'low5d';
-  const hlColor = isHigh5d ? '#00FF7A' : isLow5d ? '#FFB300' : null;
+  /* HIGH is the sell colour, LOW the buy colour -- same rule as the badges in
+     the watchlist, and read from the palette so a shared card shows the colours
+     the sharer is actually looking at. */
+  const hlColor = isHigh5d ? (cssVar('--sell-color') || '#26A9AB')
+                : isLow5d  ? (cssVar('--buy-color')  || '#E5B842') : null;
 
   // Background — the site's own obsidian/gold palette, not a generic dark card.
   const bgGrad = g.createLinearGradient(0, 0, W, H);
@@ -1635,7 +1658,10 @@ async function buildShareCardCanvas() {
     g.fillStyle = hlColor;
     g.fill();
     g.restore();
-    g.fillStyle = isHigh5d ? '#001a0e' : '#1a1100';
+    /* Dark text on a fill the stylesheet picked: derive it from the fill rather
+       than hardcoding a green-black and a gold-black that only suited the two
+       colours this used to have. */
+    g.fillStyle = darken(hlColor, 0.16);
     g.textAlign = 'center';
     g.fillText(badgeText, bx + bw / 2, by + 27);
     g.textAlign = 'left';
@@ -1710,7 +1736,6 @@ async function buildShareCardCanvas() {
   const shareTgt = shareIsBuy ? recommendedBuy : recommendedSell;
   /* Read, not hardcoded: the share card has to show the palette the user
      is actually looking at. (The PocketGE wordmark below stays brand gold.) */
-  const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   const shareTgtColor = cssVar(shareIsBuy ? '--buy-color' : '--sell-color') ||
                         (shareIsBuy ? '#E5B842' : '#26A9AB');
 
