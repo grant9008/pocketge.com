@@ -478,6 +478,13 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 /* Item pages carry a stub instead of the glossary's 23 rows (12.5KB of
    prose identical on all of them) and fetch /glossary.html on first open.
    This is what shows while that is in flight, and what stays if it fails. */
+/* Tip jar. Quiet on purpose: the same weight as the surrounding prose in
+   the dev note, and the same weight as its neighbours in the footer. It is
+   an offer, not a call to action. */
+.support-link { color: var(--accent-bright); text-decoration: none; border-bottom: 1px solid rgba(201,166,77,0.4); }
+.support-link:hover { border-bottom-color: var(--accent-bright); }
+.support-foot { color: inherit; }
+
 /* Buy/sell palette picker in the drawer. Each swatch previews its own two
    colours rather than naming them, because 'gold' and 'teal' mean less at a
    glance than the colours themselves. */

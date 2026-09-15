@@ -780,6 +780,43 @@ function loadColPrefs() {
 let columnPrefs = loadColPrefs();
 function saveColPrefs() { try { localStorage.setItem(colPrefsKey(), JSON.stringify(columnPrefs)); } catch (e) {} }
 
+/* ── Tip jar ───────────────────────────────────────────────────────────────
+   Empty until there is a real page to point at. A dead donate link is worse
+   than no donate link, so the footer link and the line in the dev note both
+   stay hidden while this is blank — setting it to the full URL is the only
+   change needed to turn them on.
+
+   The copy deliberately does NOT say tips "cover hosting". This is a static
+   site on GitHub Pages reading a free, volunteer-run API: hosting costs
+   approximately nothing. The whole tool is built on not quoting numbers it
+   cannot show you, and the one screen that asks for money is the worst place
+   to start. It says the true thing instead — it is free, and if it saved you
+   time you can say thanks.
+
+   Nowhere near the trading UI: not on the Recommended Flip card, not in the
+   watchlist, no modal, no interstitial. The dev note and the footer are both
+   inside the block prerender_items.py cuts, so neither reaches the 1,840 item
+   pages either. */
+const SUPPORT_URL = '';
+
+(function supportLinks() {
+  const mount = () => {
+    if (!SUPPORT_URL) return;
+    const dev = document.getElementById('supportDev');
+    const foot = document.getElementById('supportFoot');
+    const sep = document.querySelector('.support-foot-sep');
+    [dev, foot, sep].forEach(el => { if (el) el.hidden = false; });
+    document.querySelectorAll('.support-link, .support-foot').forEach(a => {
+      a.href = SUPPORT_URL;
+      a.addEventListener('click', () => track('support_click', {
+        via: a.classList.contains('support-foot') ? 'footer' : 'dev_note',
+      }));
+    });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
+  else mount();
+})();
+
 /* ── Buy/sell palette ──────────────────────────────────────────────────────
    Gold-for-buy and teal-for-sell are a convention, not a fact, and someone
    staring at this for hours should get to pick. Everything that carries that
