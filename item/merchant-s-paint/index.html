@@ -218,6 +218,17 @@
      navigation. In <head> and render-blocking, exactly as the inline
      block was, so there is no flash of unstyled content. -->
 <link rel="stylesheet" href="/app.css">
+<!-- Buy/sell palette, applied before first paint so a non-default one does
+     not flash gold/teal first. The stored value holds the resolved colours
+     rather than a preset id, so this needs no copy of the THEMES table in
+     app.js to look anything up. -->
+<script>
+(function(){try{var t=JSON.parse(localStorage.getItem('ge_theme'));
+if(!t||!t.buy)return;var r=document.documentElement.style;
+r.setProperty('--buy-color',t.buy);r.setProperty('--buy-rgb',t.buyRgb);
+r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
+}catch(e){}})();
+</script>
 <script>window.__PGE_ITEM__={"id":32110,"name":"Merchant's paint","slug":"merchant-s-paint"};</script>
 <script type="application/ld+json" id="itemJsonLd">[{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"PocketGE","item":"https://pocketge.com/"},{"@type":"ListItem","position":2,"name":"Merchant's paint","item":"https://pocketge.com/item/merchant-s-paint/"}]},{"@context":"https://schema.org","@type":"ItemPage","name":"Merchant's paint Price OSRS \u2014 10,979,997 gp \u00b7 Live GE Chart & Flip Margin | PocketGE","description":"Merchant's paint is 10,979,997 gp on the OSRS Grand Exchange (insta-buy 10,979,997, insta-sell 10,050,005). Live chart & flip margin after 2% tax \u00b7 12 traded/day.","url":"https://pocketge.com/item/merchant-s-paint/","dateModified":"2026-09-15"}]</script>
 </head>
@@ -267,6 +278,10 @@
                   <span class="icon-label">Bank</span>
                 </button>
                 <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
+
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Buy / sell colours</div>
+                <div class="theme-row" id="themeRow" role="group" aria-label="Buy and sell colours"></div>
 
                 <!-- Real navigation, which is what makes a drawer worth
                      opening at all — these standalone pages previously only
@@ -657,7 +672,7 @@
 <section class="item-seo" id="itemSeo">
   <p class="is-sum" id="isSummary"><b>Merchant's paint</b> is <b>10,979,997 gp</b> on the OSRS GE (insta-sell 10,050,005 gp). ~12/day · members. Down 1% on its 24-hour average.</p>
   <div class="is-qa" id="isQa"><p><b>Buy limit:</b> none on this item.</p><p><b>High alch:</b> 1 gp.</p></div>
-  <div class="is-detail" id="isDetail" data-item-id="32110"><h2>About Merchant's paint</h2><p>In game it is examined as &ldquo;A vibrant gold paint. This might look good on a boat.&rdquo; Merchant's paint is members-only, so a membership is needed to trade or use it. The base game value is 1 gp, which is what shops price from rather than what players pay.</p><h2>Merchant's paint buy limit</h2><p>Merchant's paint has no Grand Exchange buy limit, so the only cap on a position is the gold behind it.</p><h2>GE tax on Merchant's paint</h2><p>Selling at 10,979,997 gp costs 219,599 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Merchant's paint</h2><p>High alchemy turns one Merchant's paint into <b>1 gp</b>. That is less than the 140 gp nature rune the cast costs, so alching Merchant's paint always loses money.</p><h2>How much Merchant's paint trades</h2><p>Merchant's paint sees about <b>12</b> trades a day, which makes it very thinly traded — there may be no buyer for hours at a time, and one sale can set the price.</p><h3>Merchant's paint FAQ</h3><p><b>How much is Merchant's paint in OSRS?</b> Merchant's paint is 10,979,997 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 10,050,005 gp. The chart above is live.</p><p><b>What is the buy limit for Merchant's paint?</b> Merchant's paint has no buy limit.</p><p><b>Can you high alch Merchant's paint for profit?</b> No — the alch value is 1 gp and the nature rune alone costs 140 gp.</p><p><b>Do you need members for Merchant's paint?</b> Yes, Merchant's paint is members-only.</p></div>
+  <div class="is-detail" id="isDetail" data-item-id="32110"><h2>About Merchant's paint</h2><p>In game it is examined as &ldquo;A vibrant gold paint. This might look good on a boat.&rdquo; Merchant's paint is members-only, so a membership is needed to trade or use it. The base game value is 1 gp, which is what shops price from rather than what players pay.</p><h2>Merchant's paint buy limit</h2><p>Merchant's paint has no Grand Exchange buy limit, so the only cap on a position is the gold behind it.</p><h2>GE tax on Merchant's paint</h2><p>Selling at 10,979,997 gp costs 219,599 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Merchant's paint</h2><p>High alchemy turns one Merchant's paint into <b>1 gp</b>. That is less than the 137 gp nature rune the cast costs, so alching Merchant's paint always loses money.</p><h2>How much Merchant's paint trades</h2><p>Merchant's paint sees about <b>12</b> trades a day, which makes it very thinly traded — there may be no buyer for hours at a time, and one sale can set the price.</p><h3>Merchant's paint FAQ</h3><p><b>How much is Merchant's paint in OSRS?</b> Merchant's paint is 10,979,997 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 10,050,005 gp. The chart above is live.</p><p><b>What is the buy limit for Merchant's paint?</b> Merchant's paint has no buy limit.</p><p><b>Can you high alch Merchant's paint for profit?</b> No — the alch value is 1 gp and the nature rune alone costs 137 gp.</p><p><b>Do you need members for Merchant's paint?</b> Yes, Merchant's paint is members-only.</p></div>
   <p class="is-rel" id="isRelated">Related: <a href="/item/barracuda-paint/">Barracuda paint</a><span class="is-sep">·</span><a href="/item/angler-s-paint/">Angler's paint</a><span class="is-sep">·</span><a href="/item/white-dark-bow-paint/">White dark bow paint</a></p>
   <p class="is-guide">New to flipping? <a href="/#how-it-works">How PocketGE works</a> — a flip from start to finish, plus the FAQ.</p>
 </section>

@@ -218,6 +218,17 @@
      navigation. In <head> and render-blocking, exactly as the inline
      block was, so there is no flash of unstyled content. -->
 <link rel="stylesheet" href="/app.css">
+<!-- Buy/sell palette, applied before first paint so a non-default one does
+     not flash gold/teal first. The stored value holds the resolved colours
+     rather than a preset id, so this needs no copy of the THEMES table in
+     app.js to look anything up. -->
+<script>
+(function(){try{var t=JSON.parse(localStorage.getItem('ge_theme'));
+if(!t||!t.buy)return;var r=document.documentElement.style;
+r.setProperty('--buy-color',t.buy);r.setProperty('--buy-rgb',t.buyRgb);
+r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
+}catch(e){}})();
+</script>
 <script>window.__PGE_ITEM__={"id":3483,"name":"Gilded platelegs","slug":"gilded-platelegs"};</script>
 <script type="application/ld+json" id="itemJsonLd">[{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"PocketGE","item":"https://pocketge.com/"},{"@type":"ListItem","position":2,"name":"Gilded platelegs","item":"https://pocketge.com/item/gilded-platelegs/"}]},{"@context":"https://schema.org","@type":"ItemPage","name":"Gilded platelegs Price OSRS \u2014 6,307,803 gp \u00b7 Live GE Chart & Flip Margin | PocketGE","description":"Gilded platelegs are 6,307,803 gp on the OSRS Grand Exchange (insta-buy 6,307,803, insta-sell 6,065,446). Live chart & flip margin after 2% tax \u00b7 88 traded/day \u00b7 8 buy limit.","url":"https://pocketge.com/item/gilded-platelegs/","dateModified":"2026-09-15"}]</script>
 </head>
@@ -267,6 +278,10 @@
                   <span class="icon-label">Bank</span>
                 </button>
                 <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
+
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Buy / sell colours</div>
+                <div class="theme-row" id="themeRow" role="group" aria-label="Buy and sell colours"></div>
 
                 <!-- Real navigation, which is what makes a drawer worth
                      opening at all — these standalone pages previously only
@@ -657,7 +672,7 @@
 <section class="item-seo" id="itemSeo">
   <p class="is-sum" id="isSummary"><b>Gilded platelegs</b> are <b>6,307,803 gp</b> on the OSRS GE (insta-sell 6,065,446 gp). ~88/day · F2P.</p>
   <div class="is-qa" id="isQa"><p><b>Buy limit:</b> 8 every 4 hours.</p><p><b>High alch:</b> 38,400 gp.</p></div>
-  <div class="is-detail" id="isDetail" data-item-id="3483"><h2>About Gilded platelegs</h2><p>In game they are examined as &ldquo;Rune platelegs with gold plate.&rdquo; Gilded platelegs are available to free-to-play accounts. The base game value is 64,000 gp, which is what shops price from rather than what players pay.</p><h2>Gilded platelegs buy limit</h2><p>The Grand Exchange lets one account buy <b>8</b> every 4 hours. That is a very tight limit, so a position is built over days rather than hours. Filling it once costs about 50,462,424 gp at the 6,307,803 gp price recorded on 15 September 2026. The limit is per account and resets on a rolling 4-hour timer.</p><h2>GE tax on Gilded platelegs</h2><p>Selling at 6,307,803 gp costs 126,156 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Gilded platelegs</h2><p>High alchemy turns Gilded platelegs into <b>38,400 gp</b>. Gilded platelegs are worth far more than that on the Grand Exchange, so the figure matters for the alch calculator rather than as anything to do.</p><h2>How much Gilded platelegs trade</h2><p>Gilded platelegs see about <b>88</b> trades a day, which makes them very thinly traded — there may be no buyer for hours at a time, and one sale can set the price. That is roughly 11 times the 8 buy limit.</p><h3>Gilded platelegs FAQ</h3><p><b>How much are Gilded platelegs in OSRS?</b> Gilded platelegs are 6,307,803 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 6,065,446 gp. The chart above is live.</p><p><b>What is the buy limit for Gilded platelegs?</b> 8 every 4 hours.</p><p><b>Can you high alch Gilded platelegs for profit?</b> Not at the moment — the alch value is 38,400 gp and a nature rune costs 140 gp, so it only pays below 38,260 gp.</p><p><b>Do you need members for Gilded platelegs?</b> No, free-to-play accounts can buy and sell them.</p></div>
+  <div class="is-detail" id="isDetail" data-item-id="3483"><h2>About Gilded platelegs</h2><p>In game they are examined as &ldquo;Rune platelegs with gold plate.&rdquo; Gilded platelegs are available to free-to-play accounts. The base game value is 64,000 gp, which is what shops price from rather than what players pay.</p><h2>Gilded platelegs buy limit</h2><p>The Grand Exchange lets one account buy <b>8</b> every 4 hours. That is a very tight limit, so a position is built over days rather than hours. Filling it once costs about 50,462,424 gp at the 6,307,803 gp price recorded on 15 September 2026. The limit is per account and resets on a rolling 4-hour timer.</p><h2>GE tax on Gilded platelegs</h2><p>Selling at 6,307,803 gp costs 126,156 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Gilded platelegs</h2><p>High alchemy turns Gilded platelegs into <b>38,400 gp</b>. Gilded platelegs are worth far more than that on the Grand Exchange, so the figure matters for the alch calculator rather than as anything to do.</p><h2>How much Gilded platelegs trade</h2><p>Gilded platelegs see about <b>88</b> trades a day, which makes them very thinly traded — there may be no buyer for hours at a time, and one sale can set the price. That is roughly 11 times the 8 buy limit.</p><h3>Gilded platelegs FAQ</h3><p><b>How much are Gilded platelegs in OSRS?</b> Gilded platelegs are 6,307,803 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 6,065,446 gp. The chart above is live.</p><p><b>What is the buy limit for Gilded platelegs?</b> 8 every 4 hours.</p><p><b>Can you high alch Gilded platelegs for profit?</b> Not at the moment — the alch value is 38,400 gp and a nature rune costs 137 gp, so it only pays below 38,263 gp.</p><p><b>Do you need members for Gilded platelegs?</b> No, free-to-play accounts can buy and sell them.</p></div>
   <p class="is-rel" id="isRelated">Related: <a href="/item/rune-platelegs/">Rune platelegs</a><span class="is-sep">·</span><a href="/item/dragon-platelegs/">Dragon platelegs</a><span class="is-sep">·</span><a href="/item/torag-s-platelegs/">Torag's platelegs</a><span class="is-sep">·</span><a href="/item/dharok-s-platelegs/">Dharok's platelegs</a></p>
   <p class="is-guide">New to flipping? <a href="/#how-it-works">How PocketGE works</a> — a flip from start to finish, plus the FAQ.</p>
 </section>

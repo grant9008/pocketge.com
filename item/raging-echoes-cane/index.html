@@ -218,6 +218,17 @@
      navigation. In <head> and render-blocking, exactly as the inline
      block was, so there is no flash of unstyled content. -->
 <link rel="stylesheet" href="/app.css">
+<!-- Buy/sell palette, applied before first paint so a non-default one does
+     not flash gold/teal first. The stored value holds the resolved colours
+     rather than a preset id, so this needs no copy of the THEMES table in
+     app.js to look anything up. -->
+<script>
+(function(){try{var t=JSON.parse(localStorage.getItem('ge_theme'));
+if(!t||!t.buy)return;var r=document.documentElement.style;
+r.setProperty('--buy-color',t.buy);r.setProperty('--buy-rgb',t.buyRgb);
+r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
+}catch(e){}})();
+</script>
 <script>window.__PGE_ITEM__={"id":30428,"name":"Raging echoes cane","slug":"raging-echoes-cane"};</script>
 <script type="application/ld+json" id="itemJsonLd">[{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"PocketGE","item":"https://pocketge.com/"},{"@type":"ListItem","position":2,"name":"Raging echoes cane","item":"https://pocketge.com/item/raging-echoes-cane/"}]},{"@context":"https://schema.org","@type":"ItemPage","name":"Raging echoes cane Price OSRS \u2014 1,200,000 gp \u00b7 Live GE Chart & Flip Margin | PocketGE","description":"Raging echoes cane is 1,200,000 gp on the OSRS Grand Exchange (insta-buy 1,200,000, insta-sell 1,058,888). Live chart & flip margin after 2% tax \u00b7 5 traded/day.","url":"https://pocketge.com/item/raging-echoes-cane/","dateModified":"2026-09-15"}]</script>
 </head>
@@ -267,6 +278,10 @@
                   <span class="icon-label">Bank</span>
                 </button>
                 <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
+
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Buy / sell colours</div>
+                <div class="theme-row" id="themeRow" role="group" aria-label="Buy and sell colours"></div>
 
                 <!-- Real navigation, which is what makes a drawer worth
                      opening at all — these standalone pages previously only
@@ -657,7 +672,7 @@
 <section class="item-seo" id="itemSeo">
   <p class="is-sum" id="isSummary"><b>Raging echoes cane</b> is <b>1,200,000 gp</b> on the OSRS GE (insta-sell 1,058,888 gp). ~5/day · members. Down 9% on its 24-hour average.</p>
   <div class="is-qa" id="isQa"><p><b>Buy limit:</b> none on this item.</p><p><b>High alch:</b> 600 gp.</p></div>
-  <div class="is-detail" id="isDetail" data-item-id="30428"><h2>About Raging echoes cane</h2><p>In game it is examined as &ldquo;The cane of a Raging Echoes relic hunter.&rdquo; Raging echoes cane is members-only, so a membership is needed to trade or use it. The base game value is 1,000 gp, which is what shops price from rather than what players pay.</p><h2>Raging echoes cane buy limit</h2><p>Raging echoes cane has no Grand Exchange buy limit, so the only cap on a position is the gold behind it.</p><h2>GE tax on Raging echoes cane</h2><p>Selling at 1,200,000 gp costs 24,000 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Raging echoes cane</h2><p>High alchemy turns one Raging echoes cane into <b>600 gp</b>. Raging echoes cane is worth far more than that on the Grand Exchange, so the figure matters for the alch calculator rather than as anything to do.</p><h2>How much Raging echoes cane trades</h2><p>Raging echoes cane sees about <b>5</b> trades a day, which makes it very thinly traded — there may be no buyer for hours at a time, and one sale can set the price.</p><h3>Raging echoes cane FAQ</h3><p><b>How much is Raging echoes cane in OSRS?</b> Raging echoes cane is 1,200,000 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 1,058,888 gp. The chart above is live.</p><p><b>What is the buy limit for Raging echoes cane?</b> Raging echoes cane has no buy limit.</p><p><b>Can you high alch Raging echoes cane for profit?</b> Not at the moment — the alch value is 600 gp and a nature rune costs 140 gp, so it only pays below 460 gp.</p><p><b>Do you need members for Raging echoes cane?</b> Yes, Raging echoes cane is members-only.</p></div>
+  <div class="is-detail" id="isDetail" data-item-id="30428"><h2>About Raging echoes cane</h2><p>In game it is examined as &ldquo;The cane of a Raging Echoes relic hunter.&rdquo; Raging echoes cane is members-only, so a membership is needed to trade or use it. The base game value is 1,000 gp, which is what shops price from rather than what players pay.</p><h2>Raging echoes cane buy limit</h2><p>Raging echoes cane has no Grand Exchange buy limit, so the only cap on a position is the gold behind it.</p><h2>GE tax on Raging echoes cane</h2><p>Selling at 1,200,000 gp costs 24,000 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Raging echoes cane</h2><p>High alchemy turns one Raging echoes cane into <b>600 gp</b>. Raging echoes cane is worth far more than that on the Grand Exchange, so the figure matters for the alch calculator rather than as anything to do.</p><h2>How much Raging echoes cane trades</h2><p>Raging echoes cane sees about <b>5</b> trades a day, which makes it very thinly traded — there may be no buyer for hours at a time, and one sale can set the price.</p><h3>Raging echoes cane FAQ</h3><p><b>How much is Raging echoes cane in OSRS?</b> Raging echoes cane is 1,200,000 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 1,058,888 gp. The chart above is live.</p><p><b>What is the buy limit for Raging echoes cane?</b> Raging echoes cane has no buy limit.</p><p><b>Can you high alch Raging echoes cane for profit?</b> Not at the moment — the alch value is 600 gp and a nature rune costs 137 gp, so it only pays below 463 gp.</p><p><b>Do you need members for Raging echoes cane?</b> Yes, Raging echoes cane is members-only.</p></div>
   <p class="is-rel" id="isRelated">Related: <a href="/item/raging-echoes-nexus-scroll/">Raging echoes nexus scroll</a><span class="is-sep">·</span><a href="/item/raging-echoes-spirit-tree-scroll/">Raging echoes spirit tree scroll</a><span class="is-sep">·</span><a href="/item/raging-echoes-astral-contact-scroll/">Raging echoes astral contact scroll</a><span class="is-sep">·</span><a href="/item/raging-echoes-hat-t3/">Raging echoes hat (t3)</a></p>
   <p class="is-guide">New to flipping? <a href="/#how-it-works">How PocketGE works</a> — a flip from start to finish, plus the FAQ.</p>
 </section>

@@ -218,6 +218,17 @@
      navigation. In <head> and render-blocking, exactly as the inline
      block was, so there is no flash of unstyled content. -->
 <link rel="stylesheet" href="/app.css">
+<!-- Buy/sell palette, applied before first paint so a non-default one does
+     not flash gold/teal first. The stored value holds the resolved colours
+     rather than a preset id, so this needs no copy of the THEMES table in
+     app.js to look anything up. -->
+<script>
+(function(){try{var t=JSON.parse(localStorage.getItem('ge_theme'));
+if(!t||!t.buy)return;var r=document.documentElement.style;
+r.setProperty('--buy-color',t.buy);r.setProperty('--buy-rgb',t.buyRgb);
+r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
+}catch(e){}})();
+</script>
 <script>window.__PGE_ITEM__={"id":1521,"name":"Oak logs","slug":"oak-logs"};</script>
 <script type="application/ld+json" id="itemJsonLd">[{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"PocketGE","item":"https://pocketge.com/"},{"@type":"ListItem","position":2,"name":"Oak logs","item":"https://pocketge.com/item/oak-logs/"}]},{"@context":"https://schema.org","@type":"ItemPage","name":"Oak logs Price OSRS \u2014 40 gp \u00b7 Live GE Chart & Flip Margin | PocketGE","description":"Oak logs are 40 gp on the OSRS Grand Exchange (insta-buy 40, insta-sell 40). Live chart & flip margin after 2% tax \u00b7 5.05M traded/day \u00b7 15.0K buy limit.","url":"https://pocketge.com/item/oak-logs/","dateModified":"2026-09-15"}]</script>
 </head>
@@ -267,6 +278,10 @@
                   <span class="icon-label">Bank</span>
                 </button>
                 <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
+
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Buy / sell colours</div>
+                <div class="theme-row" id="themeRow" role="group" aria-label="Buy and sell colours"></div>
 
                 <!-- Real navigation, which is what makes a drawer worth
                      opening at all — these standalone pages previously only
@@ -657,7 +672,7 @@
 <section class="item-seo" id="itemSeo">
   <p class="is-sum" id="isSummary"><b>Oak logs</b> are <b>40 gp</b> on the OSRS GE (insta-sell 40 gp). ~5.05M/day · F2P. Up 3% on its 24-hour average.</p>
   <div class="is-qa" id="isQa"><p><b>Buy limit:</b> 15,000 every 4 hours.</p><p><b>High alch:</b> 12 gp.</p></div>
-  <div class="is-detail" id="isDetail" data-item-id="1521"><h2>About Oak logs</h2><p>In game they are examined as &ldquo;Logs cut from an oak tree.&rdquo; Oak logs are available to free-to-play accounts. The base game value is 20 gp, which is what shops price from rather than what players pay.</p><h2>Oak logs buy limit</h2><p>The Grand Exchange lets one account buy <b>15,000</b> every 4 hours. That is a generous limit, so the market rather than the limit is usually what caps a position here. Filling it once costs about 600,000 gp at the 40 gp price recorded on 15 September 2026. The limit is per account and resets on a rolling 4-hour timer.</p><h2>GE tax on Oak logs</h2><p>The 2% sale tax is rounded down, and at 40 gp it rounds to nothing — sales under 50 gp are untaxed, so a flip here keeps its whole margin.</p><h2>High alching Oak logs</h2><p>High alchemy turns Oak logs into <b>12 gp</b>. That is less than the 140 gp nature rune the cast costs, so alching Oak logs always loses money.</p><h2>How much Oak logs trade</h2><p>Oak logs see about <b>5.05M</b> trades a day, which makes them one of the busiest items on the Grand Exchange — orders at a fair price fill in minutes. That is roughly 337 times the 15,000 buy limit.</p><h3>Oak logs FAQ</h3><p><b>How much are Oak logs in OSRS?</b> Oak logs are 40 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 40 gp. The chart above is live.</p><p><b>What is the buy limit for Oak logs?</b> 15,000 every 4 hours.</p><p><b>Can you high alch Oak logs for profit?</b> No — the alch value is 12 gp and the nature rune alone costs 140 gp.</p><p><b>Do you need members for Oak logs?</b> No, free-to-play accounts can buy and sell them.</p></div>
+  <div class="is-detail" id="isDetail" data-item-id="1521"><h2>About Oak logs</h2><p>In game they are examined as &ldquo;Logs cut from an oak tree.&rdquo; Oak logs are available to free-to-play accounts. The base game value is 20 gp, which is what shops price from rather than what players pay.</p><h2>Oak logs buy limit</h2><p>The Grand Exchange lets one account buy <b>15,000</b> every 4 hours. That is a generous limit, so the market rather than the limit is usually what caps a position here. Filling it once costs about 600,000 gp at the 40 gp price recorded on 15 September 2026. The limit is per account and resets on a rolling 4-hour timer.</p><h2>GE tax on Oak logs</h2><p>The 2% sale tax is rounded down, and at 40 gp it rounds to nothing — sales under 50 gp are untaxed, so a flip here keeps its whole margin.</p><h2>High alching Oak logs</h2><p>High alchemy turns Oak logs into <b>12 gp</b>. That is less than the 137 gp nature rune the cast costs, so alching Oak logs always loses money.</p><h2>How much Oak logs trade</h2><p>Oak logs see about <b>5.05M</b> trades a day, which makes them one of the busiest items on the Grand Exchange — orders at a fair price fill in minutes. That is roughly 337 times the 15,000 buy limit.</p><h3>Oak logs FAQ</h3><p><b>How much are Oak logs in OSRS?</b> Oak logs are 40 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 40 gp. The chart above is live.</p><p><b>What is the buy limit for Oak logs?</b> 15,000 every 4 hours.</p><p><b>Can you high alch Oak logs for profit?</b> No — the alch value is 12 gp and the nature rune alone costs 137 gp.</p><p><b>Do you need members for Oak logs?</b> No, free-to-play accounts can buy and sell them.</p></div>
   <p class="is-rel" id="isRelated">Related: <a href="/item/mahogany-logs/">Mahogany logs</a><span class="is-sep">·</span><a href="/item/maple-logs/">Maple logs</a><span class="is-sep">·</span><a href="/item/yew-logs/">Yew logs</a><span class="is-sep">·</span><a href="/item/magic-logs/">Magic logs</a></p>
   <p class="is-guide">New to flipping? <a href="/#how-it-works">How PocketGE works</a> — a flip from start to finish, plus the FAQ.</p>
 </section>

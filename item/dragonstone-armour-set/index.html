@@ -218,6 +218,17 @@
      navigation. In <head> and render-blocking, exactly as the inline
      block was, so there is no flash of unstyled content. -->
 <link rel="stylesheet" href="/app.css">
+<!-- Buy/sell palette, applied before first paint so a non-default one does
+     not flash gold/teal first. The stored value holds the resolved colours
+     rather than a preset id, so this needs no copy of the THEMES table in
+     app.js to look anything up. -->
+<script>
+(function(){try{var t=JSON.parse(localStorage.getItem('ge_theme'));
+if(!t||!t.buy)return;var r=document.documentElement.style;
+r.setProperty('--buy-color',t.buy);r.setProperty('--buy-rgb',t.buyRgb);
+r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
+}catch(e){}})();
+</script>
 <script>window.__PGE_ITEM__={"id":23667,"name":"Dragonstone armour set","slug":"dragonstone-armour-set"};</script>
 <script type="application/ld+json" id="itemJsonLd">[{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"PocketGE","item":"https://pocketge.com/"},{"@type":"ListItem","position":2,"name":"Dragonstone armour set","item":"https://pocketge.com/item/dragonstone-armour-set/"}]},{"@context":"https://schema.org","@type":"ItemPage","name":"Dragonstone armour set Price OSRS \u2014 3,000,000 gp \u00b7 Live GE Chart & Flip Margin | PocketGE","description":"Dragonstone armour set is 3,000,000 gp on the OSRS Grand Exchange (insta-buy 3,000,000, insta-sell 3,080,159). Live chart & flip margin after 2% tax \u00b7 12 traded/day.","url":"https://pocketge.com/item/dragonstone-armour-set/","dateModified":"2026-09-15"}]</script>
 </head>
@@ -267,6 +278,10 @@
                   <span class="icon-label">Bank</span>
                 </button>
                 <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
+
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Buy / sell colours</div>
+                <div class="theme-row" id="themeRow" role="group" aria-label="Buy and sell colours"></div>
 
                 <!-- Real navigation, which is what makes a drawer worth
                      opening at all — these standalone pages previously only
@@ -657,7 +672,7 @@
 <section class="item-seo" id="itemSeo">
   <p class="is-sum" id="isSummary"><b>Dragonstone armour set</b> is <b>3,000,000 gp</b> on the OSRS GE. Both sides last traded at different times — no live spread to quote. ~12/day · members. Up 5% on its 24-hour average.</p>
   <div class="is-qa" id="isQa"><p><b>Buy limit:</b> none on this item.</p><p><b>High alch:</b> 48,000 gp.</p></div>
-  <div class="is-detail" id="isDetail" data-item-id="23667"><h2>About Dragonstone armour set</h2><p>In game it is examined as &ldquo;A set containing dragonstone helmet, platebody, platelegs, boots and gauntlets.&rdquo; Dragonstone armour set is members-only, so a membership is needed to trade or use it. The base game value is 80,000 gp, which is what shops price from rather than what players pay.</p><h2>Dragonstone armour set buy limit</h2><p>Dragonstone armour set has no Grand Exchange buy limit, so the only cap on a position is the gold behind it.</p><h2>GE tax on Dragonstone armour set</h2><p>Selling at 3,000,000 gp costs 60,000 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Dragonstone armour set</h2><p>High alchemy turns one Dragonstone armour set into <b>48,000 gp</b>. Dragonstone armour set is worth far more than that on the Grand Exchange, so the figure matters for the alch calculator rather than as anything to do.</p><h2>How much Dragonstone armour set trades</h2><p>Dragonstone armour set sees about <b>12</b> trades a day, which makes it very thinly traded — there may be no buyer for hours at a time, and one sale can set the price.</p><h3>Dragonstone armour set FAQ</h3><p><b>How much is Dragonstone armour set in OSRS?</b> Dragonstone armour set is 3,000,000 gp on the Grand Exchange as of 15 September 2026. The chart above is live.</p><p><b>What is the buy limit for Dragonstone armour set?</b> Dragonstone armour set has no buy limit.</p><p><b>Can you high alch Dragonstone armour set for profit?</b> Not at the moment — the alch value is 48,000 gp and a nature rune costs 140 gp, so it only pays below 47,860 gp.</p><p><b>Do you need members for Dragonstone armour set?</b> Yes, Dragonstone armour set is members-only.</p></div>
+  <div class="is-detail" id="isDetail" data-item-id="23667"><h2>About Dragonstone armour set</h2><p>In game it is examined as &ldquo;A set containing dragonstone helmet, platebody, platelegs, boots and gauntlets.&rdquo; Dragonstone armour set is members-only, so a membership is needed to trade or use it. The base game value is 80,000 gp, which is what shops price from rather than what players pay.</p><h2>Dragonstone armour set buy limit</h2><p>Dragonstone armour set has no Grand Exchange buy limit, so the only cap on a position is the gold behind it.</p><h2>GE tax on Dragonstone armour set</h2><p>Selling at 3,000,000 gp costs 60,000 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Dragonstone armour set</h2><p>High alchemy turns one Dragonstone armour set into <b>48,000 gp</b>. Dragonstone armour set is worth far more than that on the Grand Exchange, so the figure matters for the alch calculator rather than as anything to do.</p><h2>How much Dragonstone armour set trades</h2><p>Dragonstone armour set sees about <b>12</b> trades a day, which makes it very thinly traded — there may be no buyer for hours at a time, and one sale can set the price.</p><h3>Dragonstone armour set FAQ</h3><p><b>How much is Dragonstone armour set in OSRS?</b> Dragonstone armour set is 3,000,000 gp on the Grand Exchange as of 15 September 2026. The chart above is live.</p><p><b>What is the buy limit for Dragonstone armour set?</b> Dragonstone armour set has no buy limit.</p><p><b>Can you high alch Dragonstone armour set for profit?</b> Not at the moment — the alch value is 48,000 gp and a nature rune costs 137 gp, so it only pays below 47,863 gp.</p><p><b>Do you need members for Dragonstone armour set?</b> Yes, Dragonstone armour set is members-only.</p></div>
   <p class="is-rel" id="isRelated">Related: <a href="/item/dragonstone-bolts-e/">Dragonstone bolts (e)</a><span class="is-sep">·</span><a href="/item/dragonstone-bolt-tips/">Dragonstone bolt tips</a><span class="is-sep">·</span><a href="/item/dragonstone-bolts/">Dragonstone bolts</a><span class="is-sep">·</span><a href="/item/dragonstone/">Dragonstone</a></p>
   <p class="is-guide">New to flipping? <a href="/#how-it-works">How PocketGE works</a> — a flip from start to finish, plus the FAQ.</p>
 </section>

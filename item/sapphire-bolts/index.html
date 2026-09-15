@@ -218,6 +218,17 @@
      navigation. In <head> and render-blocking, exactly as the inline
      block was, so there is no flash of unstyled content. -->
 <link rel="stylesheet" href="/app.css">
+<!-- Buy/sell palette, applied before first paint so a non-default one does
+     not flash gold/teal first. The stored value holds the resolved colours
+     rather than a preset id, so this needs no copy of the THEMES table in
+     app.js to look anything up. -->
+<script>
+(function(){try{var t=JSON.parse(localStorage.getItem('ge_theme'));
+if(!t||!t.buy)return;var r=document.documentElement.style;
+r.setProperty('--buy-color',t.buy);r.setProperty('--buy-rgb',t.buyRgb);
+r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
+}catch(e){}})();
+</script>
 <script>window.__PGE_ITEM__={"id":9337,"name":"Sapphire bolts","slug":"sapphire-bolts"};</script>
 <script type="application/ld+json" id="itemJsonLd">[{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"PocketGE","item":"https://pocketge.com/"},{"@type":"ListItem","position":2,"name":"Sapphire bolts","item":"https://pocketge.com/item/sapphire-bolts/"}]},{"@context":"https://schema.org","@type":"ItemPage","name":"Sapphire bolts Price OSRS \u2014 34 gp \u00b7 Live GE Chart & Flip Margin | PocketGE","description":"Sapphire bolts are 34 gp on the OSRS Grand Exchange (insta-buy 34, insta-sell 34). Live chart & flip margin after 2% tax \u00b7 211.3K traded/day \u00b7 11.0K buy limit.","url":"https://pocketge.com/item/sapphire-bolts/","dateModified":"2026-09-15"}]</script>
 </head>
@@ -267,6 +278,10 @@
                   <span class="icon-label">Bank</span>
                 </button>
                 <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
+
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Buy / sell colours</div>
+                <div class="theme-row" id="themeRow" role="group" aria-label="Buy and sell colours"></div>
 
                 <!-- Real navigation, which is what makes a drawer worth
                      opening at all — these standalone pages previously only
@@ -657,7 +672,7 @@
 <section class="item-seo" id="itemSeo">
   <p class="is-sum" id="isSummary"><b>Sapphire bolts</b> are <b>34 gp</b> on the OSRS GE (insta-sell 34 gp). ~211.3K/day · members.</p>
   <div class="is-qa" id="isQa"><p><b>Buy limit:</b> 11,000 every 4 hours.</p><p><b>High alch:</b> 22 gp.</p></div>
-  <div class="is-detail" id="isDetail" data-item-id="9337"><h2>About Sapphire bolts</h2><p>In game they are examined as &ldquo;Sapphire tipped Mithril crossbow bolts.&rdquo; Sapphire bolts are members-only, so a membership is needed to trade or use them. The base game value is 37 gp, which is what shops price from rather than what players pay.</p><h2>Sapphire bolts buy limit</h2><p>The Grand Exchange lets one account buy <b>11,000</b> every 4 hours. That is a generous limit, so the market rather than the limit is usually what caps a position here. Filling it once costs about 374,000 gp at the 34 gp price recorded on 15 September 2026. The limit is per account and resets on a rolling 4-hour timer.</p><h2>GE tax on Sapphire bolts</h2><p>The 2% sale tax is rounded down, and at 34 gp it rounds to nothing — sales under 50 gp are untaxed, so a flip here keeps its whole margin.</p><h2>High alching Sapphire bolts</h2><p>High alchemy turns Sapphire bolts into <b>22 gp</b>. That is less than the 140 gp nature rune the cast costs, so alching Sapphire bolts always loses money.</p><h2>How much Sapphire bolts trade</h2><p>Sapphire bolts see about <b>211.3K</b> trades a day, which makes them heavily traded — orders at a fair price usually fill quickly. That is roughly 19 times the 11,000 buy limit.</p><h3>Sapphire bolts FAQ</h3><p><b>How much are Sapphire bolts in OSRS?</b> Sapphire bolts are 34 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 34 gp. The chart above is live.</p><p><b>What is the buy limit for Sapphire bolts?</b> 11,000 every 4 hours.</p><p><b>Can you high alch Sapphire bolts for profit?</b> No — the alch value is 22 gp and the nature rune alone costs 140 gp.</p><p><b>Do you need members for Sapphire bolts?</b> Yes, Sapphire bolts are members-only.</p></div>
+  <div class="is-detail" id="isDetail" data-item-id="9337"><h2>About Sapphire bolts</h2><p>In game they are examined as &ldquo;Sapphire tipped Mithril crossbow bolts.&rdquo; Sapphire bolts are members-only, so a membership is needed to trade or use them. The base game value is 37 gp, which is what shops price from rather than what players pay.</p><h2>Sapphire bolts buy limit</h2><p>The Grand Exchange lets one account buy <b>11,000</b> every 4 hours. That is a generous limit, so the market rather than the limit is usually what caps a position here. Filling it once costs about 374,000 gp at the 34 gp price recorded on 15 September 2026. The limit is per account and resets on a rolling 4-hour timer.</p><h2>GE tax on Sapphire bolts</h2><p>The 2% sale tax is rounded down, and at 34 gp it rounds to nothing — sales under 50 gp are untaxed, so a flip here keeps its whole margin.</p><h2>High alching Sapphire bolts</h2><p>High alchemy turns Sapphire bolts into <b>22 gp</b>. That is less than the 137 gp nature rune the cast costs, so alching Sapphire bolts always loses money.</p><h2>How much Sapphire bolts trade</h2><p>Sapphire bolts see about <b>211.3K</b> trades a day, which makes them heavily traded — orders at a fair price usually fill quickly. That is roughly 19 times the 11,000 buy limit.</p><h3>Sapphire bolts FAQ</h3><p><b>How much are Sapphire bolts in OSRS?</b> Sapphire bolts are 34 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 34 gp. The chart above is live.</p><p><b>What is the buy limit for Sapphire bolts?</b> 11,000 every 4 hours.</p><p><b>Can you high alch Sapphire bolts for profit?</b> No — the alch value is 22 gp and the nature rune alone costs 137 gp.</p><p><b>Do you need members for Sapphire bolts?</b> Yes, Sapphire bolts are members-only.</p></div>
   <p class="is-rel" id="isRelated">Related: <a href="/item/uncut-sapphire/">Uncut sapphire</a><span class="is-sep">·</span><a href="/item/sapphire/">Sapphire</a><span class="is-sep">·</span><a href="/item/sapphire-necklace/">Sapphire necklace</a><span class="is-sep">·</span><a href="/item/sapphire-bolt-tips/">Sapphire bolt tips</a></p>
   <p class="is-guide">New to flipping? <a href="/#how-it-works">How PocketGE works</a> — a flip from start to finish, plus the FAQ.</p>
 </section>

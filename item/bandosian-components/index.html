@@ -218,6 +218,17 @@
      navigation. In <head> and render-blocking, exactly as the inline
      block was, so there is no flash of unstyled content. -->
 <link rel="stylesheet" href="/app.css">
+<!-- Buy/sell palette, applied before first paint so a non-default one does
+     not flash gold/teal first. The stored value holds the resolved colours
+     rather than a preset id, so this needs no copy of the THEMES table in
+     app.js to look anything up. -->
+<script>
+(function(){try{var t=JSON.parse(localStorage.getItem('ge_theme'));
+if(!t||!t.buy)return;var r=document.documentElement.style;
+r.setProperty('--buy-color',t.buy);r.setProperty('--buy-rgb',t.buyRgb);
+r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
+}catch(e){}})();
+</script>
 <script>window.__PGE_ITEM__={"id":26394,"name":"Bandosian components","slug":"bandosian-components"};</script>
 <script type="application/ld+json" id="itemJsonLd">[{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"PocketGE","item":"https://pocketge.com/"},{"@type":"ListItem","position":2,"name":"Bandosian components","item":"https://pocketge.com/item/bandosian-components/"}]},{"@context":"https://schema.org","@type":"ItemPage","name":"Bandosian components Price OSRS \u2014 7,968,678 gp \u00b7 Live GE Chart & Flip Margin | PocketGE","description":"Bandosian components are 7,968,678 gp on the OSRS Grand Exchange (insta-buy 7,968,678, insta-sell 7,111,115). Live chart & flip margin after 2% tax \u00b7 24 traded/day.","url":"https://pocketge.com/item/bandosian-components/","dateModified":"2026-09-15"}]</script>
 </head>
@@ -267,6 +278,10 @@
                   <span class="icon-label">Bank</span>
                 </button>
                 <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
+
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Buy / sell colours</div>
+                <div class="theme-row" id="themeRow" role="group" aria-label="Buy and sell colours"></div>
 
                 <!-- Real navigation, which is what makes a drawer worth
                      opening at all — these standalone pages previously only
@@ -657,7 +672,7 @@
 <section class="item-seo" id="itemSeo">
   <p class="is-sum" id="isSummary"><b>Bandosian components</b> are <b>7,968,678 gp</b> on the OSRS GE (insta-sell 7,111,115 gp). ~24/day · members. Down 1% on its 24-hour average.</p>
   <div class="is-qa" id="isQa"><p><b>Buy limit:</b> none on this item.</p><p><b>High alch:</b> 60,000 gp.</p></div>
-  <div class="is-detail" id="isDetail" data-item-id="26394"><h2>About Bandosian components</h2><p>In game they are examined as &ldquo;High grade material.&rdquo; Bandosian components are members-only, so a membership is needed to trade or use them. The base game value is 100,000 gp, which is what shops price from rather than what players pay.</p><h2>Bandosian components buy limit</h2><p>Bandosian components have no Grand Exchange buy limit, so the only cap on a position is the gold behind them.</p><h2>GE tax on Bandosian components</h2><p>Selling at 7,968,678 gp costs 159,373 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Bandosian components</h2><p>High alchemy turns Bandosian components into <b>60,000 gp</b>. Bandosian components are worth far more than that on the Grand Exchange, so the figure matters for the alch calculator rather than as anything to do.</p><h2>How much Bandosian components trade</h2><p>Bandosian components see about <b>24</b> trades a day, which makes them very thinly traded — there may be no buyer for hours at a time, and one sale can set the price.</p><h3>Bandosian components FAQ</h3><p><b>How much are Bandosian components in OSRS?</b> Bandosian components are 7,968,678 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 7,111,115 gp. The chart above is live.</p><p><b>What is the buy limit for Bandosian components?</b> Bandosian components have no buy limit.</p><p><b>Can you high alch Bandosian components for profit?</b> Not at the moment — the alch value is 60,000 gp and a nature rune costs 140 gp, so it only pays below 59,860 gp.</p><p><b>Do you need members for Bandosian components?</b> Yes, Bandosian components are members-only.</p></div>
+  <div class="is-detail" id="isDetail" data-item-id="26394"><h2>About Bandosian components</h2><p>In game they are examined as &ldquo;High grade material.&rdquo; Bandosian components are members-only, so a membership is needed to trade or use them. The base game value is 100,000 gp, which is what shops price from rather than what players pay.</p><h2>Bandosian components buy limit</h2><p>Bandosian components have no Grand Exchange buy limit, so the only cap on a position is the gold behind them.</p><h2>GE tax on Bandosian components</h2><p>Selling at 7,968,678 gp costs 159,373 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Bandosian components</h2><p>High alchemy turns Bandosian components into <b>60,000 gp</b>. Bandosian components are worth far more than that on the Grand Exchange, so the figure matters for the alch calculator rather than as anything to do.</p><h2>How much Bandosian components trade</h2><p>Bandosian components see about <b>24</b> trades a day, which makes them very thinly traded — there may be no buyer for hours at a time, and one sale can set the price.</p><h3>Bandosian components FAQ</h3><p><b>How much are Bandosian components in OSRS?</b> Bandosian components are 7,968,678 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 7,111,115 gp. The chart above is live.</p><p><b>What is the buy limit for Bandosian components?</b> Bandosian components have no buy limit.</p><p><b>Can you high alch Bandosian components for profit?</b> Not at the moment — the alch value is 60,000 gp and a nature rune costs 137 gp, so it only pays below 59,863 gp.</p><p><b>Do you need members for Bandosian components?</b> Yes, Bandosian components are members-only.</p></div>
   <p class="is-rel" id="isRelated" hidden></p>
   <p class="is-guide">New to flipping? <a href="/#how-it-works">How PocketGE works</a> — a flip from start to finish, plus the FAQ.</p>
 </section>

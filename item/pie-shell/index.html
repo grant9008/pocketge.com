@@ -218,6 +218,17 @@
      navigation. In <head> and render-blocking, exactly as the inline
      block was, so there is no flash of unstyled content. -->
 <link rel="stylesheet" href="/app.css">
+<!-- Buy/sell palette, applied before first paint so a non-default one does
+     not flash gold/teal first. The stored value holds the resolved colours
+     rather than a preset id, so this needs no copy of the THEMES table in
+     app.js to look anything up. -->
+<script>
+(function(){try{var t=JSON.parse(localStorage.getItem('ge_theme'));
+if(!t||!t.buy)return;var r=document.documentElement.style;
+r.setProperty('--buy-color',t.buy);r.setProperty('--buy-rgb',t.buyRgb);
+r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
+}catch(e){}})();
+</script>
 <script>window.__PGE_ITEM__={"id":2315,"name":"Pie shell","slug":"pie-shell"};</script>
 <script type="application/ld+json" id="itemJsonLd">[{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"PocketGE","item":"https://pocketge.com/"},{"@type":"ListItem","position":2,"name":"Pie shell","item":"https://pocketge.com/item/pie-shell/"}]},{"@context":"https://schema.org","@type":"ItemPage","name":"Pie shell Price OSRS \u2014 286 gp \u00b7 Live GE Chart & Flip Margin | PocketGE","description":"Pie shell is 286 gp on the OSRS Grand Exchange (insta-buy 286, insta-sell 285). Live chart & flip margin after 2% tax \u00b7 317.5K traded/day \u00b7 13.0K buy limit.","url":"https://pocketge.com/item/pie-shell/","dateModified":"2026-09-15"}]</script>
 </head>
@@ -267,6 +278,10 @@
                   <span class="icon-label">Bank</span>
                 </button>
                 <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
+
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Buy / sell colours</div>
+                <div class="theme-row" id="themeRow" role="group" aria-label="Buy and sell colours"></div>
 
                 <!-- Real navigation, which is what makes a drawer worth
                      opening at all — these standalone pages previously only
@@ -657,7 +672,7 @@
 <section class="item-seo" id="itemSeo">
   <p class="is-sum" id="isSummary"><b>Pie shell</b> is <b>286 gp</b> on the OSRS GE (insta-sell 285 gp). ~317.5K/day · F2P. Down 7% on its 24-hour average.</p>
   <div class="is-qa" id="isQa"><p><b>Buy limit:</b> 13,000 every 4 hours.</p><p><b>High alch:</b> 2 gp.</p></div>
-  <div class="is-detail" id="isDetail" data-item-id="2315"><h2>About Pie shell</h2><p>In game it is examined as &ldquo;I need to find a filling for this pie.&rdquo; Pie shell is available to free-to-play accounts. The base game value is 4 gp, which is what shops price from rather than what players pay.</p><h2>Pie shell buy limit</h2><p>The Grand Exchange lets one account buy <b>13,000</b> every 4 hours. That is a generous limit, so the market rather than the limit is usually what caps a position here. Filling it once costs about 3,718,000 gp at the 286 gp price recorded on 15 September 2026. The limit is per account and resets on a rolling 4-hour timer.</p><h2>GE tax on Pie shell</h2><p>Selling at 286 gp costs 5 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Pie shell</h2><p>High alchemy turns one Pie shell into <b>2 gp</b>. That is less than the 140 gp nature rune the cast costs, so alching Pie shell always loses money.</p><h2>How much Pie shell trades</h2><p>Pie shell sees about <b>317.5K</b> trades a day, which makes it heavily traded — orders at a fair price usually fill quickly. That is roughly 24 times the 13,000 buy limit.</p><h3>Pie shell FAQ</h3><p><b>How much is Pie shell in OSRS?</b> Pie shell is 286 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 285 gp. The chart above is live.</p><p><b>What is the buy limit for Pie shell?</b> 13,000 every 4 hours.</p><p><b>Can you high alch Pie shell for profit?</b> No — the alch value is 2 gp and the nature rune alone costs 140 gp.</p><p><b>Do you need members for Pie shell?</b> No, free-to-play accounts can buy and sell it.</p></div>
+  <div class="is-detail" id="isDetail" data-item-id="2315"><h2>About Pie shell</h2><p>In game it is examined as &ldquo;I need to find a filling for this pie.&rdquo; Pie shell is available to free-to-play accounts. The base game value is 4 gp, which is what shops price from rather than what players pay.</p><h2>Pie shell buy limit</h2><p>The Grand Exchange lets one account buy <b>13,000</b> every 4 hours. That is a generous limit, so the market rather than the limit is usually what caps a position here. Filling it once costs about 3,718,000 gp at the 286 gp price recorded on 15 September 2026. The limit is per account and resets on a rolling 4-hour timer.</p><h2>GE tax on Pie shell</h2><p>Selling at 286 gp costs 5 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Pie shell</h2><p>High alchemy turns one Pie shell into <b>2 gp</b>. That is less than the 137 gp nature rune the cast costs, so alching Pie shell always loses money.</p><h2>How much Pie shell trades</h2><p>Pie shell sees about <b>317.5K</b> trades a day, which makes it heavily traded — orders at a fair price usually fill quickly. That is roughly 24 times the 13,000 buy limit.</p><h3>Pie shell FAQ</h3><p><b>How much is Pie shell in OSRS?</b> Pie shell is 286 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 285 gp. The chart above is live.</p><p><b>What is the buy limit for Pie shell?</b> 13,000 every 4 hours.</p><p><b>Can you high alch Pie shell for profit?</b> No — the alch value is 2 gp and the nature rune alone costs 137 gp.</p><p><b>Do you need members for Pie shell?</b> No, free-to-play accounts can buy and sell it.</p></div>
   <p class="is-rel" id="isRelated" hidden></p>
   <p class="is-guide">New to flipping? <a href="/#how-it-works">How PocketGE works</a> — a flip from start to finish, plus the FAQ.</p>
 </section>

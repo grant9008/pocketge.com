@@ -218,6 +218,17 @@
      navigation. In <head> and render-blocking, exactly as the inline
      block was, so there is no flash of unstyled content. -->
 <link rel="stylesheet" href="/app.css">
+<!-- Buy/sell palette, applied before first paint so a non-default one does
+     not flash gold/teal first. The stored value holds the resolved colours
+     rather than a preset id, so this needs no copy of the THEMES table in
+     app.js to look anything up. -->
+<script>
+(function(){try{var t=JSON.parse(localStorage.getItem('ge_theme'));
+if(!t||!t.buy)return;var r=document.documentElement.style;
+r.setProperty('--buy-color',t.buy);r.setProperty('--buy-rgb',t.buyRgb);
+r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
+}catch(e){}})();
+</script>
 <script>window.__PGE_ITEM__={"id":28790,"name":"Kourend castle teleport (tablet)","slug":"kourend-castle-teleport-tablet"};</script>
 <script type="application/ld+json" id="itemJsonLd">[{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"PocketGE","item":"https://pocketge.com/"},{"@type":"ListItem","position":2,"name":"Kourend castle teleport (tablet)","item":"https://pocketge.com/item/kourend-castle-teleport-tablet/"}]},{"@context":"https://schema.org","@type":"ItemPage","name":"Kourend castle teleport (tablet) Price OSRS \u2014 654 gp \u00b7 Live GE Chart & Flip Margin | PocketGE","description":"Kourend castle teleport (tablet) is 654 gp on the OSRS Grand Exchange (insta-buy 654, insta-sell 625). Live chart & flip margin after 2% tax \u00b7 164.0K traded/day.","url":"https://pocketge.com/item/kourend-castle-teleport-tablet/","dateModified":"2026-09-15"}]</script>
 </head>
@@ -267,6 +278,10 @@
                   <span class="icon-label">Bank</span>
                 </button>
                 <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
+
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Buy / sell colours</div>
+                <div class="theme-row" id="themeRow" role="group" aria-label="Buy and sell colours"></div>
 
                 <!-- Real navigation, which is what makes a drawer worth
                      opening at all — these standalone pages previously only
@@ -657,7 +672,7 @@
 <section class="item-seo" id="itemSeo">
   <p class="is-sum" id="isSummary"><b>Kourend castle teleport (tablet)</b> is <b>654 gp</b> on the OSRS GE (insta-sell 625 gp). ~164.0K/day · members. Down 8% on its 24-hour average.</p>
   <div class="is-qa" id="isQa"><p><b>Buy limit:</b> none on this item.</p><p><b>High alch:</b> 1 gp.</p></div>
-  <div class="is-detail" id="isDetail" data-item-id="28790"><h2>About Kourend castle teleport (tablet)</h2><p>In game it is examined as &ldquo;A teleport to Kourend Castle.&rdquo; Kourend castle teleport (tablet) is members-only, so a membership is needed to trade or use it. The base game value is 1 gp, which is what shops price from rather than what players pay.</p><h2>Kourend castle teleport (tablet) buy limit</h2><p>Kourend castle teleport (tablet) has no Grand Exchange buy limit, so the only cap on a position is the gold behind it.</p><h2>GE tax on Kourend castle teleport (tablet)</h2><p>Selling at 654 gp costs 13 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Kourend castle teleport (tablet)</h2><p>High alchemy turns one Kourend castle teleport (tablet) into <b>1 gp</b>. That is less than the 140 gp nature rune the cast costs, so alching Kourend castle teleport (tablet) always loses money.</p><h2>How much Kourend castle teleport (tablet) trades</h2><p>Kourend castle teleport (tablet) sees about <b>164.0K</b> trades a day, which makes it heavily traded — orders at a fair price usually fill quickly.</p><h3>Kourend castle teleport (tablet) FAQ</h3><p><b>How much is Kourend castle teleport (tablet) in OSRS?</b> Kourend castle teleport (tablet) is 654 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 625 gp. The chart above is live.</p><p><b>What is the buy limit for Kourend castle teleport (tablet)?</b> Kourend castle teleport (tablet) has no buy limit.</p><p><b>Can you high alch Kourend castle teleport (tablet) for profit?</b> No — the alch value is 1 gp and the nature rune alone costs 140 gp.</p><p><b>Do you need members for Kourend castle teleport (tablet)?</b> Yes, Kourend castle teleport (tablet) is members-only.</p></div>
+  <div class="is-detail" id="isDetail" data-item-id="28790"><h2>About Kourend castle teleport (tablet)</h2><p>In game it is examined as &ldquo;A teleport to Kourend Castle.&rdquo; Kourend castle teleport (tablet) is members-only, so a membership is needed to trade or use it. The base game value is 1 gp, which is what shops price from rather than what players pay.</p><h2>Kourend castle teleport (tablet) buy limit</h2><p>Kourend castle teleport (tablet) has no Grand Exchange buy limit, so the only cap on a position is the gold behind it.</p><h2>GE tax on Kourend castle teleport (tablet)</h2><p>Selling at 654 gp costs 13 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Kourend castle teleport (tablet)</h2><p>High alchemy turns one Kourend castle teleport (tablet) into <b>1 gp</b>. That is less than the 137 gp nature rune the cast costs, so alching Kourend castle teleport (tablet) always loses money.</p><h2>How much Kourend castle teleport (tablet) trades</h2><p>Kourend castle teleport (tablet) sees about <b>164.0K</b> trades a day, which makes it heavily traded — orders at a fair price usually fill quickly.</p><h3>Kourend castle teleport (tablet) FAQ</h3><p><b>How much is Kourend castle teleport (tablet) in OSRS?</b> Kourend castle teleport (tablet) is 654 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 625 gp. The chart above is live.</p><p><b>What is the buy limit for Kourend castle teleport (tablet)?</b> Kourend castle teleport (tablet) has no buy limit.</p><p><b>Can you high alch Kourend castle teleport (tablet) for profit?</b> No — the alch value is 1 gp and the nature rune alone costs 137 gp.</p><p><b>Do you need members for Kourend castle teleport (tablet)?</b> Yes, Kourend castle teleport (tablet) is members-only.</p></div>
   <p class="is-rel" id="isRelated">Related: <a href="/item/teleport-to-house-tablet/">Teleport to house (tablet)</a><span class="is-sep">·</span><a href="/item/varrock-teleport-tablet/">Varrock teleport (tablet)</a><span class="is-sep">·</span><a href="/item/blighted-teleport-spell-sack/">Blighted teleport spell sack</a><span class="is-sep">·</span><a href="/item/falador-teleport-tablet/">Falador teleport (tablet)</a></p>
   <p class="is-guide">New to flipping? <a href="/#how-it-works">How PocketGE works</a> — a flip from start to finish, plus the FAQ.</p>
 </section>

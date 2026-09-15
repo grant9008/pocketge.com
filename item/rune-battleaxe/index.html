@@ -218,6 +218,17 @@
      navigation. In <head> and render-blocking, exactly as the inline
      block was, so there is no flash of unstyled content. -->
 <link rel="stylesheet" href="/app.css">
+<!-- Buy/sell palette, applied before first paint so a non-default one does
+     not flash gold/teal first. The stored value holds the resolved colours
+     rather than a preset id, so this needs no copy of the THEMES table in
+     app.js to look anything up. -->
+<script>
+(function(){try{var t=JSON.parse(localStorage.getItem('ge_theme'));
+if(!t||!t.buy)return;var r=document.documentElement.style;
+r.setProperty('--buy-color',t.buy);r.setProperty('--buy-rgb',t.buyRgb);
+r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
+}catch(e){}})();
+</script>
 <script>window.__PGE_ITEM__={"id":1373,"name":"Rune battleaxe","slug":"rune-battleaxe"};</script>
 <script type="application/ld+json" id="itemJsonLd">[{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"PocketGE","item":"https://pocketge.com/"},{"@type":"ListItem","position":2,"name":"Rune battleaxe","item":"https://pocketge.com/item/rune-battleaxe/"}]},{"@context":"https://schema.org","@type":"ItemPage","name":"Rune battleaxe Price OSRS \u2014 24,410 gp \u00b7 Live GE Chart & Flip Margin | PocketGE","description":"Rune battleaxe is 24,410 gp on the OSRS Grand Exchange (insta-buy 24,410, insta-sell 24,410). Live chart & flip margin after 2% tax \u00b7 42.6K traded/day \u00b7 70 buy limit.","url":"https://pocketge.com/item/rune-battleaxe/","dateModified":"2026-09-15"}]</script>
 </head>
@@ -267,6 +278,10 @@
                   <span class="icon-label">Bank</span>
                 </button>
                 <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
+
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Buy / sell colours</div>
+                <div class="theme-row" id="themeRow" role="group" aria-label="Buy and sell colours"></div>
 
                 <!-- Real navigation, which is what makes a drawer worth
                      opening at all — these standalone pages previously only
@@ -656,8 +671,8 @@
      failed price fetch never show an empty shell. -->
 <section class="item-seo" id="itemSeo">
   <p class="is-sum" id="isSummary"><b>Rune battleaxe</b> is <b>24,410 gp</b> on the OSRS GE (insta-sell 24,410 gp). ~42.6K/day · F2P.</p>
-  <div class="is-qa" id="isQa"><p><b>Buy limit:</b> 70 every 4 hours.</p><p><b>High alch:</b> 24,960 gp — alching profits 410 gp after a nature rune.</p></div>
-  <div class="is-detail" id="isDetail" data-item-id="1373"><h2>About Rune battleaxe</h2><p>In game it is examined as &ldquo;A vicious looking axe.&rdquo; Rune battleaxe is available to free-to-play accounts. The base game value is 41,600 gp, which is what shops price from rather than what players pay.</p><h2>Rune battleaxe buy limit</h2><p>The Grand Exchange lets one account buy <b>70</b> every 4 hours. That is a very tight limit, so a position is built over days rather than hours. Filling it once costs about 1,708,700 gp at the 24,410 gp price recorded on 15 September 2026. The limit is per account and resets on a rolling 4-hour timer.</p><h2>GE tax on Rune battleaxe</h2><p>Selling at 24,410 gp costs 488 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Rune battleaxe</h2><p>High alchemy turns one Rune battleaxe into <b>24,960 gp</b>. With a nature rune at 140 gp it profits <b>410 gp</b> a cast at the 24,410 gp price recorded on 15 September 2026.</p><h2>How much Rune battleaxe trades</h2><p>Rune battleaxe sees about <b>42.6K</b> trades a day, which makes it steadily traded — an order priced at the spread normally fills the same hour. That is roughly 608 times the 70 buy limit.</p><h3>Rune battleaxe FAQ</h3><p><b>How much is Rune battleaxe in OSRS?</b> Rune battleaxe is 24,410 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 24,410 gp. The chart above is live.</p><p><b>What is the buy limit for Rune battleaxe?</b> 70 every 4 hours.</p><p><b>Can you high alch Rune battleaxe for profit?</b> Yes — 24,960 gp alch value against a 24,410 gp price and a 140 gp nature rune, so 410 gp a cast.</p><p><b>Do you need members for Rune battleaxe?</b> No, free-to-play accounts can buy and sell it.</p></div>
+  <div class="is-qa" id="isQa"><p><b>Buy limit:</b> 70 every 4 hours.</p><p><b>High alch:</b> 24,960 gp — alching profits 413 gp after a nature rune.</p></div>
+  <div class="is-detail" id="isDetail" data-item-id="1373"><h2>About Rune battleaxe</h2><p>In game it is examined as &ldquo;A vicious looking axe.&rdquo; Rune battleaxe is available to free-to-play accounts. The base game value is 41,600 gp, which is what shops price from rather than what players pay.</p><h2>Rune battleaxe buy limit</h2><p>The Grand Exchange lets one account buy <b>70</b> every 4 hours. That is a very tight limit, so a position is built over days rather than hours. Filling it once costs about 1,708,700 gp at the 24,410 gp price recorded on 15 September 2026. The limit is per account and resets on a rolling 4-hour timer.</p><h2>GE tax on Rune battleaxe</h2><p>Selling at 24,410 gp costs 488 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Rune battleaxe</h2><p>High alchemy turns one Rune battleaxe into <b>24,960 gp</b>. With a nature rune at 137 gp it profits <b>413 gp</b> a cast at the 24,410 gp price recorded on 15 September 2026.</p><h2>How much Rune battleaxe trades</h2><p>Rune battleaxe sees about <b>42.6K</b> trades a day, which makes it steadily traded — an order priced at the spread normally fills the same hour. That is roughly 608 times the 70 buy limit.</p><h3>Rune battleaxe FAQ</h3><p><b>How much is Rune battleaxe in OSRS?</b> Rune battleaxe is 24,410 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 24,410 gp. The chart above is live.</p><p><b>What is the buy limit for Rune battleaxe?</b> 70 every 4 hours.</p><p><b>Can you high alch Rune battleaxe for profit?</b> Yes — 24,960 gp alch value against a 24,410 gp price and a 137 gp nature rune, so 413 gp a cast.</p><p><b>Do you need members for Rune battleaxe?</b> No, free-to-play accounts can buy and sell it.</p></div>
   <p class="is-rel" id="isRelated">Related: <a href="/item/dragon-battleaxe/">Dragon battleaxe</a></p>
   <p class="is-guide">New to flipping? <a href="/#how-it-works">How PocketGE works</a> — a flip from start to finish, plus the FAQ.</p>
 </section>

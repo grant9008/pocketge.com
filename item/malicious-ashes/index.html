@@ -218,6 +218,17 @@
      navigation. In <head> and render-blocking, exactly as the inline
      block was, so there is no flash of unstyled content. -->
 <link rel="stylesheet" href="/app.css">
+<!-- Buy/sell palette, applied before first paint so a non-default one does
+     not flash gold/teal first. The stored value holds the resolved colours
+     rather than a preset id, so this needs no copy of the THEMES table in
+     app.js to look anything up. -->
+<script>
+(function(){try{var t=JSON.parse(localStorage.getItem('ge_theme'));
+if(!t||!t.buy)return;var r=document.documentElement.style;
+r.setProperty('--buy-color',t.buy);r.setProperty('--buy-rgb',t.buyRgb);
+r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
+}catch(e){}})();
+</script>
 <script>window.__PGE_ITEM__={"id":25772,"name":"Malicious ashes","slug":"malicious-ashes"};</script>
 <script type="application/ld+json" id="itemJsonLd">[{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"PocketGE","item":"https://pocketge.com/"},{"@type":"ListItem","position":2,"name":"Malicious ashes","item":"https://pocketge.com/item/malicious-ashes/"}]},{"@context":"https://schema.org","@type":"ItemPage","name":"Malicious ashes Price OSRS \u2014 1,242 gp \u00b7 Live GE Chart & Flip Margin | PocketGE","description":"Malicious ashes are 1,242 gp on the OSRS Grand Exchange (insta-buy 1,242, insta-sell 1,242). Live chart & flip margin after 2% tax \u00b7 32.7K traded/day.","url":"https://pocketge.com/item/malicious-ashes/","dateModified":"2026-09-15"}]</script>
 </head>
@@ -267,6 +278,10 @@
                   <span class="icon-label">Bank</span>
                 </button>
                 <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
+
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Buy / sell colours</div>
+                <div class="theme-row" id="themeRow" role="group" aria-label="Buy and sell colours"></div>
 
                 <!-- Real navigation, which is what makes a drawer worth
                      opening at all — these standalone pages previously only
@@ -657,7 +672,7 @@
 <section class="item-seo" id="itemSeo">
   <p class="is-sum" id="isSummary"><b>Malicious ashes</b> are <b>1,242 gp</b> on the OSRS GE (insta-sell 1,242 gp). ~32.7K/day · members. Down 8% on its 24-hour average.</p>
   <div class="is-qa" id="isQa"><p><b>Buy limit:</b> none on this item.</p><p><b>High alch:</b> 1 gp.</p></div>
-  <div class="is-detail" id="isDetail" data-item-id="25772"><h2>About Malicious ashes</h2><p>In game they are examined as &ldquo;A heap of ashes.&rdquo; Malicious ashes are members-only, so a membership is needed to trade or use them. The base game value is 1 gp, which is what shops price from rather than what players pay.</p><h2>Malicious ashes buy limit</h2><p>Malicious ashes have no Grand Exchange buy limit, so the only cap on a position is the gold behind them.</p><h2>GE tax on Malicious ashes</h2><p>Selling at 1,242 gp costs 24 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Malicious ashes</h2><p>High alchemy turns Malicious ashes into <b>1 gp</b>. That is less than the 140 gp nature rune the cast costs, so alching Malicious ashes always loses money.</p><h2>How much Malicious ashes trade</h2><p>Malicious ashes see about <b>32.7K</b> trades a day, which makes them steadily traded — an order priced at the spread normally fills the same hour.</p><h3>Malicious ashes FAQ</h3><p><b>How much are Malicious ashes in OSRS?</b> Malicious ashes are 1,242 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 1,242 gp. The chart above is live.</p><p><b>What is the buy limit for Malicious ashes?</b> Malicious ashes have no buy limit.</p><p><b>Can you high alch Malicious ashes for profit?</b> No — the alch value is 1 gp and the nature rune alone costs 140 gp.</p><p><b>Do you need members for Malicious ashes?</b> Yes, Malicious ashes are members-only.</p></div>
+  <div class="is-detail" id="isDetail" data-item-id="25772"><h2>About Malicious ashes</h2><p>In game they are examined as &ldquo;A heap of ashes.&rdquo; Malicious ashes are members-only, so a membership is needed to trade or use them. The base game value is 1 gp, which is what shops price from rather than what players pay.</p><h2>Malicious ashes buy limit</h2><p>Malicious ashes have no Grand Exchange buy limit, so the only cap on a position is the gold behind them.</p><h2>GE tax on Malicious ashes</h2><p>Selling at 1,242 gp costs 24 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Malicious ashes</h2><p>High alchemy turns Malicious ashes into <b>1 gp</b>. That is less than the 137 gp nature rune the cast costs, so alching Malicious ashes always loses money.</p><h2>How much Malicious ashes trade</h2><p>Malicious ashes see about <b>32.7K</b> trades a day, which makes them steadily traded — an order priced at the spread normally fills the same hour.</p><h3>Malicious ashes FAQ</h3><p><b>How much are Malicious ashes in OSRS?</b> Malicious ashes are 1,242 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 1,242 gp. The chart above is live.</p><p><b>What is the buy limit for Malicious ashes?</b> Malicious ashes have no buy limit.</p><p><b>Can you high alch Malicious ashes for profit?</b> No — the alch value is 1 gp and the nature rune alone costs 137 gp.</p><p><b>Do you need members for Malicious ashes?</b> Yes, Malicious ashes are members-only.</p></div>
   <p class="is-rel" id="isRelated">Related: <a href="/item/vile-ashes/">Vile ashes</a><span class="is-sep">·</span><a href="/item/ashes/">Ashes</a><span class="is-sep">·</span><a href="/item/infernal-ashes/">Infernal ashes</a><span class="is-sep">·</span><a href="/item/abyssal-ashes/">Abyssal ashes</a></p>
   <p class="is-guide">New to flipping? <a href="/#how-it-works">How PocketGE works</a> — a flip from start to finish, plus the FAQ.</p>
 </section>

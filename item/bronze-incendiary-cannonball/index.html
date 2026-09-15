@@ -218,6 +218,17 @@
      navigation. In <head> and render-blocking, exactly as the inline
      block was, so there is no flash of unstyled content. -->
 <link rel="stylesheet" href="/app.css">
+<!-- Buy/sell palette, applied before first paint so a non-default one does
+     not flash gold/teal first. The stored value holds the resolved colours
+     rather than a preset id, so this needs no copy of the THEMES table in
+     app.js to look anything up. -->
+<script>
+(function(){try{var t=JSON.parse(localStorage.getItem('ge_theme'));
+if(!t||!t.buy)return;var r=document.documentElement.style;
+r.setProperty('--buy-color',t.buy);r.setProperty('--buy-rgb',t.buyRgb);
+r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
+}catch(e){}})();
+</script>
 <script>window.__PGE_ITEM__={"id":31932,"name":"Bronze incendiary cannonball","slug":"bronze-incendiary-cannonball"};</script>
 <script type="application/ld+json" id="itemJsonLd">[{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"PocketGE","item":"https://pocketge.com/"},{"@type":"ListItem","position":2,"name":"Bronze incendiary cannonball","item":"https://pocketge.com/item/bronze-incendiary-cannonball/"}]},{"@context":"https://schema.org","@type":"ItemPage","name":"Bronze incendiary cannonball Price OSRS \u2014 21 gp \u00b7 Live GE Chart & Flip Margin | PocketGE","description":"Bronze incendiary cannonball is 21 gp on the OSRS Grand Exchange (insta-buy 21, insta-sell 20). Live chart & flip margin after 2% tax \u00b7 344 traded/day.","url":"https://pocketge.com/item/bronze-incendiary-cannonball/","dateModified":"2026-09-15"}]</script>
 </head>
@@ -267,6 +278,10 @@
                   <span class="icon-label">Bank</span>
                 </button>
                 <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
+
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Buy / sell colours</div>
+                <div class="theme-row" id="themeRow" role="group" aria-label="Buy and sell colours"></div>
 
                 <!-- Real navigation, which is what makes a drawer worth
                      opening at all — these standalone pages previously only
@@ -657,7 +672,7 @@
 <section class="item-seo" id="itemSeo">
   <p class="is-sum" id="isSummary"><b>Bronze incendiary cannonball</b> is <b>21 gp</b> on the OSRS GE (insta-sell 20 gp). ~344/day · members.</p>
   <div class="is-qa" id="isQa"><p><b>Buy limit:</b> none on this item.</p><p><b>High alch:</b> 2 gp.</p></div>
-  <div class="is-detail" id="isDetail" data-item-id="31932"><h2>About Bronze incendiary cannonball</h2><p>In game it is examined as &ldquo;Ammo suited for a boat's cannon.&rdquo; Bronze incendiary cannonball is members-only, so a membership is needed to trade or use it. The base game value is 4 gp, which is what shops price from rather than what players pay.</p><h2>Bronze incendiary cannonball buy limit</h2><p>Bronze incendiary cannonball has no Grand Exchange buy limit, so the only cap on a position is the gold behind it.</p><h2>GE tax on Bronze incendiary cannonball</h2><p>The 2% sale tax is rounded down, and at 21 gp it rounds to nothing — sales under 50 gp are untaxed, so a flip here keeps its whole margin.</p><h2>High alching Bronze incendiary cannonball</h2><p>High alchemy turns one Bronze incendiary cannonball into <b>2 gp</b>. That is less than the 140 gp nature rune the cast costs, so alching Bronze incendiary cannonball always loses money.</p><h2>How much Bronze incendiary cannonball trades</h2><p>Bronze incendiary cannonball sees about <b>344</b> trades a day, which makes it thinly traded — an order can sit for hours, and a large one can move the price.</p><h3>Bronze incendiary cannonball FAQ</h3><p><b>How much is Bronze incendiary cannonball in OSRS?</b> Bronze incendiary cannonball is 21 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 20 gp. The chart above is live.</p><p><b>What is the buy limit for Bronze incendiary cannonball?</b> Bronze incendiary cannonball has no buy limit.</p><p><b>Can you high alch Bronze incendiary cannonball for profit?</b> No — the alch value is 2 gp and the nature rune alone costs 140 gp.</p><p><b>Do you need members for Bronze incendiary cannonball?</b> Yes, Bronze incendiary cannonball is members-only.</p></div>
+  <div class="is-detail" id="isDetail" data-item-id="31932"><h2>About Bronze incendiary cannonball</h2><p>In game it is examined as &ldquo;Ammo suited for a boat's cannon.&rdquo; Bronze incendiary cannonball is members-only, so a membership is needed to trade or use it. The base game value is 4 gp, which is what shops price from rather than what players pay.</p><h2>Bronze incendiary cannonball buy limit</h2><p>Bronze incendiary cannonball has no Grand Exchange buy limit, so the only cap on a position is the gold behind it.</p><h2>GE tax on Bronze incendiary cannonball</h2><p>The 2% sale tax is rounded down, and at 21 gp it rounds to nothing — sales under 50 gp are untaxed, so a flip here keeps its whole margin.</p><h2>High alching Bronze incendiary cannonball</h2><p>High alchemy turns one Bronze incendiary cannonball into <b>2 gp</b>. That is less than the 137 gp nature rune the cast costs, so alching Bronze incendiary cannonball always loses money.</p><h2>How much Bronze incendiary cannonball trades</h2><p>Bronze incendiary cannonball sees about <b>344</b> trades a day, which makes it thinly traded — an order can sit for hours, and a large one can move the price.</p><h3>Bronze incendiary cannonball FAQ</h3><p><b>How much is Bronze incendiary cannonball in OSRS?</b> Bronze incendiary cannonball is 21 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 20 gp. The chart above is live.</p><p><b>What is the buy limit for Bronze incendiary cannonball?</b> Bronze incendiary cannonball has no buy limit.</p><p><b>Can you high alch Bronze incendiary cannonball for profit?</b> No — the alch value is 2 gp and the nature rune alone costs 137 gp.</p><p><b>Do you need members for Bronze incendiary cannonball?</b> Yes, Bronze incendiary cannonball is members-only.</p></div>
   <p class="is-rel" id="isRelated">Related: <a href="/item/rune-incendiary-cannonball/">Rune incendiary cannonball</a><span class="is-sep">·</span><a href="/item/adamant-incendiary-cannonball/">Adamant incendiary cannonball</a><span class="is-sep">·</span><a href="/item/mithril-incendiary-cannonball/">Mithril incendiary cannonball</a><span class="is-sep">·</span><a href="/item/steel-incendiary-cannonball/">Steel incendiary cannonball</a></p>
   <p class="is-guide">New to flipping? <a href="/#how-it-works">How PocketGE works</a> — a flip from start to finish, plus the FAQ.</p>
 </section>

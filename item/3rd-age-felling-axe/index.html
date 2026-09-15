@@ -218,6 +218,17 @@
      navigation. In <head> and render-blocking, exactly as the inline
      block was, so there is no flash of unstyled content. -->
 <link rel="stylesheet" href="/app.css">
+<!-- Buy/sell palette, applied before first paint so a non-default one does
+     not flash gold/teal first. The stored value holds the resolved colours
+     rather than a preset id, so this needs no copy of the THEMES table in
+     app.js to look anything up. -->
+<script>
+(function(){try{var t=JSON.parse(localStorage.getItem('ge_theme'));
+if(!t||!t.buy)return;var r=document.documentElement.style;
+r.setProperty('--buy-color',t.buy);r.setProperty('--buy-rgb',t.buyRgb);
+r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
+}catch(e){}})();
+</script>
 <script>window.__PGE_ITEM__={"id":28226,"name":"3rd Age felling axe","slug":"3rd-age-felling-axe"};</script>
 <script type="application/ld+json" id="itemJsonLd">[{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"PocketGE","item":"https://pocketge.com/"},{"@type":"ListItem","position":2,"name":"3rd Age felling axe","item":"https://pocketge.com/item/3rd-age-felling-axe/"}]},{"@context":"https://schema.org","@type":"ItemPage","name":"3rd Age felling axe Price OSRS \u2014 2,077,777,777 gp \u00b7 Live GE Chart & Flip Margin | PocketGE","description":"3rd Age felling axe is 2,077,777,777 gp on the OSRS Grand Exchange (insta-buy 2,077,777,777, insta-sell 1,875,000,000). Live chart & flip margin after 2% tax \u00b7 3 traded/day.","url":"https://pocketge.com/item/3rd-age-felling-axe/","dateModified":"2026-09-15"}]</script>
 </head>
@@ -267,6 +278,10 @@
                   <span class="icon-label">Bank</span>
                 </button>
                 <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
+
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Buy / sell colours</div>
+                <div class="theme-row" id="themeRow" role="group" aria-label="Buy and sell colours"></div>
 
                 <!-- Real navigation, which is what makes a drawer worth
                      opening at all — these standalone pages previously only
@@ -657,7 +672,7 @@
 <section class="item-seo" id="itemSeo">
   <p class="is-sum" id="isSummary"><b>3rd Age felling axe</b> is <b>2,077,777,777 gp</b> on the OSRS GE (insta-sell 1,875,000,000 gp). ~3/day · members. Up 7% on its 24-hour average.</p>
   <div class="is-qa" id="isQa"><p><b>Buy limit:</b> none on this item.</p><p><b>High alch:</b> 33,000 gp.</p></div>
-  <div class="is-detail" id="isDetail" data-item-id="28226"><h2>About 3rd Age felling axe</h2><p>In game it is examined as &ldquo;A beautifully crafted axe, shaped by ancient smiths.&rdquo; 3rd Age felling axe is members-only, so a membership is needed to trade or use it. The base game value is 55,000 gp, which is what shops price from rather than what players pay.</p><h2>3rd Age felling axe buy limit</h2><p>3rd Age felling axe has no Grand Exchange buy limit, so the only cap on a position is the gold behind it.</p><h2>GE tax on 3rd Age felling axe</h2><p>2% of 2,077,777,777 gp would be 41,555,555 gp, but the Grand Exchange caps its tax at 5,000,000 gp per item — so a sale near this price pays a flat 5,000,000 gp, and the effective rate falls the higher the price goes.</p><h2>High alching 3rd Age felling axe</h2><p>High alchemy turns one 3rd Age felling axe into <b>33,000 gp</b>. 3rd Age felling axe is worth far more than that on the Grand Exchange, so the figure matters for the alch calculator rather than as anything to do.</p><h2>How much 3rd Age felling axe trades</h2><p>3rd Age felling axe sees about <b>3</b> trades a day, which makes it very thinly traded — there may be no buyer for hours at a time, and one sale can set the price.</p><h3>3rd Age felling axe FAQ</h3><p><b>How much is 3rd Age felling axe in OSRS?</b> 3rd Age felling axe is 2,077,777,777 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 1,875,000,000 gp. The chart above is live.</p><p><b>What is the buy limit for 3rd Age felling axe?</b> 3rd Age felling axe has no buy limit.</p><p><b>Can you high alch 3rd Age felling axe for profit?</b> Not at the moment — the alch value is 33,000 gp and a nature rune costs 140 gp, so it only pays below 32,860 gp.</p><p><b>Do you need members for 3rd Age felling axe?</b> Yes, 3rd Age felling axe is members-only.</p></div>
+  <div class="is-detail" id="isDetail" data-item-id="28226"><h2>About 3rd Age felling axe</h2><p>In game it is examined as &ldquo;A beautifully crafted axe, shaped by ancient smiths.&rdquo; 3rd Age felling axe is members-only, so a membership is needed to trade or use it. The base game value is 55,000 gp, which is what shops price from rather than what players pay.</p><h2>3rd Age felling axe buy limit</h2><p>3rd Age felling axe has no Grand Exchange buy limit, so the only cap on a position is the gold behind it.</p><h2>GE tax on 3rd Age felling axe</h2><p>2% of 2,077,777,777 gp would be 41,555,555 gp, but the Grand Exchange caps its tax at 5,000,000 gp per item — so a sale near this price pays a flat 5,000,000 gp, and the effective rate falls the higher the price goes.</p><h2>High alching 3rd Age felling axe</h2><p>High alchemy turns one 3rd Age felling axe into <b>33,000 gp</b>. 3rd Age felling axe is worth far more than that on the Grand Exchange, so the figure matters for the alch calculator rather than as anything to do.</p><h2>How much 3rd Age felling axe trades</h2><p>3rd Age felling axe sees about <b>3</b> trades a day, which makes it very thinly traded — there may be no buyer for hours at a time, and one sale can set the price.</p><h3>3rd Age felling axe FAQ</h3><p><b>How much is 3rd Age felling axe in OSRS?</b> 3rd Age felling axe is 2,077,777,777 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 1,875,000,000 gp. The chart above is live.</p><p><b>What is the buy limit for 3rd Age felling axe?</b> 3rd Age felling axe has no buy limit.</p><p><b>Can you high alch 3rd Age felling axe for profit?</b> Not at the moment — the alch value is 33,000 gp and a nature rune costs 137 gp, so it only pays below 32,863 gp.</p><p><b>Do you need members for 3rd Age felling axe?</b> Yes, 3rd Age felling axe is members-only.</p></div>
   <p class="is-rel" id="isRelated">Related: <a href="/item/dragon-felling-axe/">Dragon felling axe</a><span class="is-sep">·</span><a href="/item/felling-axe-handle/">Felling axe handle</a><span class="is-sep">·</span><a href="/item/rune-felling-axe/">Rune felling axe</a><span class="is-sep">·</span><a href="/item/adamant-felling-axe/">Adamant felling axe</a></p>
   <p class="is-guide">New to flipping? <a href="/#how-it-works">How PocketGE works</a> — a flip from start to finish, plus the FAQ.</p>
 </section>

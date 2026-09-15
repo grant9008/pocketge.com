@@ -218,6 +218,17 @@
      navigation. In <head> and render-blocking, exactly as the inline
      block was, so there is no flash of unstyled content. -->
 <link rel="stylesheet" href="/app.css">
+<!-- Buy/sell palette, applied before first paint so a non-default one does
+     not flash gold/teal first. The stored value holds the resolved colours
+     rather than a preset id, so this needs no copy of the THEMES table in
+     app.js to look anything up. -->
+<script>
+(function(){try{var t=JSON.parse(localStorage.getItem('ge_theme'));
+if(!t||!t.buy)return;var r=document.documentElement.style;
+r.setProperty('--buy-color',t.buy);r.setProperty('--buy-rgb',t.buyRgb);
+r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
+}catch(e){}})();
+</script>
 <script>window.__PGE_ITEM__={"id":11798,"name":"Godsword blade","slug":"godsword-blade"};</script>
 <script type="application/ld+json" id="itemJsonLd">[{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"PocketGE","item":"https://pocketge.com/"},{"@type":"ListItem","position":2,"name":"Godsword blade","item":"https://pocketge.com/item/godsword-blade/"}]},{"@context":"https://schema.org","@type":"ItemPage","name":"Godsword blade Price OSRS \u2014 496,000 gp \u00b7 Live GE Chart & Flip Margin | PocketGE","description":"Godsword blade is 496,000 gp on the OSRS Grand Exchange (insta-buy 496,000, insta-sell 484,277). Live chart & flip margin after 2% tax \u00b7 250 traded/day \u00b7 10.0K buy limit.","url":"https://pocketge.com/item/godsword-blade/","dateModified":"2026-09-15"}]</script>
 </head>
@@ -267,6 +278,10 @@
                   <span class="icon-label">Bank</span>
                 </button>
                 <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
+
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Buy / sell colours</div>
+                <div class="theme-row" id="themeRow" role="group" aria-label="Buy and sell colours"></div>
 
                 <!-- Real navigation, which is what makes a drawer worth
                      opening at all — these standalone pages previously only
@@ -657,7 +672,7 @@
 <section class="item-seo" id="itemSeo">
   <p class="is-sum" id="isSummary"><b>Godsword blade</b> is <b>496,000 gp</b> on the OSRS GE (insta-sell 484,277 gp). ~250/day · members. Down 1% on its 24-hour average.</p>
   <div class="is-qa" id="isQa"><p><b>Buy limit:</b> 10,000 every 4 hours.</p><p><b>High alch:</b> 450,000 gp.</p></div>
-  <div class="is-detail" id="isDetail" data-item-id="11798"><h2>About Godsword blade</h2><p>In game it is examined as &ldquo;The blade for the ultimate weapon.&rdquo; Godsword blade is members-only, so a membership is needed to trade or use it. The base game value is 750,000 gp, which is what shops price from rather than what players pay.</p><h2>Godsword blade buy limit</h2><p>The Grand Exchange lets one account buy <b>10,000</b> every 4 hours. That is a generous limit, so the market rather than the limit is usually what caps a position here. Filling it once costs about 4,960,000,000 gp at the 496,000 gp price recorded on 15 September 2026. The limit is per account and resets on a rolling 4-hour timer.</p><h2>GE tax on Godsword blade</h2><p>Selling at 496,000 gp costs 9,920 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Godsword blade</h2><p>High alchemy turns one Godsword blade into <b>450,000 gp</b>. With a nature rune at 140 gp that only pays below <b>449,860 gp</b>, and Godsword blade is 496,000 gp — so alching it loses 46,140 gp a cast right now.</p><h2>How much Godsword blade trades</h2><p>Godsword blade sees about <b>250</b> trades a day, which makes it thinly traded — an order can sit for hours, and a large one can move the price. That is less than twice the 10,000 buy limit, so a handful of buyers can take a whole day of supply.</p><h3>Godsword blade FAQ</h3><p><b>How much is Godsword blade in OSRS?</b> Godsword blade is 496,000 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 484,277 gp. The chart above is live.</p><p><b>What is the buy limit for Godsword blade?</b> 10,000 every 4 hours.</p><p><b>Can you high alch Godsword blade for profit?</b> Not at the moment — the alch value is 450,000 gp and a nature rune costs 140 gp, so it only pays below 449,860 gp.</p><p><b>Do you need members for Godsword blade?</b> Yes, Godsword blade is members-only.</p></div>
+  <div class="is-detail" id="isDetail" data-item-id="11798"><h2>About Godsword blade</h2><p>In game it is examined as &ldquo;The blade for the ultimate weapon.&rdquo; Godsword blade is members-only, so a membership is needed to trade or use it. The base game value is 750,000 gp, which is what shops price from rather than what players pay.</p><h2>Godsword blade buy limit</h2><p>The Grand Exchange lets one account buy <b>10,000</b> every 4 hours. That is a generous limit, so the market rather than the limit is usually what caps a position here. Filling it once costs about 4,960,000,000 gp at the 496,000 gp price recorded on 15 September 2026. The limit is per account and resets on a rolling 4-hour timer.</p><h2>GE tax on Godsword blade</h2><p>Selling at 496,000 gp costs 9,920 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Godsword blade</h2><p>High alchemy turns one Godsword blade into <b>450,000 gp</b>. With a nature rune at 137 gp that only pays below <b>449,863 gp</b>, and Godsword blade is 496,000 gp — so alching it loses 46,137 gp a cast right now.</p><h2>How much Godsword blade trades</h2><p>Godsword blade sees about <b>250</b> trades a day, which makes it thinly traded — an order can sit for hours, and a large one can move the price. That is less than twice the 10,000 buy limit, so a handful of buyers can take a whole day of supply.</p><h3>Godsword blade FAQ</h3><p><b>How much is Godsword blade in OSRS?</b> Godsword blade is 496,000 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 484,277 gp. The chart above is live.</p><p><b>What is the buy limit for Godsword blade?</b> 10,000 every 4 hours.</p><p><b>Can you high alch Godsword blade for profit?</b> Not at the moment — the alch value is 450,000 gp and a nature rune costs 137 gp, so it only pays below 449,863 gp.</p><p><b>Do you need members for Godsword blade?</b> Yes, Godsword blade is members-only.</p></div>
   <p class="is-rel" id="isRelated">Related: <a href="/item/armadyl-godsword/">Armadyl godsword</a><span class="is-sep">·</span><a href="/item/bandos-godsword/">Bandos godsword</a><span class="is-sep">·</span><a href="/item/saradomin-godsword/">Saradomin godsword</a><span class="is-sep">·</span><a href="/item/zamorak-godsword/">Zamorak godsword</a></p>
   <p class="is-guide">New to flipping? <a href="/#how-it-works">How PocketGE works</a> — a flip from start to finish, plus the FAQ.</p>
 </section>
