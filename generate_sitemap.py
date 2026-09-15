@@ -172,9 +172,14 @@ def main():
     # works, is still what related-item links use for an item with no page of
     # its own, and is still what the app puts in the address bar.
     prerendered = prerendered_names()
+    # "weekly", matching how often these documents are actually regenerated
+    # (prerender.yml's schedule). It said "daily" while the generator ran
+    # monthly, so lastmod moved once for every thirty changes claimed. The
+    # PRICES change constantly, but changefreq describes the document, and the
+    # document is a snapshot rewritten on a schedule.
     for name in all_names:
         if name.lower() in prerendered:
-            rows.append(f"{SITE}/item/{slugify(name)}/|{today}|daily|0.7")
+            rows.append(f"{SITE}/item/{slugify(name)}/|{today}|weekly|0.7")
 
     out = ['<?xml version="1.0" encoding="UTF-8"?>',
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
