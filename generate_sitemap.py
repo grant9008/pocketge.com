@@ -119,6 +119,9 @@ PAGE_WEIGHTS = {
     # Generated from the Help modal. Changes only when that copy does,
     # which is rarely, but it is a real reference page rather than chrome.
     "glossary.html": ("monthly", "0.6"),
+    # The A-Z index. Rebuilt every run because it lists every page, and
+    # it is how 706 otherwise-orphaned item pages get an inbound link.
+    "items.html": ("weekly", "0.7"),
     "burnt-food-collectors.html": ("monthly", "0.6"),
 }
 # index.html is the "/" row, added separately. og-image.source.html is the
