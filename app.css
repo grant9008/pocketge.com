@@ -493,37 +493,54 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 /* Buy/sell palette picker in the drawer. Each swatch previews its own two
    colours rather than naming them, because 'gold' and 'teal' mean less at a
    glance than the colours themselves. */
-/* Breadcrumb above the item name. Quiet by design — it is orientation, not a
-   control, and it sits directly above the one thing on the page people came
-   for. Matching JSON-LD is emitted alongside it, which is the half Google
-   needs to see reflected in something a reader can actually read. */
+/* The utility line above the item name: breadcrumb, then quick links, both on
+   the left and both deliberately quiet. It is orientation and shortcuts, not
+   controls, so nothing here is allowed to pull attention off the price. */
+/* The gap is the only thing dividing the two navs. A "|" between them was
+   tidier on one line and wrong on two: where the row breaks depends on how
+   long the item's name is, not on the viewport, so no breakpoint can predict
+   it, and a wrap left the divider leading a line with nothing to its left.
+   18px and the heavier link weight separate them at any width. */
+.util-bar { display: flex; flex-wrap: wrap; align-items: center; column-gap: 18px;
+  padding: 0 0 5px 2px; }
 .crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 5px;
-  padding: 0 0 5px 2px; font-size: 11.5px; line-height: 1.4; }
+  min-width: 0; font-size: 11.5px; line-height: 1.4; }
 .crumbs a { color: var(--text-muted); text-decoration: none; white-space: nowrap; }
 .crumbs a:hover { color: var(--text-main); text-decoration: underline; }
 .crumbs .crumb-sep { color: var(--border-main); user-select: none; }
 .crumbs .crumb-now { color: var(--text-muted); white-space: nowrap; overflow: hidden;
   text-overflow: ellipsis; max-width: 46ch; }
-@media (max-width: 560px) { .crumbs { font-size: 11px; } }
 
-/* Header quick links. Only rendered where the search bar is not already using
-   the width: .sbar caps at 640px, so the group has 190px of slack at 1440 and
-   549px at 1920, and none at all below ~1400. Hidden there rather than shrunk,
-   because a cramped link row beside a cramped search box helps nobody. */
-.hdr-links { display: none; align-items: center; gap: 14px; margin-left: 16px; flex-shrink: 0; }
-@media (min-width: 1400px) { .hdr-links { display: flex; } }
-.hdr-link { color: var(--text-muted); font-size: 12.5px; font-weight: 700; text-decoration: none;
+/* Quick links. These used to live in the header's dead space beside the search
+   bar, which only exists above 1400px — below that they were hidden, so the
+   laptop half of the traffic never saw them at all. On this row there is no
+   width to compete for, so they show everywhere. All three are still in the
+   drawer as well. */
+.hdr-links { display: flex; align-items: center; gap: 10px; }
+.hdr-link { color: var(--text-muted); font-size: 11.5px; font-weight: 600; text-decoration: none;
   white-space: nowrap; transition: color .12s ease; }
-.hdr-link:hover { color: var(--text-main); }
+.hdr-link:hover { color: var(--text-main); text-decoration: underline; }
 /* The two dots ARE the current palette, so the control shows its own state
    rather than needing a label. */
 .hdr-palette { display: inline-flex; align-items: center; gap: 0; background: transparent;
-  border: 1px solid var(--border-main); border-radius: 20px; padding: 4px 7px; cursor: pointer;
+  border: 1px solid var(--border-main); border-radius: 20px; padding: 3px 5px; cursor: pointer;
   line-height: 0; transition: border-color .12s ease; }
 .hdr-palette:hover { border-color: var(--border-active); }
-.hdr-palette i { width: 9px; height: 9px; border-radius: 50%; display: block; }
+.hdr-palette i { width: 7px; height: 7px; border-radius: 50%; display: block; }
 .hdr-palette .hp-buy { background: var(--buy-color); }
-.hdr-palette .hp-sell { background: var(--sell-color); margin-left: -3px; }
+.hdr-palette .hp-sell { background: var(--sell-color); margin-left: -2px; }
+/* On a phone the two navs stop competing for one line. Side by side they fit
+   for a short name and then the breadcrumb wraps INSIDE itself, which drops
+   the links into the middle of the trail — "All items / # · Flip history ·
+   3rd age druidic staff". Giving the links the whole second line makes the
+   break the same one every time. */
+@media (max-width: 700px) {
+  .hdr-links { flex-basis: 100%; }
+}
+@media (max-width: 560px) {
+  .crumbs { font-size: 11px; }
+  .hdr-link { font-size: 11px; }
+}
 
 .theme-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 14px 10px; }
 .theme-swatch { display: flex; align-items: center; gap: 6px; padding: 5px 9px 5px 6px;
