@@ -779,6 +779,99 @@ function loadColPrefs() {
 }
 let columnPrefs = loadColPrefs();
 function saveColPrefs() { try { localStorage.setItem(colPrefsKey(), JSON.stringify(columnPrefs)); } catch (e) {} }
+
+/* ── Buy/sell palette ──────────────────────────────────────────────────────
+   Gold-for-buy and teal-for-sell are a convention, not a fact, and someone
+   staring at this for hours should get to pick. Everything that carries that
+   meaning — the two price boxes, the chart's two series, the volume bars, the
+   rating gauge, the flip cards — reads --buy-color/--sell-color, so a palette
+   is two custom properties and nothing else.
+
+   Deliberately NOT offered: green/sell-red. It reads as the obvious choice and
+   is the worst available option twice over — it collides with --positive and
+   --negative, which already mean "price up" and "price down" a few pixels
+   away, and red/green is precisely the pair the ~8% of men with deuteranopia
+   or protanopia cannot separate. The default gold/teal is yellow-vs-cyan,
+   which survives both kinds of colour blindness; every palette here does.
+
+   The rgb triplets exist because rgba() cannot take a hex custom property and
+   every tint, glow and border of these colours is an alpha variant of it.
+   They are stored resolved, rather than as a preset id, so the pre-paint
+   script in index.html needs no copy of this table to consult. */
+const THEMES = [
+  { id: 'terminal', name: 'Terminal',
+    buy: '#E5B842', buyRgb: '229, 184, 66', sell: '#26A9AB', sellRgb: '38, 169, 171' },
+  { id: 'contrast', name: 'High contrast',
+    buy: '#FFC107', buyRgb: '255, 193, 7', sell: '#29B6F6', sellRgb: '41, 182, 246' },
+  { id: 'neon', name: 'Neon',
+    buy: '#FF4FA3', buyRgb: '255, 79, 163', sell: '#22E0FF', sellRgb: '34, 224, 255' },
+  { id: 'sunset', name: 'Sunset',
+    buy: '#FF8A3D', buyRgb: '255, 138, 61', sell: '#B388FF', sellRgb: '179, 136, 255' },
+];
+const THEME_KEY = 'ge_theme';
+
+function currentThemeId() {
+  try { return (JSON.parse(localStorage.getItem(THEME_KEY)) || {}).id || 'terminal'; }
+  catch (e) { return 'terminal'; }
+}
+
+function applyTheme(id, persist) {
+  const t = THEMES.find(x => x.id === id) || THEMES[0];
+  const r = document.documentElement.style;
+  if (t.id === 'terminal') {
+    /* Clear rather than restate: the stylesheet's :root already holds these,
+       and leaving an inline copy behind means a later edit to app.css does
+       not reach anyone who ever opened this menu. */
+    ['--buy-color', '--buy-rgb', '--sell-color', '--sell-rgb'].forEach(p => r.removeProperty(p));
+  } else {
+    r.setProperty('--buy-color', t.buy);
+    r.setProperty('--buy-rgb', t.buyRgb);
+    r.setProperty('--sell-color', t.sell);
+    r.setProperty('--sell-rgb', t.sellRgb);
+  }
+  if (persist) {
+    try {
+      if (t.id === 'terminal') localStorage.removeItem(THEME_KEY);
+      else localStorage.setItem(THEME_KEY, JSON.stringify(t));
+    } catch (e) {}
+  }
+  /* The chart is a canvas: CSS cannot repaint it. drawChart() re-reads both
+     properties on every call, so it only needs asking — through queueDraw(),
+     which no-ops safely before the first series has loaded. */
+  queueDraw();
+  document.querySelectorAll('.theme-swatch').forEach(b =>
+    b.classList.toggle('is-on', b.dataset.theme === t.id));
+  track('theme_change', { mode: t.id });
+}
+
+/* Built here rather than written into index.html so the markup cannot fall out
+   of step with THEMES, and so each swatch can preview its own two colours
+   without repeating them in two files. The colours are already applied by the
+   pre-paint script in index.html; this only draws the control and marks which
+   one is on. */
+(function themePicker() {
+  const mount = () => {
+    const row = document.getElementById('themeRow');
+    if (!row) return;
+    const on = currentThemeId();
+    row.innerHTML = THEMES.map(t => `
+      <button type="button" class="theme-swatch${t.id === on ? ' is-on' : ''}"
+              data-theme="${t.id}" aria-pressed="${t.id === on}"
+              title="Buy ${t.buy}, sell ${t.sell}">
+        <span class="sw" aria-hidden="true"><i style="background:${t.buy}"></i><i style="background:${t.sell}"></i></span>
+        ${escapeHtml(t.name)}
+      </button>`).join('');
+    row.querySelectorAll('.theme-swatch').forEach(b => {
+      b.onclick = () => {
+        applyTheme(b.dataset.theme, true);
+        row.querySelectorAll('.theme-swatch').forEach(x =>
+          x.setAttribute('aria-pressed', String(x.dataset.theme === b.dataset.theme)));
+      };
+    });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
+  else mount();
+})();
 /* Rotating the phone crosses the breakpoint, so re-read that layout's own
    choice instead of carrying the other one across. */
 (function watchColLayout() {
@@ -1562,7 +1655,11 @@ async function buildShareCardCanvas() {
      box is the sharer's actual call, so it is the one that gets drawn. */
   const shareIsBuy = activePriceBox === 'buy';
   const shareTgt = shareIsBuy ? recommendedBuy : recommendedSell;
-  const shareTgtColor = shareIsBuy ? '#E5B842' : '#26A9AB';
+  /* Read, not hardcoded: the share card has to show the palette the user
+     is actually looking at. (The PocketGE wordmark below stays brand gold.) */
+  const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const shareTgtColor = cssVar(shareIsBuy ? '--buy-color' : '--sell-color') ||
+                        (shareIsBuy ? '#E5B842' : '#26A9AB');
 
   /* Shrink-to-fit, then ellipsise. Used for the Market Read line, which is a
      fixed sentence but a variable width once the font is applied. */
