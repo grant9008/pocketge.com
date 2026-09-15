@@ -34,7 +34,16 @@ DESC = ("What every badge, marker and tag on PocketGE means: 5D HIGH and 5D LOW,
 STYLE = """
   .glossary-body {
     --text-main:#D9D3C7; --text-muted:#8A8274; --border-main:#2B2621;
-    --buy-color:#E5B842; --sell-color:#26A9AB; --positive:#10B981; --negative:#EF5350;
+    --positive:#10B981; --negative:#EF5350;
+  }
+  /* The palette defaults live on :root, NOT on .glossary-body with the rest.
+     The pre-paint script sets them inline on <html>, and a declaration on a
+     nearer ancestor beats an inherited one however it got there — with these
+     four on .glossary-body the badges here stayed gold and teal for someone
+     running Neon, which is the one thing a legend must not do. On :root the
+     inline copy wins and these are the fallback. */
+  :root {
+    --buy-color:#E5B842; --sell-color:#26A9AB;
     --buy-rgb:229, 184, 66; --sell-rgb:38, 169, 171;
   }
   .glossary-section { margin-top:22px; margin-bottom:8px; font-size:11px; font-weight:700;
@@ -123,6 +132,19 @@ def build():
      Do not edit by hand: edit index.html and re-run, or CI will fail. -->
 <link rel="stylesheet" href="finder-page.css">
 <style>{STYLE}</style>
+<!-- This page draws the badges in --buy-color/--sell-color, so it has to honour
+     a chosen palette or the legend contradicts the terminal that sent you here.
+     Same pre-paint block as index.html, and for the same reason: the value is
+     read before first paint so a non-default palette does not flash gold/teal.
+     The stored value holds resolved colours, not a preset id, so nothing here
+     needs a copy of the THEMES table. -->
+<script>
+(function(){{try{{var t=JSON.parse(localStorage.getItem('ge_theme'));
+if(!t||!t.buy)return;var r=document.documentElement.style;
+r.setProperty('--buy-color',t.buy);r.setProperty('--buy-rgb',t.buyRgb);
+r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
+}}catch(e){{}}}})();
+</script>
 </head>
 <body>
 <div class="wrap">
