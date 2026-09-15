@@ -16,12 +16,23 @@ on:
         description: 'How many items to prerender, ranked by daily volume'
         required: false
         default: '800'
-  # Monthly, not weekly. Each run rewrites every generated page, so the commit
-  # is ~34MB of changed files at the default limit; monthly keeps the history
-  # from ballooning, and prices in the HTML are only a snapshot anyway — the
-  # app replaces them with live ones the moment it loads.
+  # Weekly. This was monthly, on the grounds that each run rewrites every
+  # generated page and so costs "~34MB of changed files" — but that is the
+  # working-tree diff, not what git stores. Measured with
+  # `git rev-list --disk-usage`, a run actually costs 1.3–1.4MB: the pages are
+  # near-identical, so they delta-compress to almost nothing. Monthly was
+  # buying ~17MB/yr over weekly's ~73MB/yr, on a 197MB pack.
+  #
+  # What monthly cost instead: the price quoted in each page's meta
+  # description is what shows in the search result, and it was up to 30 days
+  # stale there. It also meant any change to how pages are GENERATED sat
+  # dormant until the 1st — the 2026-09-15 run shipped three merged PRs'
+  # worth of page changes that had been live in the repo but not on the site.
+  #
+  # Not daily: ~510MB/yr, for a snapshot the app replaces with live prices the
+  # moment it loads. Sunday, so a fresh set goes into the week.
   schedule:
-    - cron: '17 4 1 * *'
+    - cron: '17 4 * * 0'
 
 permissions:
   contents: write
