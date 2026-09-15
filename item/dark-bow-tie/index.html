@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PocketGE">
+<meta name="application-name" content="PocketGE">
+<meta name="theme-color" content="#0B0E14">
+
+<title>Dark bow tie Price OSRS — 1,992,998 gp · Live GE Chart & Flip Margin | PocketGE</title>
+<meta name="description" content="Dark bow tie is 1,992,998 gp on the OSRS Grand Exchange (insta-buy 1,992,998, insta-sell 1,000,000). Live chart & flip margin after 2% tax · 7 traded/day · 4 buy limit.">
+<meta name="keywords" content="OSRS trading terminal, OSRS flipping, OSRS merching, OSRS price tracker, Grand Exchange prices, OSRS flip finder, OSRS trading, OSRS live margins, OSRS watchlist, Grand Exchange tax calculator">
+<link rel="canonical" href="https://pocketge.com/item/dark-bow-tie/">
+<link rel="manifest" href="/manifest.json">
+
+<meta property="og:title" content="Dark bow tie Price OSRS — 1,992,998 gp · Live GE Chart & Flip Margin | PocketGE">
+<meta property="og:description" content="Dark bow tie is 1,992,998 gp on the OSRS Grand Exchange (insta-buy 1,992,998, insta-sell 1,000,000). Live chart & flip margin after 2% tax · 7 traded/day · 4 buy limit.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pocketge.com/item/dark-bow-tie/">
+<meta property="og:image" content="https://pocketge.com/og-image-v2.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PocketGE — the OSRS trading terminal: a Grand Exchange price chart with target buy and target sell levels">
+<meta property="og:site_name" content="PocketGE">
+<meta property="og:locale" content="en_US">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Dark bow tie Price OSRS — 1,992,998 gp · Live GE Chart & Flip Margin | PocketGE">
+<meta name="twitter:description" content="Dark bow tie is 1,992,998 gp on the OSRS Grand Exchange (insta-buy 1,992,998, insta-sell 1,000,000). Live chart & flip margin after 2% tax · 7 traded/day · 4 buy limit.">
+<meta name="twitter:image" content="https://pocketge.com/og-image-v2.png">
+<meta name="twitter:image:alt" content="PocketGE — the OSRS trading terminal: a Grand Exchange price chart with target buy and target sell levels">
+
+<link id="favicon1" rel="icon" type="image/png" href="/favicon.png">
+<link id="favicon2" rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link id="favicon3" rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link id="favicon4" rel="shortcut icon" href="/favicon.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "PocketGE",
+  "alternateName": "PocketGE OSRS Trading Terminal",
+  "url": "https://pocketge.com/",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "browserRequirements": "Requires JavaScript. Works in any modern browser.",
+  "description": "An Old School RuneScape merching and market-tracking platform. Build custom watchlists, follow Grand Exchange price action on TradingView-inspired charts, and see 30-day and 5-day highs and lows, historical trends, live buy and sell prices, target buy and sell levels, margins with the 2% GE tax applied, trading volume, buy limits, potential profit, analyst ratings and scored flip recommendations in one place.",
+  "image": "https://pocketge.com/og-image-v2.png",
+  "codeRepository": "https://github.com/grant9008/pocketge.com",
+  "sameAs": ["https://github.com/grant9008/pocketge.com"]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "PocketGE",
+  "url": "https://pocketge.com/",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": { "@type": "EntryPoint", "urlTemplate": "https://pocketge.com/?q={search_term_string}" },
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+
+<!-- Warm up the API/CDN origins the app hits on boot — the mobile network
+     dependency tree showed serial DNS+TLS setup delaying first data. -->
+<link rel="preconnect" href="https://prices.runescape.wiki" crossorigin>
+<link rel="preconnect" href="https://static.runelite.net">
+<link rel="preconnect" href="https://oldschool.runescape.wiki">
+<link rel="dns-prefetch" href="https://api.weirdgloop.org">
+
+<script>
+  /* A reload lands at the TOP, not wherever you happened to be scrolled.
+     Browsers restore the previous scroll position by default, which is right
+     for an article and wrong for this: the app is the first screen, and a
+     refresh is what you press to get fresh prices on the item you are
+     looking at. Measured on a 430x932 phone with a full favourites list —
+     scrolled to the watchlist at y=692, hit reload, came back at y=707.
+     Worse than a plain jump, because the app renders asynchronously: the
+     restore is applied against a page that is still growing, so where you
+     land depends on how fast the prices came back. That is the "sometimes"
+     in the report.
+     Set here, in the first script in <head>, because restoration is applied
+     before any later script would run — doing this from the app bundle is
+     already too late to prevent the jump, only late enough to correct it
+     visibly.
+     Fragment links are unaffected: `manual` governs history restoration, not
+     scrolling to a #target, so /#meet-the-dev still jumps where it should
+     (verified). Nothing here pushes history state, so back/forward is a
+     different site and has nothing to restore either. */
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  /* Self-exclusion from analytics. On a site this size the maintainer's own
+     browsing is a real share of traffic, and it skews everything that
+     matters — sessions, bounce rate, which items look popular, whether a
+     change moved a number. GA4's built-in "internal traffic" filter keys off
+     IP, which is useless for a phone on mobile data, so the switch lives in
+     the browser instead.
+
+     Visit /?ga=off once per browser (phone included) and it sticks;
+     /?ga=on undoes it. Both log to the console so there is a confirmation
+     rather than a guess.
+
+     Two mechanisms on purpose. window['ga-disable-<ID>'] is the flag GA4
+     itself honours, and it is set BEFORE any gtag() call so nothing queued
+     early can slip through; skipping the library load means the request is
+     never made at all. Either would do — together the tag can neither fire
+     nor arrive. */
+  var GA_ID = 'G-43YM2RCX1R';
+  var gaOptOut = false;
+  (function () {
+    try {
+      var q = new URLSearchParams(location.search).get('ga');
+      if (q === 'off') localStorage.setItem('pge_ga_optout', '1');
+      else if (q === 'on') localStorage.removeItem('pge_ga_optout');
+      gaOptOut = localStorage.getItem('pge_ga_optout') === '1';
+      if (q === 'off' || q === 'on') {
+        console.info('[PocketGE] analytics ' + (gaOptOut ? 'DISABLED' : 'ENABLED') +
+          ' for this browser (saved). Use /?ga=' + (gaOptOut ? 'on' : 'off') + ' to undo.');
+        /* Say it ON SCREEN, not just in the console. The whole point of this
+           switch is excluding the maintainer's PHONE, and a phone has no
+           console — so the one device it exists for got no confirmation at
+           all, and "did that work?" is a question you cannot answer by
+           looking at analytics that are working correctly either way.
+           Built by hand rather than reusing anything: this runs in <head>
+           before the app script parses, so nothing else exists yet. */
+        (function () {
+          var msg = 'Analytics ' + (gaOptOut ? 'OFF' : 'ON') + ' for this browser';
+          var sub = gaOptOut ? 'Your visits are no longer counted. /?ga=on to undo.'
+                             : 'Your visits are counted again. /?ga=off to exclude.';
+          var show = function () {
+            if (!document.body) return;
+            var el = document.createElement('div');
+            el.setAttribute('role', 'status');
+            el.style.cssText = 'position:fixed;left:50%;top:14px;transform:translateX(-50%);' +
+              'z-index:99999;max-width:92vw;padding:10px 14px;border-radius:8px;' +
+              'background:rgba(12,11,9,0.96);border:1px solid ' +
+              (gaOptOut ? 'rgba(229,184,66,0.75)' : 'rgba(255,255,255,0.25)') + ';' +
+              'color:#D9D3C7;font:600 13px -apple-system,BlinkMacSystemFont,sans-serif;' +
+              'box-shadow:0 6px 24px rgba(0,0,0,0.5);text-align:center;line-height:1.45;' +
+              'transition:opacity .35s ease';
+            el.innerHTML = '<div style="color:' + (gaOptOut ? '#E5B842' : '#D9D3C7') +
+              ';font-weight:800">' + msg + '</div>' +
+              '<div style="font-weight:500;font-size:11.5px;color:#8A8274;margin-top:2px">' + sub + '</div>';
+            document.body.appendChild(el);
+            setTimeout(function () { el.style.opacity = '0'; }, 5000);
+            setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 5500);
+          };
+          if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', show);
+          else show();
+        })();
+      }
+    } catch (e) {}
+    window['ga-disable-' + GA_ID] = gaOptOut;
+  })();
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  /* send_page_view: false because this is an SPA — we fire our own virtual
+     page_view from setItem() once the selected item is known, so every visit
+     (including deep links like /?q=Cake) reports the actual item title/path
+     instead of collapsing into a single "home /" pageview. */
+  gtag('config', GA_ID, { send_page_view: false });
+  /* Campaign attribution has to be captured HERE and set explicitly.
+     GA4 normally reads utm_* out of page_location by itself — but this site
+     never lets it see a real URL. send_page_view is off, and both of the
+     page_view events we fire by hand set page_location to a value we build
+     ourselves ('https://pocketge.com/' for the homepage, a virtual
+     /item/<slug> for an item), neither of which carries a query string. So a
+     visit to /?utm_source=runelite would be attributed to nothing at all.
+     Worse, setItem() calls history.replaceState early enough that by the time
+     anything else could look, the parameters are gone from the address bar.
+     Read once, at load, before any of that runs, and hand GA the campaign
+     fields directly so every event in the session carries them. */
+  (function () {
+    try {
+      var q = new URLSearchParams(window.location.search);
+      var campaign = {};
+      var map = {
+        utm_source: 'campaign_source',
+        utm_medium: 'campaign_medium',
+        utm_campaign: 'campaign_name',
+        utm_content: 'campaign_content',
+        utm_term: 'campaign_term'
+      };
+      Object.keys(map).forEach(function (k) {
+        var v = q.get(k);
+        if (v) { campaign[map[k]] = v.slice(0, 100); }
+      });
+      if (Object.keys(campaign).length) { gtag('set', campaign); }
+    } catch (e) { /* no URLSearchParams, or a hostile URL — attribution is not worth throwing over */ }
+  })();
+  /* Load the GA library OFF the critical path: it was the biggest chunk of
+     "unused JS" on mobile and competes with first paint. gtag() calls made
+     before it arrives just queue in dataLayer, so nothing is lost.
+     Opted out = never loaded. gtag() stays defined either way, so the
+     `typeof gtag === 'function'` call sites further down keep working and
+     just push into a dataLayer nothing ever reads. */
+  (function () {
+    if (gaOptOut) return;
+    var load = function () {
+      var s = document.createElement('script');
+      s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+      document.head.appendChild(s);
+    };
+    if ('requestIdleCallback' in window) requestIdleCallback(load, { timeout: 4000 });
+    else setTimeout(load, 2500);
+  })();
+</script>
+<!-- Extracted to /app.css. It was 248KB inline on every page, and a
+     prerendered item page cannot carry that 800 times over. External
+     also means one download shared by every page instead of one per
+     navigation. In <head> and render-blocking, exactly as the inline
+     block was, so there is no flash of unstyled content. -->
+<link rel="stylesheet" href="/app.css">
+<!-- Buy/sell palette, applied before first paint so a non-default one does
+     not flash gold/teal first. The stored value holds the resolved colours
+     rather than a preset id, so this needs no copy of the THEMES table in
+     app.js to look anything up. -->
+<script>
+(function(){try{var t=JSON.parse(localStorage.getItem('ge_theme'));
+if(!t||!t.buy)return;var r=document.documentElement.style;
+r.setProperty('--buy-color',t.buy);r.setProperty('--buy-rgb',t.buyRgb);
+r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
+}catch(e){}})();
+</script>
+<script>window.__PGE_ITEM__={"id":19970,"name":"Dark bow tie","slug":"dark-bow-tie"};</script>
+<script type="application/ld+json" id="itemJsonLd">[{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"PocketGE","item":"https://pocketge.com/"},{"@type":"ListItem","position":2,"name":"Dark bow tie","item":"https://pocketge.com/item/dark-bow-tie/"}]},{"@context":"https://schema.org","@type":"ItemPage","name":"Dark bow tie Price OSRS \u2014 1,992,998 gp \u00b7 Live GE Chart & Flip Margin | PocketGE","description":"Dark bow tie is 1,992,998 gp on the OSRS Grand Exchange (insta-buy 1,992,998, insta-sell 1,000,000). Live chart & flip margin after 2% tax \u00b7 7 traded/day \u00b7 4 buy limit.","url":"https://pocketge.com/item/dark-bow-tie/","dateModified":"2026-09-15"}]</script>
+</head>
+<body>
+
+<!-- Itemised per page by renderItemSeo; restoreBrandMeta puts the brand
+     wording back on "/". Every ?q= page shared this one heading before,
+     which told a crawler that 4,000 URLs were all about the same thing. -->
+<h1 class="sr-only" id="seoH1">Dark bow tie price in OSRS — live Grand Exchange data</h1>
+
+<!-- The landing/interstitial screen used to live here: a brand page shown
+     on first visit to "/" with a "Continue to app" button. Removed. Someone
+     who searched "OSRS flipping" or "ruby price" wants the terminal, and an
+     extra tap between them and it is a bounce, not an introduction. The
+     brand and education copy it carried is not lost — the about-section
+     further down the page says the same things to a crawler and to anyone
+     who scrolls, without standing in front of the app.
+     What replaced it: the app itself, opened on an item that is actually
+     moving (see pickLandingItem). -->
+
+<div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
+
+<div class="wrap">
+  <div class="content-area">
+
+    <div class="main-column">
+
+      <div class="top-row-wrapper">
+        <div class="top-panel" id="topPanel">
+          <div class="panel-left">
+            <div class="more-wrap">
+              <button id="btnMore" class="icon-btn more-toggle" title="More" aria-label="More actions" aria-expanded="false"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></button>
+              <div class="more-actions" id="moreActions" role="dialog" aria-modal="true" aria-label="Menu">
+                <div class="drawer-head">
+                  <button type="button" class="drawer-close" id="drawerClose" aria-label="Close menu"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></button>
+                  <span class="drawer-brand"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="">PocketGE</span>
+                </div>
+                <button id="btnNotif" class="icon-btn" title="Enable Browser Push Notifications"><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.7 3A6 6 0 0 1 18 8c0 4.5 1.2 7 2.3 8.5"/><path d="M17 17H3s3-2 3-9a4.7 4.7 0 0 1 .3-1.7"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><line x1="2" x2="22" y1="2" y2="22"/></svg></span><span class="icon-label">Alerts</span></button>
+                <button id="btnPortfolio" class="icon-btn" title="Bank of Gielinor — track your stacks &amp; total wealth">
+                  <svg class="bk-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <ellipse cx="12" cy="20" rx="8" ry="2.2" fill="#8B5A00"></ellipse>
+                    <ellipse cx="12" cy="16" rx="8" ry="2.2" fill="#C8841C"></ellipse>
+                    <ellipse cx="12" cy="12" rx="8" ry="2.2" fill="#FFB300"></ellipse>
+                    <ellipse cx="12" cy="8"  rx="8" ry="2.2" fill="#FFD24D"></ellipse>
+                    <ellipse cx="12" cy="4.2" rx="8" ry="2.2" fill="#FFE680" stroke="#C8841C" stroke-width="0.9"></ellipse>
+                  </svg>
+                  <span class="icon-label">Bank</span>
+                </button>
+                <button id="btnHelp" class="icon-btn" title="What do the badges mean? Tap to open the glossary."><span><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="icon-label">Help</span></button>
+
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Buy / sell colours</div>
+                <div class="theme-row" id="themeRow" role="group" aria-label="Buy and sell colours"></div>
+
+                <!-- Real navigation, which is what makes a drawer worth
+                     opening at all — these standalone pages previously only
+                     existed as footer links, below everything. -->
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Scanners</div>
+                <a class="drawer-link" href="/high-vol-margins.html">High Volume Margins</a>
+                <a class="drawer-link" href="/low-vol-margins.html">Low Volume Margins</a>
+                <a class="drawer-link" href="/biggest-losers-24h.html">Biggest Losers (24h)</a>
+                <a class="drawer-link" href="/reliable-14d-margins.html">Reliable 14-Day Margins</a>
+                <a class="drawer-link" href="/at-5d-highs.html">At 5-Day Highs</a>
+                <a class="drawer-link" href="/at-5d-lows.html">At 5-Day Lows</a>
+
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">Calculators &amp; Guides</div>
+                <a class="drawer-link" href="/high-alch-calculator.html">High Alch Calculator</a>
+                <a class="drawer-link" href="/cannonball-profit-calculator.html">Cannonball Profit</a>
+                <!-- The pair reads as one choice: Flipping Guide is how the
+                     GE works (tax, buy limits, picking items), this is how
+                     the terminal works (watchlist, badges, targets, profit).
+                     Sits next to it so the labels distinguish themselves. -->
+                <a class="drawer-link" href="/flipping-guide.html">Flipping Guide</a>
+                <a class="drawer-link" href="/#how-it-works">How PocketGE works</a>
+                <!-- The glossary lives in the Help modal, which is reachable
+                     only from inside the terminal. This is the same copy as a
+                     page, so it can be linked and found. -->
+                <a class="drawer-link" href="/glossary.html">Badge &amp; Signal Glossary</a>
+                <a class="drawer-link" href="/items.html">All Item Prices A-Z</a>
+                <a class="drawer-link" href="/burnt-food-collectors.html">Burnt Food &amp; Collectors</a>
+
+                <!-- The plugin page existed for months with ZERO inbound links
+                     from anywhere on the site — only its own footer pointed at
+                     it. An orphan page is one Google has little reason to crawl
+                     and none to rank. The drawer is inherited by every
+                     prerendered item page, so one entry here is ~1,750 internal
+                     links to it, and it is also simply where someone would look
+                     for "do they have a RuneLite plugin". -->
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">In game</div>
+                <a class="drawer-link" href="/runelite-plugin.html">RuneLite Plugin <b>· new</b></a>
+                <a class="drawer-link" href="/flip-history.html">Flip History</a>
+
+                <!-- The "add me in game" note already existed, but only in the
+                     about section far below the app, where nobody looking for
+                     the author would think to scroll. The drawer is where you
+                     go to find the human behind a tool, so it gets a real
+                     entry that jumps to it. -->
+                <div class="drawer-sep"></div>
+                <div class="drawer-label">The dev</div>
+                <a class="drawer-link drawer-rsn" href="#meet-the-dev">Add me in game — <b>pocketge</b></a>
+                <!-- The other two placements (the dev note and the footer) sit
+                     1,300px and 8,400px down an 11,400px page, which is quiet to
+                     the point of nobody finding them. The drawer is one tap from
+                     anywhere and already the home for Help, the glossary and the
+                     palette, so it is where a standing link belongs. Still not in
+                     the trading UI, still no modal. -->
+                <a class="drawer-link" id="supportDrawer" href="" rel="noopener" target="_blank" hidden>Support PocketGE</a>
+              </div>
+            </div>
+            <!-- A real link to "/", not a reload. Reloading is wrong from an
+                 item page: /item/<slug>/ is a document with the about/FAQ copy
+                 stripped out, so reloading it could never bring that copy back,
+                 and picking any prerendered item rewrites the URL to that path
+                 even when the visit started at "/". Being an anchor also makes
+                 Enter, middle-click and open-in-new-tab work on their own, and
+                 gives every item page a crawlable link home. -->
+            <a id="logoBtn" class="brand-logo" href="/" aria-label="PocketGE home — full guide and FAQ"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo — Gilded scimitar icon"><span class="brand-word">Pocket<span>GE</span></span></a>
+            <div class="mode-pill">
+              <button data-mode="f2p" id="btnF2P" class="active mp-f2p">F2P</button>
+              <button data-mode="members" id="btnMembers" class="mp-p2p" title="Members (Pay-to-Play)">P2P</button>
+            </div>
+
+            <div class="search-group" id="searchGroup">
+              <div class="sbar">
+                <img id="itemIcon" src="" alt="Selected OSRS item icon">
+                <input id="query" placeholder="Search items..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <span id="sbarItem" class="sbar-item" aria-hidden="true"></span>
+                <a id="sbarWiki" class="sbar-wiki" target="_blank" rel="noopener noreferrer" href="https://oldschool.runescape.wiki/" title="Open this item on the OSRS Wiki" aria-label="Open current item on the OSRS Wiki">↗</a>
+                <div id="suggestBox" class="suggest" style="display:none"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ticker-header" id="tickerHeader">
+          <div class="ticker-title-group">
+            <a id="tickerHeaderIconLink" class="ticker-wiki-link" target="_blank" rel="noopener noreferrer" href="https://oldschool.runescape.wiki/" aria-label="Open OSRS Wiki page for this item">
+              <img id="tickerHeaderIcon" src="" alt="Dark bow tie — OSRS Grand Exchange item icon">
+            </a>
+            <div class="ticker-info">
+              <a id="tickerNameLink" class="ticker-wiki-link ticker-name-link" target="_blank" rel="noopener noreferrer" href="https://oldschool.runescape.wiki/">
+                <h2 id="tickerName">Dark bow tie</h2>
+                <!-- The name has always opened the wiki; nothing said so.
+                     Muted external-link glyph, gold on hover with the
+                     underline. aria-hidden because the anchor's own title
+                     already announces the destination. -->
+                <svg class="wiki-hint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 7h8v8"/><path d="M17 7 7 17"/></svg>
+              </a>
+              <div class="ticker-price-row">
+                <span id="tickerLivePrice" class="price">---</span>
+                <span id="tickerChange" class="change neutral">---</span>
+              </div>
+            </div>
+          </div>
+          <!-- Primary favorite button, right beside the item name so it reads
+               as "save THIS item". Lives as a SIBLING of ticker-title-group
+               (not inside it), so mobile media queries can hide the whole
+               name/icon block for the combined-search treatment without
+               hiding the Save button too. -->
+          <button id="btnFav" class="fav-btn" type="button" title="Add this item to Favorites" aria-pressed="false">
+            <svg class="fav-star" viewBox="0 0 24 24" aria-hidden="true">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <span class="fav-label">Save</span>
+            <span class="fav-label-active">Saved</span>
+          </button>
+          <!-- Renders a shareable PNG "stat card" for the current item
+               (client-side, canvas — no server round trip) and copies/
+               downloads it, so a redditor/streamer can post a clean,
+               data-full image instead of a raw screenshot. -->
+          <!-- No title= on purpose: the .share-tip hover below is the
+               explanation, and the native tooltip would stack on top of it. -->
+          <button id="btnShare" class="fav-btn" type="button" aria-label="Share this item as an image">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.6" y1="10.5" x2="15.4" y2="6.5"></line>
+              <line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line>
+            </svg>
+            <span class="fav-label">Share</span>
+          </button>
+
+          <div class="toolbar" id="timeToolbar">
+            <button data-view="1d" class="active view-btn">1D<span class="pct-chg">...</span></button>
+            <button data-view="5d" class="view-btn">5D<span class="pct-chg">...</span></button>
+            <button data-view="1m" class="view-btn">1M<span class="pct-chg">...</span></button>
+            <button data-view="6m" class="view-btn">6M<span class="pct-chg">...</span></button>
+            <button data-view="1y" class="view-btn">1Y<span class="pct-chg">...</span></button>
+            <button data-view="5y" class="view-btn">5Y<span class="pct-chg">...</span></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="price-strip">
+        <div id="buyPrice" class="price-box low">
+          <div class="price-label"><span class="pl-t">Target Buy</span> <span id="lblLiveBuy" class="live-val">Insta-sell: —</span></div>
+          <div class="price-val"><span>—</span></div>
+        </div>
+        <div id="sellPrice" class="price-box high selected">
+          <div class="price-label"><span class="pl-t">Target Sell</span> <span id="lblLiveSell" class="live-val">Insta-buy: —</span></div>
+          <div class="price-val"><span>—</span></div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <!-- Indeterminate activity bar, laid ON the chart's top edge rather
+             than in the gap above it. It used to be a sibling reserving its own
+             3px plus margins, which put a permanent empty band between the
+             target numbers and the chart for something visible only while
+             loading. Absolutely positioned inside the container costs zero
+             layout, so nothing moves when it appears. aria-hidden because
+             #chartLoading below already announces loading to a screen reader;
+             two live regions saying the same thing is worse than one. -->
+        <div class="load-bar" id="loadBar" aria-hidden="true"><span></span><span></span></div>
+        <canvas id="chart" class="chart"></canvas>
+        <div id="chartLoading" class="chart-loading"><div class="cl-spinner"></div>Loading live prices…</div>
+        <div id="tip" class="chart-tip"></div>
+
+        <div class="chart-footer legend">
+          <div class="legend-item low"><span class="legend-dash"></span> Lows</div>
+          <div class="legend-item high"><span class="legend-dash"></span> Highs</div>
+          <div class="legend-item low"><span class="legend-dot"></span> Period Low</div>
+          <div class="legend-item high"><span class="legend-dot"></span> Period High</div>
+          <div class="legend-item rlow"><span class="legend-ring"></span> Recent Low</div>
+          <div class="legend-item rhigh"><span class="legend-ring"></span> Recent High</div>
+          <div class="legend-item"><span class="legend-dash" style="background:rgba(244,241,232,0.85);"></span> Trend</div>
+        </div>
+      </div>
+      <!-- Vertical twin of .wl-resize: that one trades width between chart
+           and sidebar, this trades height between chart and everything under
+           it. Desktop only — see .ch-resize. -->
+      <div class="ch-resize" id="chResize" title="Drag to resize the chart · double-click to reset" aria-hidden="true"></div>
+      <!-- Refresh sits with the "just now / 2m ago" freshness stamps it
+           acts on, rather than buried in the menu. Kept OUTSIDE
+           #quickFacts: renderQuickFacts rewrites that node's innerHTML
+           every price tick and would destroy the button with it. -->
+      <div class="qf-row" id="quickFactsRow" style="display:none">
+        <div class="quick-facts" id="quickFacts" aria-label="Last traded snapshot"></div>
+        <!-- Chart view toggles. Inline above 1024px, behind this puck below
+             it. Each one is a plain visibility switch rather than an
+             indicator setting — nothing here changes what the data says,
+             only how much of it is drawn at once. -->
+        <div class="chart-tools" id="chartTools" role="group" aria-label="Chart view options">
+          <!-- There was a "Dots" toggle here that switched the highs and lows
+               to connected lines. Removed: connecting raw insta-buy/insta-sell
+               prints draws a scribble of vertical spikes, because consecutive
+               prints are independent offers rather than a continuous price.
+               That is the same reason the old connecting line was replaced by
+               the EMA trend years back, and re-adding it as an option just
+               made the bad version reachable in two taps. The scatter plus the
+               EMA is the chart; there is no second view worth keeping. -->
+          <button type="button" class="ct-btn" id="ctFill" aria-pressed="true"
+            title="Shade the band between the buy and sell prices">Fill</button>
+          <!-- "VP", not "Vol": the chart already has volume BARS along the
+               bottom, and a button labelled Vol sitting a few pixels from
+               them reads as their switch rather than the profile's. -->
+          <button type="button" class="ct-btn" id="ctVol" aria-pressed="false"
+            title="Volume profile — how much traded at each price level">VP</button>
+          <!-- Touch-only stand-in for the drag handle: one tap goes to the
+               same ceiling the drag would have reached, another puts it back.
+               See chartHeightResizer, which owns both. -->
+          <button type="button" class="ct-btn ct-tall" id="ctTall" aria-pressed="false"
+            title="Expand the chart to full height">Max</button>
+        </div>
+        <!-- One button, two jobs. It refreshes live prices; when the view has
+             been zoomed/panned or a target price hand-nudged it also puts
+             those back, and turns gold to say so. A separate "Reset zoom"
+             chip would cost another slot in this row, and the circular
+             refresh arrow already reads as "put it back" anyway. -->
+        <button id="btnRefreshPrices" class="qf-refresh" type="button" title="Refresh live prices now" aria-label="Refresh live prices now"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span class="qf-rlabel" id="refreshLabel">Refresh</span></button>
+      </div>
+      <!-- 30-day price-position meter: where the live price sits between its
+           30-day floor and ceiling. The one fact on this row that nothing
+           else on the page shows — the summary sentence that used to sit
+           beside it said the same things the bar draws (price, low, high,
+           position) plus volume and after-tax margin, both of which the
+           quick-facts strip above already prints.
+           role="img" + a label built in renderItemInsight, because the
+           position is expressed purely as a CSS offset: the deleted text
+           was doubling as this bar's only screen-reader form. -->
+      <div class="item-insight" id="itemInsight" style="display:none">
+        <div class="ins-meter" id="insMeter" role="img" aria-label="30-day price range">
+          <div class="ins-title">30-Day Range</div>
+          <div class="ins-track">
+            <span class="ins-fill" id="insFill"></span>
+            <span class="ins-marker" id="insMarker"><span class="ins-price" id="insPrice"></span></span>
+          </div>
+          <!-- Titles on .ins-end, not on the value, so the figure and its
+               "30-DAY LOW/HIGH" caption are one hover target. Static text, so
+               it lives here rather than being rewritten by renderItemInsight
+               on every price tick.
+               "sold for" is true to within a bucket: the series these come
+               from is averaged per interval, so this is the lowest/highest
+               INTERVAL, not necessarily one individual print. Close enough to
+               state plainly in a tooltip; noted here so nobody later reads the
+               copy as a promise about a single trade. -->
+          <div class="ins-ends">
+            <span class="ins-end" title="The lowest price this item sold for in the last 30 days."><span class="ins-val" id="insLo">—</span><span class="ins-elabel">30-Day Low</span></span>
+            <span class="ins-end ins-end-hi" title="The highest price this item sold for in the last 30 days."><span class="ins-val" id="insHi">—</span><span class="ins-elabel">30-Day High</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wl-resize" id="wlResize" title="Drag to resize · double-click to reset" aria-hidden="true"></div>
+
+    <div class="watchlist-container">
+      <!-- Sidebar item-list filter (F2P items vs Members items). Sleek
+           segmented control — no glyphs; the active side gets a tinted fill
+           so it reads as "showing" rather than "purchase this tier". Click
+           handlers are class-based so both copies stay in sync. -->
+      <div class="mode-pill-side" role="tablist" aria-label="Item list filter">
+        <button class="mps-btn mp-f2p active" role="tab" aria-selected="true" data-mode="f2p">F2P</button>
+        <button class="mps-btn mp-p2p" role="tab" aria-selected="false" data-mode="members">Members</button>
+      </div>
+      <!-- Decision info first on EVERY layout: Potential Profit + Analyst
+           Rating (#sideModule) above the Recommended Flip card, then the
+           lists — same order the portrait view pioneered. -->
+      <div class="calc-container" id="sideModule"></div>
+      <div class="flip-finder" id="flipFinder"></div>
+      <!-- List name row sits ABOVE the column labels, the way every trading
+           terminal orders it: which list am I looking at, then what the
+           columns mean. #favHeadTitle is re-rendered by renderWatchlist; the
+           ⋯ button and its menu are appended once by buildColHeader and live
+           as siblings of it, so a re-render can't destroy them. -->
+      <div class="fav-head-host" id="favHeadHost"><div id="favHeadTitle"></div></div>
+      <div class="col-header" id="colHeader"></div>
+      <div class="watchlist-content" id="watchlistContent"></div>
+      <!-- Drag handle between the two lists. role=separator with
+           aria-orientation is the ARIA pattern for exactly this, and it is
+           focusable so the split is reachable with arrow keys and not only
+           with a pointer. -->
+      <div class="wl-splitter" id="wlSplitter" role="separator" tabindex="0"
+           aria-orientation="horizontal" aria-label="Resize Find Opportunities. Arrow keys adjust, double-click resets."
+           title="Drag to resize · double-click to reset"><span></span></div>
+      <!-- Find Opportunities lives in its own host, NOT inside
+           #watchlistContent, purely so it can be ordered independently
+           of the favorites list (see the landscape media query). -->
+      <div class="find-opps-host" id="findOppsHost"></div>
+    </div>
+
+  </div>
+</div>
+
+<div id="helpModal" class="modal-overlay" style="display:none">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Badge &amp; Signal Glossary</h3>
+      <button class="modal-close" id="closeHelp" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body" data-glossary-src="/glossary.html">
+      <p class="glossary-lazy">Loading the glossary… if it does not appear, <a href="/glossary.html">read it on its own page</a>.</p>
+    </div>
+  </div>
+</div>
+
+<div id="notifCenterModal" class="modal-overlay" style="display:none">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>🔔 Notification Center</h3>
+      <button class="modal-close" id="closeNotifCenter" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body" id="notifCenterBody">
+      <!-- populated by renderNotifCenter() -->
+    </div>
+  </div>
+</div>
+
+<!-- Our own share sheet, used on pointer devices in place of the OS one.
+     Phones still get the native sheet — see shareCard(). -->
+<div id="shareModal" class="modal-overlay share-sheet" style="display:none">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+    <div class="modal-header">
+      <h3 id="shareModalTitle">Share</h3>
+      <button class="modal-close" id="closeShare" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="share-preview"><img id="sharePreviewImg" alt="Preview of the image that will be shared"></div>
+      <div class="share-caption" id="shareCaption"></div>
+      <div class="share-grid" id="shareGrid"></div>
+      <!-- Persists until the dialog closes: clicking Reddit/X moves focus to
+           a new tab, so a 2-second toast would be gone before it was read. -->
+      <div class="share-step" id="shareStep" role="status" hidden></div>
+      <div class="share-foot">
+        <span class="sf-note" id="shareNote">Neither Reddit nor X can take the image straight from a link — PocketGE copies it to your clipboard so you can paste it into the post.</span>
+        <button type="button" class="sf-native" id="shareNative" hidden>Device share…</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="portfolioModal" class="modal-overlay" style="display:none">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3><svg class="bk-icon" viewBox="0 0 24 24" width="20" height="20" style="vertical-align:-4px;margin-right:6px"><ellipse cx="12" cy="20" rx="8" ry="2.2" fill="#8B5A00"></ellipse><ellipse cx="12" cy="16" rx="8" ry="2.2" fill="#C8841C"></ellipse><ellipse cx="12" cy="12" rx="8" ry="2.2" fill="#FFB300"></ellipse><ellipse cx="12" cy="8" rx="8" ry="2.2" fill="#FFD24D"></ellipse><ellipse cx="12" cy="4.2" rx="8" ry="2.2" fill="#FFE680" stroke="#C8841C" stroke-width="0.9"></ellipse></svg>Bank of Gielinor</h3>
+      <button class="modal-close" id="closePortfolio" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="bk-stats" id="pfStats"></div>
+      <!-- RuneLite bridge: reads the PocketGE Flip Tracker plugin's opt-in
+           loopback server (127.0.0.1 only — nothing leaves the machine). -->
+      <div class="bk-rl" id="rlBridge">
+        <div class="bk-section-title bk-rl-head">
+          <span><span class="rl-dot" id="rlDot"></span>Live from RuneLite</span>
+          <button id="rlToggle" class="wl-sort-btn" type="button">Connect</button>
+        </div>
+        <div id="rlBody" class="rl-body"></div>
+      </div>
+      <form class="bk-form" id="pfForm" autocomplete="off">
+        <div class="bk-item-row">
+          <img id="pfItemIcon" class="bk-item-icon" src="" alt="Selected item icon for Bank of Gielinor">
+          <span class="bk-item-name" id="pfItemName">No item selected</span>
+        </div>
+        <div class="bk-form-grid">
+          <input id="pfQty" placeholder="Qty in inventory" inputmode="numeric" type="text">
+          <input id="pfCost" placeholder="Avg cost ea (optional)" inputmode="numeric" type="text">
+          <input id="pfAlert" placeholder="Alert ±%" inputmode="numeric" type="text">
+          <button type="submit" class="bk-submit">+ Stash</button>
+        </div>
+        <div class="bk-hint" id="pfHint">Only qty is required — leave cost blank to just track current value of the stack.</div>
+      </form>
+      <div class="bk-section-title">Stacks · live value</div>
+      <div class="bk-holdings" id="pfHoldings"></div>
+      <!-- The other half of the same question. This modal is what you are
+           holding; the flip history is what you have already made. One hop
+           each way -- /flip-history.html links back here via /#bank. -->
+      <p class="bk-crosslink"><a href="/flip-history.html">Flip history →</a>
+        <span>every completed flip, profit after tax, gp per hour</span></p>
+    </div>
+  </div>
+</div>
+
+<!-- Which items have a prerendered page at /item/<slug>/. Generated by
+     prerender_items.py; an empty list until it has run, which leaves the
+     app on its pre-existing ?q= behaviour. Must load before app.js. -->
+<script src="/flip-group.js"></script>
+<script src="/item-pages.js"></script>
+<!-- Extracted to /app.js. Plain src, no defer/async on purpose: the
+     inline block this replaces was a synchronous script in the middle
+     of the body, so it blocked parsing here and ran before the prose
+     below it. `defer` would move it after parsing and change that
+     ordering; a bare src keeps it byte-for-byte the same contract. -->
+<script src="/app.js"></script>
+<!-- Per-item indexable copy. Every ?q= page shipped byte-identical body text
+     before this, so the only thing distinguishing /?q=Emerald from
+     /?q=Mahogany%20logs to a crawler was the numbers inside the terminal UI.
+     Everything here is generated from data the page has already fetched —
+     see renderItemSeo. Hidden until an item is loaded so the homepage and a
+     failed price fetch never show an empty shell. -->
+<section class="item-seo" id="itemSeo">
+  <p class="is-sum" id="isSummary"><b>Dark bow tie</b> is <b>1,992,998 gp</b> on the OSRS GE (insta-sell 1,000,000 gp). ~7/day · members. Up 205% on its 24-hour average.</p>
+  <div class="is-qa" id="isQa"><p><b>Buy limit:</b> 4 every 4 hours.</p><p><b>High alch:</b> 3,000 gp.</p></div>
+  <div class="is-detail" id="isDetail" data-item-id="19970"><h2>About Dark bow tie</h2><p>In game it is examined as &ldquo;Bow ties are cool.&rdquo; Dark bow tie is members-only, so a membership is needed to trade or use it. The base game value is 5,000 gp, which is what shops price from rather than what players pay.</p><h2>Dark bow tie buy limit</h2><p>The Grand Exchange lets one account buy <b>4</b> every 4 hours. That is a very tight limit, so a position is built over days rather than hours. Filling it once costs about 7,971,992 gp at the 1,992,998 gp price recorded on 15 September 2026. The limit is per account and resets on a rolling 4-hour timer.</p><h2>GE tax on Dark bow tie</h2><p>Selling at 1,992,998 gp costs 39,859 gp in tax — 2%, rounded down, taken from the seller. A flip has to clear that before it makes anything, and it is the number most margin calculators leave out.</p><h2>High alching Dark bow tie</h2><p>High alchemy turns one Dark bow tie into <b>3,000 gp</b>. Dark bow tie is worth far more than that on the Grand Exchange, so the figure matters for the alch calculator rather than as anything to do.</p><h2>How much Dark bow tie trades</h2><p>Dark bow tie sees about <b>7</b> trades a day, which makes it very thinly traded — there may be no buyer for hours at a time, and one sale can set the price. That is less than twice the 4 buy limit, so a handful of buyers can take a whole day of supply.</p><h3>Dark bow tie FAQ</h3><p><b>How much is Dark bow tie in OSRS?</b> Dark bow tie is 1,992,998 gp on the Grand Exchange as of 15 September 2026, with an insta-sell of 1,000,000 gp. The chart above is live.</p><p><b>What is the buy limit for Dark bow tie?</b> 4 every 4 hours.</p><p><b>Can you high alch Dark bow tie for profit?</b> Not at the moment — the alch value is 3,000 gp and a nature rune costs 140 gp, so it only pays below 2,860 gp.</p><p><b>Do you need members for Dark bow tie?</b> Yes, Dark bow tie is members-only.</p></div>
+  <p class="is-rel" id="isRelated">Related: <a href="/item/dark-fishing-bait/">Dark fishing bait</a><span class="is-sep">·</span><a href="/item/dark-crab/">Dark crab</a><span class="is-sep">·</span><a href="/item/raw-dark-crab/">Raw dark crab</a><span class="is-sep">·</span><a href="/item/dark-kebbit-fur/">Dark kebbit fur</a></p>
+  <p class="is-guide">New to flipping? <a href="/#how-it-works">How PocketGE works</a> — a flip from start to finish, plus the FAQ.</p>
+</section>
+</body>
+</html>
