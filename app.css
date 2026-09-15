@@ -493,6 +493,25 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 /* Buy/sell palette picker in the drawer. Each swatch previews its own two
    colours rather than naming them, because 'gold' and 'teal' mean less at a
    glance than the colours themselves. */
+/* Header quick links. Only rendered where the search bar is not already using
+   the width: .sbar caps at 640px, so the group has 190px of slack at 1440 and
+   549px at 1920, and none at all below ~1400. Hidden there rather than shrunk,
+   because a cramped link row beside a cramped search box helps nobody. */
+.hdr-links { display: none; align-items: center; gap: 14px; margin-left: 16px; flex-shrink: 0; }
+@media (min-width: 1400px) { .hdr-links { display: flex; } }
+.hdr-link { color: var(--text-muted); font-size: 12.5px; font-weight: 700; text-decoration: none;
+  white-space: nowrap; transition: color .12s ease; }
+.hdr-link:hover { color: var(--text-main); }
+/* The two dots ARE the current palette, so the control shows its own state
+   rather than needing a label. */
+.hdr-palette { display: inline-flex; align-items: center; gap: 0; background: transparent;
+  border: 1px solid var(--border-main); border-radius: 20px; padding: 4px 7px; cursor: pointer;
+  line-height: 0; transition: border-color .12s ease; }
+.hdr-palette:hover { border-color: var(--border-active); }
+.hdr-palette i { width: 9px; height: 9px; border-radius: 50%; display: block; }
+.hdr-palette .hp-buy { background: var(--buy-color); }
+.hdr-palette .hp-sell { background: var(--sell-color); margin-left: -3px; }
+
 .theme-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 14px 10px; }
 .theme-swatch { display: flex; align-items: center; gap: 6px; padding: 5px 9px 5px 6px;
   background: transparent; border: 1px solid var(--border-main); border-radius: 6px;
