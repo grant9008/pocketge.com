@@ -829,22 +829,53 @@ const SUPPORT_URL = 'https://ko-fi.com/pocketge';
    is the worst available option twice over — it collides with --positive and
    --negative, which already mean "price up" and "price down" a few pixels
    away, and red/green is precisely the pair the ~8% of men with deuteranopia
-   or protanopia cannot separate. The default gold/teal is yellow-vs-cyan,
-   which survives both kinds of colour blindness; every palette here does.
+   or protanopia cannot separate.
+
+   Every palette here is therefore warm-for-buy against cool-for-sell, and each
+   one was checked rather than eyeballed: the two colours were simulated under
+   normal vision, deuteranopia and protanopia (Viénot's matrices) and the CIELAB
+   distance measured for all five pairs that have to stay apart — buy vs sell,
+   and each of them against --positive and --negative. The floor across all
+   fifteen readings is ~24, which is several times "just noticeably different".
+   That measurement is what rejected the candidates that looked fine on screen:
+   a dimmed gold/teal put buy 8.4 from --negative for a deuteranope, and a
+   copper/sky pair 14.6. It is also what moved Neon's buy 8° towards magenta,
+   which lifted its own floor from 14.5 to 23.6 — it was the one palette here
+   whose buy could be mistaken for "price up".
 
    The rgb triplets exist because rgba() cannot take a hex custom property and
    every tint, glow and border of these colours is an alpha variant of it.
    They are stored resolved, rather than as a preset id, so the pre-paint
-   script in index.html needs no copy of this table to consult. */
+   script in index.html needs no copy of this table to consult. New palettes go
+   at the end: the stored value is the colours, not the position, so appending
+   never repaints anyone's saved choice. */
 const THEMES = [
   { id: 'terminal', name: 'Terminal',
     buy: '#E5B842', buyRgb: '229, 184, 66', sell: '#26A9AB', sellRgb: '38, 169, 171' },
   { id: 'contrast', name: 'High contrast',
     buy: '#FFC107', buyRgb: '255, 193, 7', sell: '#29B6F6', sellRgb: '41, 182, 246' },
   { id: 'neon', name: 'Neon',
-    buy: '#FF4FA3', buyRgb: '255, 79, 163', sell: '#22E0FF', sellRgb: '34, 224, 255' },
+    buy: '#FF44B0', buyRgb: '255, 68, 176', sell: '#22E0FF', sellRgb: '34, 224, 255' },
   { id: 'sunset', name: 'Sunset',
     buy: '#FF8A3D', buyRgb: '255, 138, 61', sell: '#B388FF', sellRgb: '179, 136, 255' },
+  { id: 'cobalt', name: 'Cobalt',
+    buy: '#FF9F1C', buyRgb: '255, 159, 28', sell: '#3D8BFF', sellRgb: '61, 139, 255' },
+  { id: 'solar', name: 'Solar',
+    buy: '#FFE14D', buyRgb: '255, 225, 77', sell: '#7B8CFF', sellRgb: '123, 140, 255' },
+  { id: 'orchid', name: 'Orchid',
+    buy: '#FFB2E6', buyRgb: '255, 178, 230', sell: '#7C6BFF', sellRgb: '124, 107, 255' },
+  /* The one palette that is not a hue pair. Buy and sell separate by lightness
+     alone, which leaves green and red as the only colours on the page carrying
+     meaning — useful if you want the price boxes to stop competing with the
+     up/down arrows for attention, and the only option here that is legible to
+     someone with no colour vision at all.
+
+     The slate is lighter than the lightness gap alone wants because .hl-badge
+     paints the sell colour solid and writes near-black on top of it: a darker
+     slate read 3.9:1 there, under AA. At this value it is 5.2:1 and the two
+     are still 41 apart in CIELAB. */
+  { id: 'mono', name: 'Mono',
+    buy: '#F2EADB', buyRgb: '242, 234, 219', sell: '#7A8794', sellRgb: '122, 135, 148' },
 ];
 const THEME_KEY = 'ge_theme';
 
