@@ -93,6 +93,16 @@
   .fh-item img { width:20px; height:20px; image-rendering:pixelated; flex:0 0 auto; }
   .fh-item span { overflow:hidden; text-overflow:ellipsis; max-width:200px; }
 
+  .fh-bank-h { font-size:15px; margin:18px 0 8px; color:var(--head); }
+  .fh-stacks { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:2px 18px; }
+  .fh-stack { display:flex; justify-content:space-between; gap:12px; align-items:baseline;
+    padding:5px 0; font-size:13px; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .fh-stack-n { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .fh-stack-v { flex:0 0 auto; font-variant-numeric:tabular-nums; color:var(--head); }
+  .fh-stack-more { padding:6px 0; font-size:12px; }
+  .fh-bank-link { margin:14px 0 0; font-size:13px; }
+  .fh-bank-link a { font-weight:700; }
+  .fh-bank-link span { color:var(--muted); margin-left:8px; font-size:12px; }
   .fh-controls { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:0 0 12px; }
   .fh-controls input[type=search], .fh-controls select {
     background:var(--input); border:1px solid var(--border); color:var(--text);
@@ -140,6 +150,10 @@
     <div class="fh-stats" id="fhStats"></div>
     <div class="fh-sparse" id="fhSparse" hidden></div>
 
+    <h2>Your bank</h2>
+    <p class="sub" style="margin-bottom:10px">What you are holding, read from the same plugin. The ledger above is what you have made; this is what it is currently sitting in.</p>
+    <div id="fhBank" hidden></div>
+
     <h2>Cumulative profit</h2>
     <div class="fh-chart-wrap"><canvas id="fhChart" height="220"></canvas></div>
 
@@ -185,6 +199,7 @@
   </div>
 </div>
 <script src="site-nav.js"></script>
+<script src="flip-group.js"></script>
 <script src="flip-history.js"></script>
 </body>
 </html>

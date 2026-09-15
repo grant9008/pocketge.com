@@ -6521,7 +6521,16 @@ function rlRenderModal(data) {
     return;
   }
   dot.classList.add('on');
-  const flips = (data.flips || []).slice(-8).reverse();
+  /* Grouped with the SAME rule the flip history page uses, so the two stop
+     telling different stories about one afternoon: this list showed Adamantite
+     bar five times (549, 2, 8, 7,558, 15) while the history page showed one row
+     of 8,218. The slice stays at 8 and the payload is unchanged — the plugin
+     still sends only its recent window, this just spends those eight rows on
+     eight trades instead of eight fills. */
+  const grouped = (window.PGEFlipGroup && window.PGEFlipGroup.groupFills)
+    ? window.PGEFlipGroup.groupFills(data.flips || [])
+    : (data.flips || []);
+  const flips = grouped.slice(-8).reverse();
   const profit = Number(data.sessionProfit || 0);
   /* Four numbers people connect the bridge FOR — session, lifetime, portfolio
      and liquid cash — used to render as four .rl-hint lines: muted 12px text,
@@ -6606,7 +6615,8 @@ function rlRenderModal(data) {
       + `</div>`;
     html += flips.map(f => `
       <div class="rl-flip" data-rl-item="${(f.itemName || '').replace(/"/g, '&quot;')}" title="Open the live chart">
-        <span class="rl-name">${f.itemName} ×${Number(f.quantity).toLocaleString()}</span>
+        <span class="rl-name">${f.itemName} ×${Number(f.quantity).toLocaleString()}${
+          f.parts > 1 ? `<span class="rl-parts" title="${f.parts} partial fills merged">×${f.parts}</span>` : ''}</span>
         <span class="rl-nums">${abbreviateNumber(Math.round(f.buySpent / f.quantity))} → ${abbreviateNumber(Math.round(f.sellGross / f.quantity))}
           <span class="${f.profit >= 0 ? 'pos' : 'neg'}">${f.profit >= 0 ? '+' : ''}${abbreviateNumber(f.profit)}</span></span>
       </div>`).join('');

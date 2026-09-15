@@ -478,6 +478,11 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 /* Item pages carry a stub instead of the glossary's 23 rows (12.5KB of
    prose identical on all of them) and fetch /glossary.html on first open.
    This is what shows while that is in flight, and what stays if it fails. */
+/* Marks a Bank row the GE filled in pieces, matching the badge on the flip
+   history table so the same merge reads the same way in both places. */
+.rl-parts { margin-left: 5px; padding: 0 4px; border-radius: 3px; font-size: 9px;
+  font-weight: 700; color: var(--accent-bright); background: rgba(201,166,77,0.16); }
+
 /* Tip jar. Quiet on purpose: the same weight as the surrounding prose in
    the dev note, and the same weight as its neighbours in the footer. It is
    an offer, not a call to action. */
