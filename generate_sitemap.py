@@ -127,7 +127,13 @@ PAGE_WEIGHTS = {
 # index.html is the "/" row, added separately. og-image.source.html is the
 # artwork the link-preview PNG is screenshotted from -- no canonical, nothing
 # links to it, not a page.
-NOT_PAGES = {"index.html", "og-image.source.html"}
+NOT_PAGES = {"index.html"}
+# Artwork sources: *.source.html files exist only to be screenshotted into a
+# PNG (the link-preview card, the Ko-fi cover and avatar). They have no
+# canonical, no copy and no reason to be crawled. Matched by suffix rather
+# than listed one at a time, because the list is what went stale last time --
+# adding a third one and forgetting to name it here would quietly submit it.
+NOT_PAGE_SUFFIX = ".source.html"
 
 
 def static_pages(today):
@@ -138,7 +144,7 @@ def static_pages(today):
     a page is enough to get it indexed."""
     out = []
     for f in sorted(Path(".").glob("*.html")):
-        if f.name in NOT_PAGES:
+        if f.name in NOT_PAGES or f.name.endswith(NOT_PAGE_SUFFIX):
             continue
         freq, prio = PAGE_WEIGHTS.get(f.name, ("weekly", "0.6"))
         out.append(f"{SITE}/{f.name}|{today}|{freq}|{prio}")

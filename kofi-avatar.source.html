@@ -1,0 +1,52 @@
+<!-- Source for kofi-avatar.png — the profile picture on ko-fi.com/pocketge.
+     Regenerate after editing:
+       npx playwright screenshot --viewport-size=800,800 kofi-avatar.source.html kofi-avatar.png
+
+     Square, because Ko-fi crops avatars to a circle: everything that matters
+     sits well inside the inscribed circle, and the corners carry nothing.
+
+     It is the GE tile from og-image.source.html rather than the scimitar
+     favicon for two reasons — favicon.png is 36x32, so there is nothing to
+     scale up from, and two letters survive being shown at 40px next to a
+     comment in a way a detailed sprite does not. -->
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:800px; height:800px; }
+  body {
+    font-family: "Liberation Sans", Arial, Helvetica, sans-serif;
+    background:#0A0908;
+    display:flex; align-items:center; justify-content:center;
+  }
+  /* The gold disc is the mark. Filling the circle rather than floating a
+     rounded square inside it keeps the whole crop working at small sizes. */
+  .disc {
+    width:800px; height:800px; border-radius:50%;
+    background:linear-gradient(160deg,#FFD24D 0%,#E5B842 46%,#D79E24 100%);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    position:relative; overflow:hidden;
+  }
+  /* A flattened echo of the site's price line, so the mark is not just two
+     letters. Low contrast and kept low in the frame: at 40px it should read as
+     texture under the letters, never as something competing with them. */
+  .spark { position:absolute; left:0; right:0; bottom:88px; opacity:.18; }
+  .ge {
+    font-size:340px; font-weight:700; color:#241B06; letter-spacing:-14px;
+    line-height:1; position:relative; text-shadow:0 5px 0 rgba(255,255,255,.18);
+  }
+</style>
+
+<!-- Just the two letters. An earlier pass set "POCKET" under "GE", which reads
+     top-to-bottom as GE POCKET — the brand backwards — and putting it above
+     instead only trades that for a band of text that is ~3px tall once Ko-fi
+     shows the avatar beside a comment. The display name sits next to this
+     everywhere it appears, so the mark does not need to spell the name; it
+     needs to survive being small. Same two letters as the tile in
+     og-image.source.html. -->
+<div class="disc">
+  <svg class="spark" viewBox="0 0 800 200" preserveAspectRatio="none" height="200">
+    <polyline points="0,150 100,112 200,140 300,80 400,108 500,52 600,86 700,30 800,58"
+              fill="none" stroke="#241B06" stroke-width="26" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg>
+  <div class="ge">GE</div>
+</div>

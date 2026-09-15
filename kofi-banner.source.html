@@ -1,0 +1,81 @@
+<!-- Source for kofi-banner.png — the cover image on ko-fi.com/pocketge.
+     Ko-fi asks for 1200x400 (3:1) and crops anything else, so the viewport
+     must be exactly that. Regenerate after editing:
+       npx playwright screenshot --viewport-size=1200,400 kofi-banner.source.html kofi-banner.png
+     Same palette and marks as og-image.source.html — the gold GE tile, the
+     Pocket+GE wordmark, the teal price line over the gold dotted one. A
+     supporter arriving from the site should see the same thing they left.
+     Ko-fi overlays the avatar and display name near the lower left of the
+     cover, so that corner is deliberately left as empty chart. -->
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1200px; height:400px; }
+  body {
+    font-family: "Liberation Sans", Arial, Helvetica, sans-serif;
+    background:
+      radial-gradient(820px 420px at 80% 6%, rgba(38,166,154,0.11), transparent 62%),
+      radial-gradient(700px 400px at 6% 2%, rgba(255,179,0,0.10), transparent 60%),
+      #0A0908;
+    color:#F4F1E8; position:relative; overflow:hidden;
+  }
+  .chart { position:absolute; left:0; right:0; bottom:0; height:236px; }
+  .wrap { position:relative; padding:40px 56px; height:100%; }
+
+  .brand { display:flex; align-items:center; gap:14px; }
+  .ge {
+    width:52px; height:52px; border-radius:12px; flex:0 0 52px;
+    background:linear-gradient(160deg,#FFD24D,#E0A82E);
+    display:flex; align-items:center; justify-content:center;
+    font-size:24px; font-weight:700; color:#241B06; letter-spacing:-.5px;
+    box-shadow:0 0 28px rgba(255,179,0,.34);
+  }
+  .word { font-size:39px; font-weight:700; letter-spacing:-1px; line-height:1; }
+  .word b { color:#FFB300; font-weight:700; }
+
+  h1 { font-size:45px; line-height:1.05; font-weight:700; letter-spacing:-1.3px; margin-top:26px; }
+  h1 span { color:#26A69A; }
+  .sub { margin-top:14px; font-size:20px; font-weight:700; color:#B3AB9B; letter-spacing:-.2px; }
+  .sub em { font-style:normal; color:#E6C35C; }
+
+  .boxes { position:absolute; top:40px; right:56px; display:flex; flex-direction:column; gap:11px; }
+  .box { width:212px; padding:11px 15px; border-radius:11px; background:rgba(18,16,13,.86); }
+  .box.buy  { border:2px solid rgba(230,195,92,.85); box-shadow:0 0 26px rgba(255,179,0,.14); }
+  .box.sell { border:2px solid rgba(38,166,154,.85); box-shadow:0 0 26px rgba(38,166,154,.14); }
+  .lbl { font-size:12px; font-weight:700; letter-spacing:1.3px; }
+  .box.buy .lbl { color:#E6C35C; } .box.sell .lbl { color:#26A69A; }
+  .val { font-size:27px; font-weight:700; margin-top:2px; letter-spacing:-.5px; }
+
+  .url { position:absolute; right:56px; bottom:30px; font-size:17px; font-weight:700; color:#8A8274; }
+</style>
+
+<svg class="chart" viewBox="0 0 1200 236" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#26A69A" stop-opacity=".26"/>
+      <stop offset="100%" stop-color="#26A69A" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <path d="M0,174 L100,136 L200,170 L300,104 L400,138 L500,74 L600,110 L700,52 L800,88 L900,36 L1000,66 L1100,24 L1200,46 L1200,236 L0,236 Z" fill="url(#fill)"/>
+  <polyline points="0,174 100,136 200,170 300,104 400,138 500,74 600,110 700,52 800,88 900,36 1000,66 1100,24 1200,46"
+            fill="none" stroke="#26A69A" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <polyline points="0,217 100,182 200,213 300,149 400,182 500,120 600,154 700,97 800,132 900,81 1000,111 1100,70 1200,90"
+            fill="none" stroke="#E6C35C" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="2 15" opacity=".85"/>
+</svg>
+
+<div class="wrap">
+  <div class="brand">
+    <div class="ge">GE</div>
+    <div class="word">Pocket<b>GE</b></div>
+  </div>
+
+  <h1>The OSRS <span>Trading Terminal</span></h1>
+  <div class="sub">Free · live Grand Exchange prices, margins after the <em>2% tax</em></div>
+
+  <div class="boxes">
+    <div class="box buy"><div class="lbl">TARGET BUY</div><div class="val">1,842 gp</div></div>
+    <div class="box sell"><div class="lbl">TARGET SELL</div><div class="val">1,918 gp</div></div>
+  </div>
+
+  <div class="url">pocketge.com</div>
+</div>
