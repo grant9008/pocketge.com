@@ -660,6 +660,28 @@ def build_page(tpl, it, slug, buy, sell, vol, related, avg24=0, nature=0, when="
                    lambda m: m.group(1) + val + m.group(2), s, count=1)
     s = re.sub(r'(<link rel="canonical" href=")[^"]*(")',
                lambda m: m.group(1) + url + m.group(2), s, count=1)
+    # The breadcrumb, filled and unhidden. app.js re-renders it on every item
+    # change; this is what is in the HTML before any JS runs, which is the copy
+    # that has to exist for the BreadcrumbList below to describe something the
+    # reader can actually see.
+    crumb_letter = name[0].upper() if name and name[0].upper().isalpha() else "#"
+    crumb_anchor = crumb_letter if crumb_letter != "#" else "num"
+    crumbs_html = (
+        '<a href="/">PocketGE</a>'
+        '<span class="crumb-sep" aria-hidden="true">/</span>'
+        '<a href="/items.html">All items</a>'
+        '<span class="crumb-sep" aria-hidden="true">/</span>'
+        f'<a href="/items.html#g{crumb_anchor}">{esc(crumb_letter)}</a>'
+        '<span class="crumb-sep" aria-hidden="true">/</span>'
+        f'<span class="crumb-now" aria-current="page">{name}</span>')
+    crumbs, n_crumbs = re.subn(
+        r'<nav class="crumbs" id="crumbs"([^>]*)></nav>',
+        lambda m: f'<nav class="crumbs" id="crumbs" aria-label="Breadcrumb">{crumbs_html}</nav>',
+        s, count=1)
+    if not n_crumbs:
+        raise SystemExit("index.html has no #crumbs nav to fill — markup changed?")
+    s = crumbs
+
     s = re.sub(r'(<h1 class="sr-only" id="seoH1">).*?(</h1>)',
                lambda m: m.group(1) + f"{name} price in OSRS — live Grand Exchange data" + m.group(2),
                s, count=1, flags=re.S)
@@ -709,9 +731,17 @@ def build_page(tpl, it, slug, buy, sell, vol, related, avg24=0, nature=0, when="
             json.dumps({"id": it["id"], "name": it["name"], "slug": slug},
                        separators=(",", ":")) + ';</script>\n')
     jsonld = ('<script type="application/ld+json" id="itemJsonLd">' + json.dumps([
+        # Mirrors the visible trail above, step for step. It used to be two
+        # levels and nothing on the page showed it; Google's guidance is that
+        # breadcrumb markup describes a breadcrumb the reader can see, and
+        # breadcrumbs are one of the few rich results still widely granted --
+        # this property has had an empty Search Appearance report for 90 days.
         {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
             {"@type": "ListItem", "position": 1, "name": "PocketGE", "item": SITE + "/"},
-            {"@type": "ListItem", "position": 2, "name": it["name"], "item": url}]},
+            {"@type": "ListItem", "position": 2, "name": "All items", "item": SITE + "/items.html"},
+            {"@type": "ListItem", "position": 3, "name": crumb_letter,
+             "item": SITE + f"/items.html#g{crumb_anchor}"},
+            {"@type": "ListItem", "position": 4, "name": it["name"], "item": url}]},
         {"@context": "https://schema.org", "@type": "ItemPage", "name": title,
          "description": desc, "url": url, "dateModified": date.today().isoformat()},
     ], separators=(",", ":")) + "</script>\n")
