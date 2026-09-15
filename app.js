@@ -895,6 +895,37 @@ function applyTheme(id, persist) {
    share-card function, which put it 148 lines BELOW the badge colours once
    those started reading the palette too — a temporal dead zone throw, not a
    wrong colour. A function declaration hoists, so order stops mattering. */
+/* The breadcrumb trail for an item, as [{name, href}]. The last entry is the
+   item itself and carries no href — a breadcrumb's final crumb is where you
+   already are.
+
+   The letter step points at the A-Z index's own anchor for that letter, so
+   every step is somewhere you can actually go. Non-alphabetic names (3rd Age,
+   4-dose potions) group under "#", matching how items.html files them. */
+function crumbTrail(name) {
+  const first = String(name || '').trim().charAt(0).toUpperCase();
+  const alpha = first >= 'A' && first <= 'Z';
+  return [
+    { name: 'PocketGE', href: '/' },
+    { name: 'All items', href: '/items.html' },
+    { name: alpha ? first : '#', href: '/items.html#g' + (alpha ? first : 'num') },
+    { name: String(name || '') },
+  ];
+}
+
+function renderCrumbs(name) {
+  const el = document.getElementById('crumbs');
+  if (!el) return;
+  if (!name) { el.hidden = true; el.innerHTML = ''; return; }
+  el.innerHTML = crumbTrail(name).map((c, i, a) => {
+    const sep = i ? '<span class="crumb-sep" aria-hidden="true">/</span>' : '';
+    return sep + (c.href
+      ? `<a href="${c.href}">${escapeHtml(c.name)}</a>`
+      : `<span class="crumb-now" aria-current="page">${escapeHtml(c.name)}</span>`);
+  }).join('');
+  el.hidden = false;
+}
+
 function cssVar(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
@@ -3372,6 +3403,7 @@ function renderItemSeo(m) {
     relEl.hidden = true;
   }
   if (h1) h1.textContent = `${m.name} price in OSRS — live Grand Exchange data`;
+  renderCrumbs(m.name);
   /* The item sprite carried one generic alt on every page. Its name is the
      single most on-topic string available for it. */
   const icon = document.getElementById('tickerHeaderIcon');

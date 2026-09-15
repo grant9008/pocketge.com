@@ -499,6 +499,15 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
           </div>
         </div>
 
+        <!-- Breadcrumb. Built from the A-Z index rather than a category, because
+             categories.json covers 438 of 1,852 items (24%) and puts 162 of
+             those in more than one — Diamond necklace and Twisted bow have none
+             at all, so a category trail would be blank on most pages and
+             ambiguous on the rest. The letter is the site's actual structure and
+             every step of it is a page that exists. Hidden until an item is
+             selected; the homepage is not below anything. -->
+        <nav class="crumbs" id="crumbs" aria-label="Breadcrumb" hidden></nav>
+
         <div class="ticker-header" id="tickerHeader">
           <div class="ticker-title-group">
             <a id="tickerHeaderIconLink" class="ticker-wiki-link" target="_blank" rel="noopener noreferrer" href="https://oldschool.runescape.wiki/" aria-label="Open OSRS Wiki page for this item">
