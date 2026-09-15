@@ -34,7 +34,12 @@
        arriving on a scanner from search still could not reach it. */
     { group: 'In game' },
     { href: '/runelite-plugin.html', label: 'RuneLite Plugin' },
-    { href: '/flip-history.html', label: 'Flip History' }
+    { href: '/flip-history.html', label: 'Flip History' },
+    /* The homepage carries this too, but only as the last row of a drawer
+       long enough to scroll past on a laptop. These pages are short, so
+       here it is actually reachable. */
+    { group: 'The dev' },
+    { href: 'https://ko-fi.com/pocketge', label: 'Support PocketGE', ext: true }
   ];
 
   var CSS = [
@@ -114,6 +119,11 @@
       + '<img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="">PocketGE</a></div>';
     LINKS.forEach(function (l) {
       if (l.group) { html += '<div class="sn-label">' + l.group + '</div>'; return; }
+      if (l.ext) {
+        html += '<a class="sn-link" href="' + l.href + '" rel="noopener" target="_blank">'
+          + l.label + '</a>';
+        return;
+      }
       var target = l.href.replace(/\.html$/, '');
       if (target !== '/' && target.slice(-1) === '/') target = target.slice(0, -1);
       html += '<a class="sn-link" href="' + l.href + '"'
