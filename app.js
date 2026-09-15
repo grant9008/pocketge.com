@@ -882,6 +882,21 @@ function applyTheme(id, persist) {
   track('theme_change', { mode: t.id });
 }
 
+/* Canvas cannot read a CSS variable, so anything PAINTED in the buy or sell
+   colour has to look the triplet up itself. Everything drawn in CSS follows the
+   palette through rgba(var(--buy-rgb), a); everything drawn with fillStyle had
+   the default triplet written into it, which is why the volume bars stayed gold
+   and teal under every palette.
+
+   Read per draw, not cached: applyTheme() changes these at runtime and the next
+   redraw has to pick the change up. Falls back to the default so a missing
+   stylesheet degrades to today's colours rather than transparent. */
+function paletteRgb(side) {
+  const v = getComputedStyle(document.documentElement)
+    .getPropertyValue(side === 'buy' ? '--buy-rgb' : '--sell-rgb').trim();
+  return v || (side === 'buy' ? '229, 184, 66' : '38, 169, 171');
+}
+
 /* Built here rather than written into index.html so the markup cannot fall out
    of step with THEMES, and so each swatch can preview its own two colours
    without repeating them in two files. The colours are already applied by the
@@ -1756,8 +1771,9 @@ async function buildShareCardCanvas() {
        draws index 0 leftmost, so it needs the already-reversed order —
        gaugeInfo.liveIdx is likewise a DOM position, not a rating enum, so
        it lines up with this array as written. */
-    const SEG = ['rgba(229, 184, 66,0.34)', 'rgba(229, 184, 66,0.17)', 'rgba(120,123,134,0.16)', 'rgba(38, 169, 171,0.17)', 'rgba(38, 169, 171,0.34)'];
-    const SEG_LIVE = ['rgba(229, 184, 66,0.9)', 'rgba(229, 184, 66,0.65)', 'rgba(160,163,174,0.55)', 'rgba(38, 169, 171,0.65)', 'rgba(38, 169, 171,0.9)'];
+    const bR = paletteRgb('buy'), sR = paletteRgb('sell');
+    const SEG = [`rgba(${bR},0.34)`, `rgba(${bR},0.17)`, 'rgba(120,123,134,0.16)', `rgba(${sR},0.17)`, `rgba(${sR},0.34)`];
+    const SEG_LIVE = [`rgba(${bR},0.9)`, `rgba(${bR},0.65)`, 'rgba(160,163,174,0.55)', `rgba(${sR},0.65)`, `rgba(${sR},0.9)`];
     for (let i = 0; i < 5; i++) {
       const sx = barX + i * (segW + gap);
       roundRectPath(g, sx, barY, segW, barH, 4);
@@ -7656,6 +7672,7 @@ function drawChart(series) {
     prevLabelRight = cx + half;
   }
 
+  const buyRgb = paletteRgb('buy'), sellRgb = paletteRgb('sell');
   const buyColor = getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim();
   const sellColor = getComputedStyle(document.documentElement).getPropertyValue('--sell-color').trim();
 
@@ -7703,7 +7720,7 @@ function drawChart(series) {
     const groupPx = groupSize * stepX;
     const barWidth = Math.max(2, groupPx * 0.72);
     const gapPx = 1; // hairline gap between the two-side stack, so they read as separate
-    const gold = `rgba(229, 184, 66, ${alpha})`, teal = `rgba(38, 169, 171, ${alpha})`;
+    const gold = `rgba(${buyRgb}, ${alpha})`, teal = `rgba(${sellRgb}, ${alpha})`;
     for (const g of groups) {
       const totalH = ((g.sumLow + g.sumHigh) / maxGroupVol) * h_vol;
       if (totalH < 0.5) continue;
@@ -7876,7 +7893,7 @@ function drawChart(series) {
        basically invisible). Switchable from the toolbar because on a sharp
        move this column gets tall, and some readers would rather see the
        gridlines through it. */
-    ctx.fillStyle = "rgba(38, 169, 171, 0.13)";
+    ctx.fillStyle = `rgba(${sellRgb}, 0.13)`;
     let segStart = -1;
     for (let i = 0; i <= L.length; i++) {
       const valid = i < L.length && LO[i] != null && HI[i] != null;
@@ -7965,8 +7982,8 @@ function drawChart(series) {
        at 0.13 that column read as a solid teal wall that swallowed the dots
        and gridlines behind it — the fill is meant to say "this is the traded
        band", not to hide what's inside it. */
-    grad.addColorStop(0, chartFillOn ? 'rgba(38, 169, 171, 0.065)' : 'rgba(0,0,0,0)');
-    grad.addColorStop(1, chartFillOn ? 'rgba(38, 169, 171, 0.005)' : 'rgba(0,0,0,0)');
+    grad.addColorStop(0, chartFillOn ? `rgba(${sellRgb}, 0.065)` : 'rgba(0,0,0,0)');
+    grad.addColorStop(1, chartFillOn ? `rgba(${sellRgb}, 0.005)` : 'rgba(0,0,0,0)');
     ctx.fillStyle = grad;
     ctx.beginPath();
     let started = false, firstX = 0, lastX = 0;
@@ -7985,7 +8002,7 @@ function drawChart(series) {
     }
     /* Faint thread through every print — keeps spikes honest between the
        sampled dots without reading as a bold "line chart" line. */
-    ctx.strokeStyle = 'rgba(38, 169, 171, 0.35)'; ctx.lineWidth = 1; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.strokeStyle = `rgba(${sellRgb}, 0.35)`; ctx.lineWidth = 1; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
     ctx.beginPath();
     started = false;
     for (let i = 0; i < HI.length; i++) {
