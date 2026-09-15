@@ -921,6 +921,25 @@ function paletteRgb(side) {
    without repeating them in two files. The colours are already applied by the
    pre-paint script in index.html; this only draws the control and marks which
    one is on. */
+/* The header's palette control opens the drawer rather than duplicating the
+   swatches: the drawer's colour section sits directly under its icon row, so
+   one tap lands on it. Wired here rather than in setItem's block so it works
+   before the first item loads, and it drives #btnMore so the backdrop and
+   aria-expanded stay in step instead of being toggled from two places. */
+(function headerPalette() {
+  const mount = () => {
+    const btn = document.getElementById('hdrPalette');
+    if (!btn) return;
+    btn.onclick = () => {
+      const more = document.getElementById('btnMore');
+      if (more) more.click();
+      track('theme_open', { via: 'header' });
+    };
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
+  else mount();
+})();
+
 (function themePicker() {
   const mount = () => {
     const row = document.getElementById('themeRow');

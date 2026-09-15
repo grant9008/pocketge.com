@@ -480,6 +480,21 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
                 <a id="sbarWiki" class="sbar-wiki" target="_blank" rel="noopener noreferrer" href="https://oldschool.runescape.wiki/" title="Open this item on the OSRS Wiki" aria-label="Open current item on the OSRS Wiki">↗</a>
                 <div id="suggestBox" class="suggest" style="display:none"></div>
               </div>
+
+              <!-- The search bar caps at 640px while its group keeps expanding, so
+                   above ~1400px there were 190-550px of dead header sitting next to
+                   it. These are the three things people actually go looking for and
+                   currently have to open the drawer to find. Hidden below 1400px,
+                   where the bar uses that width itself — this never competes with
+                   search. All three are still in the drawer. -->
+              <nav class="hdr-links" aria-label="Quick links">
+                <a class="hdr-link" href="/flip-history.html">Flip history</a>
+                <a class="hdr-link" href="/runelite-plugin.html">RuneLite</a>
+                <button type="button" class="hdr-palette" id="hdrPalette"
+                        title="Buy / sell colours" aria-label="Change buy and sell colours">
+                  <i class="hp-buy"></i><i class="hp-sell"></i>
+                </button>
+              </nav>
             </div>
           </div>
         </div>
