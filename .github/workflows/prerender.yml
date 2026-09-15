@@ -96,6 +96,9 @@ jobs:
           # Before the sitemap, so a glossary edit in index.html reaches
           # glossary.html in the same run that lists it.
           python3 generate_glossary.py
+          # After prerender (it reads item-pages.js) and before the sitemap
+          # (which globs *.html, so items.html has to exist to be listed).
+          python3 generate_item_index.py --snapshot /tmp/snapshot.json
           python3 generate_sitemap.py --snapshot /tmp/snapshot.json
 
       # A page that names the wrong item, or an empty summary, is worse than
@@ -192,6 +195,20 @@ jobs:
               assert not broken, f"{name} links to missing item pages: {sorted(broken)[:10]}"
           print("every hand-written /item/ link resolves")
 
+          # The A-Z index is what gives every item page an inbound link: 706 of
+          # them had none, because related_html() sorts by volume and takes the
+          # top four, so the busiest items absorbed every link. If the index
+          # ever falls behind the generated set, those pages are orphaned again
+          # with nothing to say so.
+          idx = pathlib.Path('items.html')
+          assert idx.exists(), "items.html missing — run generate_item_index.py"
+          listed = set(re.findall(r'href="/item/([^/"]+)/"', idx.read_text()))
+          assert not (slugs - listed), \
+              f"{len(slugs - listed)} item pages not in the A-Z index: {sorted(slugs - listed)[:10]}"
+          assert not (listed - slugs), \
+              f"A-Z index links {len(listed - slugs)} pages that do not exist: {sorted(listed - slugs)[:10]}"
+          print(f"A-Z index links all {len(slugs):,} item pages — none orphaned")
+
           # The pinned categories are the whole point of pinning: if one stops
           # matching -- a rename, a regex edit -- the set silently reverts to
           # "top N by volume" and nobody notices until someone searches for a
@@ -234,7 +251,7 @@ jobs:
           # index.html / flipping-guide.html get their /?q= item links
           # rewritten to /item/<slug>/ as soon as a page exists. Both are
           # outputs of this run: staging only item/ silently threw them away.
-          git add item item-pages.js sitemap.xml glossary.html index.html flipping-guide.html
+          git add item item-pages.js sitemap.xml glossary.html items.html index.html flipping-guide.html
           if git diff --cached --quiet; then
             echo "nothing changed"
             exit 0
