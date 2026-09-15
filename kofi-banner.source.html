@@ -2,9 +2,11 @@
      Ko-fi asks for 1200x400 (3:1) and crops anything else, so the viewport
      must be exactly that. Regenerate after editing:
        npx playwright screenshot --viewport-size=1200,400 kofi-banner.source.html kofi-banner.png
-     Same palette and marks as og-image.source.html — the gold GE tile, the
-     Pocket+GE wordmark, the teal price line over the gold dotted one. A
-     supporter arriving from the site should see the same thing they left.
+     Same palette as og-image.source.html — the Pocket+GE wordmark, the teal
+     price line over the gold dotted one. The mark is the gilded scimitar
+     rather than that card's GE tile: the scimitar is the logo, and it is
+     what the site header and favicon already use. A supporter arriving from
+     the site should see the same thing they left.
      Ko-fi overlays the avatar and display name near the lower left of the
      cover, so that corner is deliberately left as empty chart. -->
 <meta charset="utf-8">
@@ -23,12 +25,13 @@
   .wrap { position:relative; padding:40px 56px; height:100%; }
 
   .brand { display:flex; align-items:center; gap:14px; }
+  /* The gilded scimitar is the logo, so it is the mark here too, from the
+     full-resolution item art in this repo (images/12389.png, 1287x1469) --
+     not favicon.png, which is 36x32. */
   .ge {
-    width:52px; height:52px; border-radius:12px; flex:0 0 52px;
-    background:linear-gradient(160deg,#FFD24D,#E0A82E);
-    display:flex; align-items:center; justify-content:center;
-    font-size:24px; font-weight:700; color:#241B06; letter-spacing:-.5px;
-    box-shadow:0 0 28px rgba(255,179,0,.34);
+    width:60px; flex:0 0 60px; display:block;
+    transform: rotate(-10deg);
+    filter: drop-shadow(0 0 20px rgba(255,179,0,.40));
   }
   .word { font-size:39px; font-weight:700; letter-spacing:-1px; line-height:1; }
   .word b { color:#FFB300; font-weight:700; }
@@ -65,7 +68,7 @@
 
 <div class="wrap">
   <div class="brand">
-    <div class="ge">GE</div>
+    <img class="ge" src="/images/12389.png" alt="">
     <div class="word">Pocket<b>GE</b></div>
   </div>
 
