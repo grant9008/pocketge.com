@@ -797,7 +797,7 @@ function saveColPrefs() { try { localStorage.setItem(colPrefsKey(), JSON.stringi
    watchlist, no modal, no interstitial. The dev note and the footer are both
    inside the block prerender_items.py cuts, so neither reaches the 1,840 item
    pages either. */
-const SUPPORT_URL = '';
+const SUPPORT_URL = 'https://ko-fi.com/pocketge';
 
 (function supportLinks() {
   const mount = () => {
