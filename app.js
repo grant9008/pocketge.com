@@ -6733,12 +6733,32 @@ function rlHandleNavRequest(nav) {
   {
     /* We yielded to the tab you were last looking at. Give it a moment, then
        take the request ourselves if it never did — otherwise closing that tab
-       would mean chart clicks silently going nowhere. */
+       would mean chart clicks silently going nowhere.
+
+       Belt AND braces, because each half fails on its own. The timer is the
+       fast path when this tab is visible, and useless when it is not: hidden
+       tabs get their timers throttled to 1 Hz, and to once a MINUTE after
+       about five minutes hidden — which is every tab sitting behind the game,
+       i.e. exactly the case this exists for. So the next long-poll delivery
+       retries it too (see rlNavRetry), on the network task source, which is
+       not throttled. Whichever gets there first, rlClaimNav makes sure only
+       one of them acts. */
+    rlNavRetry = { seq: nav.seq, item };
     setTimeout(() => {
       rlNavDeferred.delete(nav.seq);
-      if (rlClaimNav(nav.seq)) { closePortfolio(); setItem(item); }
+      rlTakeDeferredNav(nav.seq, item);
     }, RL_NAV_YIELD_MS);
   }
+}
+
+/* The most recent request this tab yielded on and has not yet seen taken.
+   Cleared the moment anyone claims it. */
+let rlNavRetry = null;
+
+function rlTakeDeferredNav(seq, item) {
+  if (!rlNavRetry || rlNavRetry.seq !== seq) { return; }
+  rlNavRetry = null;
+  if (rlClaimNav(seq)) { closePortfolio(); setItem(item); }
 }
 
 /* Which tab was looked at most recently. Recorded on focus, because at the
@@ -6752,8 +6772,27 @@ const RL_TAB_ID = String(Math.random()).slice(2) + '-' + Date.now();
 const RL_NAV_YIELD_MS = 400;
 const rlNavDeferred = new Set();
 
+/* How long a focus record stands before the tab that wrote it is presumed
+   gone. Refreshed from the nav long-poll (see rlKeepFocusAlive), which
+   reconnects at least every 25s, so a live tab never lets its own record
+   lapse and a CLOSED tab's record ages out instead of outranking every tab
+   opened after it for the rest of the browser's life. */
+const RL_TAB_FOCUS_TTL = 60_000;
+
 function rlMarkFocused() {
   try { localStorage.setItem(RL_TAB_FOCUS_KEY, JSON.stringify({ id: RL_TAB_ID, at: Date.now() })); } catch (e) {}
+}
+
+/* Keep OUR record warm, but never adopt someone else's. Called from the nav
+   loop rather than the payload poll on purpose: the payload poll is a
+   setInterval and this tab spends its life behind the game, where Chrome
+   throttles timers to 1 Hz and then to once a MINUTE. The long poll is
+   network-driven and not throttled at all. */
+function rlKeepFocusAlive() {
+  try {
+    const r = JSON.parse(localStorage.getItem(RL_TAB_FOCUS_KEY) || 'null');
+    if (r && r.id === RL_TAB_ID) { rlMarkFocused(); }
+  } catch (e) {}
 }
 window.addEventListener('focus', rlMarkFocused);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { rlMarkFocused(); } });
@@ -6781,7 +6820,18 @@ function rlClaimNav(seq) {
 function rlTakeNav(seq) {
   let lastFocused = null;
   try { lastFocused = JSON.parse(localStorage.getItem(RL_TAB_FOCUS_KEY) || 'null'); } catch (e) {}
-  const preferred = !lastFocused || lastFocused.id === RL_TAB_ID;
+  /* A record nobody has refreshed inside the TTL belonged to a tab that is
+     gone. Without this check the yield was permanent: RL_TAB_ID is minted
+     fresh on every page load, so the moment you closed the tab that last had
+     focus, its id sat in localStorage outranking every tab you opened
+     afterwards — for the life of the browser profile. Every chart click then
+     took the deferred path and rested on a setTimeout in a tab that is hidden
+     behind the game, where Chrome throttles timers to once a minute. The
+     plugin said "sent to your open tab"; the tab did nothing.
+
+     `at` was already being written here and simply never read. */
+  const stale = !lastFocused || !(Date.now() - Number(lastFocused.at) < RL_TAB_FOCUS_TTL);
+  const preferred = stale || lastFocused.id === RL_TAB_ID;
   if (!preferred) {
     rlNavDeferred.add(seq);
     return false;
@@ -6812,6 +6862,11 @@ async function rlNavLoop() {
       if (!res.ok) throw new Error('bridge ' + res.status);
       const data = await res.json();
       if (!rlWanted) break;
+      /* Not throttled, unlike every setInterval/setTimeout in a hidden tab —
+         so this loop is where anything that must keep happening behind the
+         game belongs. */
+      rlKeepFocusAlive();
+      if (rlNavRetry) { rlTakeDeferredNav(rlNavRetry.seq, rlNavRetry.item); }
       rlHandleNavRequest(data && data.navRequest);
     } catch (e) {
       /* Plugin off, bridge disabled, or an older plugin with no /nav
