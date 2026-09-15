@@ -93,6 +93,25 @@
   .fh-item img { width:20px; height:20px; image-rendering:pixelated; flex:0 0 auto; }
   .fh-item span { overflow:hidden; text-overflow:ellipsis; max-width:200px; }
 
+  .fh-controls { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:0 0 12px; }
+  .fh-controls input[type=search], .fh-controls select {
+    background:var(--input); border:1px solid var(--border); color:var(--text);
+    border-radius:5px; padding:7px 10px; font-size:12.5px; font-family:inherit; }
+  .fh-controls input[type=search] { min-width:180px; flex:1 1 180px; max-width:280px; }
+  .fh-controls input[type=search]:focus, .fh-controls select:focus {
+    outline:none; border-color:var(--accent); }
+  .fh-check { display:inline-flex; align-items:center; gap:6px; font-size:12.5px;
+    color:var(--muted); cursor:pointer; white-space:nowrap; }
+  .fh-check input { accent-color:var(--accent); }
+  .fh-count { margin-left:auto; font-size:12px; color:var(--muted); white-space:nowrap; }
+  /* Marks a row the GE filled in pieces, so merging never quietly hides that
+     it happened. */
+  .fh-parts { margin-left:6px; padding:1px 5px; border-radius:3px; font-size:10px;
+    font-weight:700; color:var(--accent); background:rgba(201,166,77,0.14); }
+  .topbar-links { display:flex; align-items:center; gap:14px; }
+  .tb-link { color:var(--muted); font-size:13px; font-weight:700; text-decoration:none; white-space:nowrap; }
+  .tb-link:hover { color:var(--head); }
+  @media (max-width:560px) { .tb-link { display:none; } }
   #fhPager { display:flex; align-items:center; justify-content:center; gap:14px; padding:12px 0 0; font-size:12px; color:var(--muted); }
   #fhPager button { background:var(--input); border:1px solid var(--border); color:var(--text); border-radius:4px; padding:6px 12px; font-size:12px; cursor:pointer; }
   #fhPager button:hover:not(:disabled) { border-color:var(--accent); color:var(--head); }
@@ -106,7 +125,10 @@
 <div class="wrap">
   <div class="topbar">
     <a class="brand" href="/"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo">PocketGE</a>
-    <a class="cta" href="/">Open the trading terminal →</a>
+    <span class="topbar-links">
+      <a class="tb-link" href="/#bank">Bank of Gielinor</a>
+      <a class="cta" href="/">Open the trading terminal →</a>
+    </span>
   </div>
 
   <h1>Flip history</h1>
@@ -123,6 +145,19 @@
 
     <h2>Every flip</h2>
     <p class="sub" style="margin-bottom:10px">Click any column to sort. <b>gp/hr</b> is the one worth sorting by: you have three Grand Exchange slots free-to-play and eight as a member, so slot time — not gold — is what you actually run out of.</p>
+    <div class="fh-controls">
+      <input type="search" id="fhQuery" placeholder="Filter by item…" aria-label="Filter by item name" autocomplete="off">
+      <select id="fhRange" aria-label="Time range">
+        <option value="all">All time</option>
+        <option value="7">Last 7 days</option>
+        <option value="30">Last 30 days</option>
+      </select>
+      <!-- On by default: the GE splitting one offer into four rows is the
+           surprising state, not the merged one. -->
+      <label class="fh-check"><input type="checkbox" id="fhGroup" checked> Group partial fills</label>
+      <span class="fh-count" id="fhCount"></span>
+    </div>
+
     <div class="fh-table-wrap">
       <table class="fh">
         <thead id="fhHead"></thead>
