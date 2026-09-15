@@ -32,6 +32,7 @@
   .glossary-body {
     --text-main:#D9D3C7; --text-muted:#8A8274; --border-main:#2B2621;
     --buy-color:#E5B842; --sell-color:#26A9AB; --positive:#10B981; --negative:#EF5350;
+    --buy-rgb:229, 184, 66; --sell-rgb:38, 169, 171;
   }
   .glossary-section { margin-top:22px; margin-bottom:8px; font-size:11px; font-weight:700;
     color:var(--text-muted); text-transform:uppercase; letter-spacing:0.6px; }
@@ -42,10 +43,12 @@
   .glossary-row > :first-child { justify-self:start; }
   .hl-badge { font-size:7.5px; font-weight:900; padding:1px 3px; border-radius:2px;
     letter-spacing:0.2px; line-height:1.3; white-space:nowrap; }
-  .hl-badge.high { background:rgba(79,255,142,0.18); color:#6FE8A0; border:1px solid rgba(79,255,142,0.55); }
-  .hl-badge.low { background:rgba(255,210,77,0.18); color:#E5B842; border:1px solid rgba(255,210,77,0.55); }
-  .hl-badge.high5d { background:#00FF7A; color:#001a0e; box-shadow:0 0 10px rgba(0,255,122,0.7); }
-  .hl-badge.low5d { background:#FFB300; color:#1a1100; box-shadow:0 0 10px rgba(255,179,0,0.7); }
+  .hl-badge.high { background:rgba(var(--sell-rgb),0.18); color:var(--sell-color); border:1px solid rgba(var(--sell-rgb),0.55); }
+  .hl-badge.low { background:rgba(var(--buy-rgb),0.18); color:var(--buy-color); border:1px solid rgba(var(--buy-rgb),0.55); }
+  .hl-badge.high5d { background:var(--sell-color); color:#04120f; box-shadow:0 0 10px rgba(var(--sell-rgb),0.7); }
+  .hl-badge.high5d { color:color-mix(in srgb, var(--sell-color) 16%, #000); }
+  .hl-badge.low5d { background:var(--buy-color); color:#140f04; box-shadow:0 0 10px rgba(var(--buy-rgb),0.7); }
+  .hl-badge.low5d { color:color-mix(in srgb, var(--buy-color) 16%, #000); }
   .wl-trend { font-size:10px; white-space:nowrap; }
   .wl-trend.up { color:var(--positive); }
   .wl-trend.down { color:var(--negative); }
@@ -73,8 +76,8 @@
 <div class="glossary-section">Row highlights</div>
       <div class="glossary-row"><span class="hl-badge high5d">▲ 5D HIGH</span><span>At or near the 5-day high — a notable peak across the last 5 days, not just an intraday wiggle. Brighter glow signals the macro move.</span></div>
       <div class="glossary-row"><span class="hl-badge low5d">▼ 5D LOW</span><span>At or near the 5-day low — a notable trough across the last 5 days. Stronger signal than a routine day low.</span></div>
-      <div class="glossary-row"><span class="hl-badge high">▲ HIGH</span><span>At or above its 24-hour high. Sell now to catch the peak. Row glows RuneScape-green.</span></div>
-      <div class="glossary-row"><span class="hl-badge low">▼ LOW</span><span>At or below its 24-hour low. Buy now to catch the dip. Row glows RuneScape-gold.</span></div>
+      <div class="glossary-row"><span class="hl-badge high">▲ HIGH</span><span>At or above its 24-hour high. Sell now to catch the peak. Row is marked in your sell colour.</span></div>
+      <div class="glossary-row"><span class="hl-badge low">▼ LOW</span><span>At or below its 24-hour low. Buy now to catch the dip. Row is marked in your buy colour.</span></div>
 
       <div class="glossary-section">Browser notifications</div>
       <div class="glossary-row"><span class="hl-badge high">▲ BREAK</span><span>Browser notifications only fire when a favorite's live price BREAKS PAST its tracked 24h or 5D extreme — a genuine new high/low, not a lingering "near the edge" state. Watermarks update automatically so the next alert needs an even bigger move. 5D breaks are flagged separately because they're rarer / bigger deal.</span></div>
@@ -90,11 +93,11 @@
            those are scoped under a .legend ancestor, which the modal has no
            reason to have. -->
       <div class="glossary-section">Chart markers</div>
-      <div class="glossary-row"><span style="display:inline-flex;gap:3px;align-items:center"><span class="legend-dash" style="background:var(--buy-color)"></span><span class="legend-dash" style="background:var(--sell-color)"></span></span><span><strong>Lows</strong> (gold) — insta-sell prints, the price sellers actually accepted. <strong>Highs</strong> (teal) — insta-buy prints, what buyers paid.</span></div>
+      <div class="glossary-row"><span style="display:inline-flex;gap:3px;align-items:center"><span class="legend-dash" style="background:var(--buy-color)"></span><span class="legend-dash" style="background:var(--sell-color)"></span></span><span><strong>Lows</strong> (your buy colour) — insta-sell prints, the price sellers actually accepted. <strong>Highs</strong> (your sell colour) — insta-buy prints, what buyers paid.</span></div>
       <div class="glossary-row"><span style="display:inline-flex;gap:3px;align-items:center"><span class="legend-dot" style="background:var(--buy-color)"></span><span class="legend-dot" style="background:var(--sell-color)"></span></span><span><strong>Period Low / Period High</strong> — solid dot with a pale centre. The lowest and highest price across the whole timeframe you're viewing.</span></div>
       <div class="glossary-row"><span style="display:inline-flex;gap:3px;align-items:center"><span class="legend-ring" style="border-color:var(--buy-color)"></span><span class="legend-ring" style="border-color:var(--sell-color)"></span></span><span><strong>Recent Low / Recent High</strong> — hollow ring. The extreme within just the most recent quarter of the window, so you can tell an old peak from a fresh one.</span></div>
       <div class="glossary-row"><span class="legend-dash" style="background:rgba(244,241,232,0.85)"></span><span><strong>Trend</strong> — the smoothed mid-price line. Follows direction without the print-to-print noise.</span></div>
-      <div class="glossary-row"><span style="font-size:11px;font-weight:700;color:var(--text-muted)">Bars</span><span>Traded volume, gold for insta-sells and teal for insta-buys. On short screens they sit faintly behind the price instead of in their own strip, to leave the chart more room. Tap any point on the chart for its exact price and volume.</span></div>
+      <div class="glossary-row"><span style="font-size:11px;font-weight:700;color:var(--text-muted)">Bars</span><span>Traded volume, your buy colour for insta-sells and your sell colour for insta-buys. On short screens they sit faintly behind the price instead of in their own strip, to leave the chart more room. Tap any point on the chart for its exact price and volume.</span></div>
 
       <div class="glossary-section">Analyst Rating (sidebar gauge — the one opinion on the page)</div>
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color);font-size:10px;">STRONG BUY … STRONG SELL</span><span>One call, scored against the selected chart timeframe's price range: near the window's floor with a real margin reads Buy; near its ceiling reads Sell. Mid-range gets no word at all — the meter's needle sits centred and that is the whole answer, so nothing is put on the line above it pretending to be a call. Underneath, the item is graded twice — once as a buy, once as a sell — and how far apart those two scores land is what decides how strong the word is. A near-tie means the item flips about as well in either direction, so it shows the centred needle rather than picking a side. Expand the gauge to see both scores and the four things that produced them. Because each timeframe has its own price range, the same price can rate differently on 1D and 6M — that's the window changing, not the item. "Buy the Dip" / "Sell the Rip" mean the setup is forming but the price hasn't reached the target level yet. Advisory only — the Target / Swing prices are the actual trade.</span></div>
