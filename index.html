@@ -482,34 +482,33 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
               </div>
 
             </div>
+
+            <!-- Quick links. A sibling of the search group, not a child of it,
+                 because the two want different rows at different widths: beside
+                 the search box while the top panel is one line, and up on the
+                 F2P/P2P row hard right once the search box has taken a line of
+                 its own. Only `order` can do that, and only between siblings.
+                 The search box gave up its 640px cap to make the first case
+                 fit. All three are still in the drawer. -->
+            <nav class="hdr-links" aria-label="Quick links">
+              <a class="hdr-link" href="/flip-history.html">Flip history</a>
+              <a class="hdr-link" href="/runelite-plugin.html">RuneLite</a>
+              <button type="button" class="hdr-palette" id="hdrPalette"
+                      title="Buy / sell colours" aria-label="Change buy and sell colours">
+                <i class="hp-buy"></i><i class="hp-sell"></i>
+              </button>
+            </nav>
           </div>
         </div>
 
-        <!-- The utility line. Two navs on one row, both quiet: where you are,
-             then the three things people go looking for.
-
-             The links used to sit in the header's dead space beside the search
-             bar, which is only dead above 1400px — below that they vanished, so
-             the laptop half of the traffic never saw them. Here the row is the
-             full content width at every size and they stop disappearing. -->
-        <div class="util-bar">
-          <!-- Breadcrumb. Built from the A-Z index rather than a category, because
-               categories.json covers 438 of 1,852 items (24%) and puts 162 of
-               those in more than one — Diamond necklace and Twisted bow have none
-               at all, so a category trail would be blank on most pages and
-               ambiguous on the rest. The letter is the site's actual structure and
-               every step of it is a page that exists. Hidden until an item is
-               selected; the homepage is not below anything. -->
-          <nav class="crumbs" id="crumbs" aria-label="Breadcrumb" hidden></nav>
-          <nav class="hdr-links" aria-label="Quick links">
-            <a class="hdr-link" href="/flip-history.html">Flip history</a>
-            <a class="hdr-link" href="/runelite-plugin.html">RuneLite</a>
-            <button type="button" class="hdr-palette" id="hdrPalette"
-                    title="Buy / sell colours" aria-label="Change buy and sell colours">
-              <i class="hp-buy"></i><i class="hp-sell"></i>
-            </button>
-          </nav>
-        </div>
+        <!-- Breadcrumb. Built from the A-Z index rather than a category, because
+             categories.json covers 438 of 1,852 items (24%) and puts 162 of
+             those in more than one — Diamond necklace and Twisted bow have none
+             at all, so a category trail would be blank on most pages and
+             ambiguous on the rest. The letter is the site's actual structure and
+             every step of it is a page that exists. Hidden until an item is
+             selected; the homepage is not below anything. -->
+        <nav class="crumbs" id="crumbs" aria-label="Breadcrumb" hidden></nav>
 
         <div class="ticker-header" id="tickerHeader">
           <div class="ticker-title-group">

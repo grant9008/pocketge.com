@@ -339,7 +339,12 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
      is a real DOM sibling of the logo rather than nested in .search-group.
      Its bare-glyph + hover-fill treatment lives in the base rules, so
      there's nothing breakpoint-specific left to say about it here. */
-  .search-group { flex: 1 1 auto; }
+  /* Capped rather than `flex: 1 1 auto`, which let search take the whole row
+     and pushed the quick links out to the far right edge — the dead space the
+     search box was sprawling into is exactly where they need to sit. 464 is
+     .sbar's 460 plus the group's 4px gap; below this breakpoint the group
+     takes a row of its own and the cap would only leave dead space. */
+  .search-group { flex: 0 1 464px; }
 }
 #itemIcon { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; image-rendering: pixelated; }
 /* Combined search+item+wiki overlay — off by default, enabled in landscape
@@ -493,30 +498,33 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 /* Buy/sell palette picker in the drawer. Each swatch previews its own two
    colours rather than naming them, because 'gold' and 'teal' mean less at a
    glance than the colours themselves. */
-/* The utility line above the item name: breadcrumb, then quick links, both on
-   the left and both deliberately quiet. It is orientation and shortcuts, not
-   controls, so nothing here is allowed to pull attention off the price. */
-/* The gap is the only thing dividing the two navs. A "|" between them was
-   tidier on one line and wrong on two: where the row breaks depends on how
-   long the item's name is, not on the viewport, so no breakpoint can predict
-   it, and a wrap left the divider leading a line with nothing to its left.
-   18px and the heavier link weight separate them at any width. */
-.util-bar { display: flex; flex-wrap: wrap; align-items: center; column-gap: 18px;
-  padding: 0 0 5px 2px; }
+/* Breadcrumb above the item name. Quiet by design — it is orientation, not a
+   control, and it sits directly above the one thing on the page people came
+   for. Matching JSON-LD is emitted alongside it, which is the half Google
+   needs to see reflected in something a reader can actually read. */
 .crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 5px;
-  min-width: 0; font-size: 11.5px; line-height: 1.4; }
+  min-width: 0; padding: 0 0 5px 2px; font-size: 11.5px; line-height: 1.4; }
+/* `display:flex` outranks the UA sheet's [hidden] { display:none }, so the
+   homepage was keeping a 5px ghost row of this nav's own padding. */
+.crumbs[hidden] { display: none; }
 .crumbs a { color: var(--text-muted); text-decoration: none; white-space: nowrap; }
 .crumbs a:hover { color: var(--text-main); text-decoration: underline; }
 .crumbs .crumb-sep { color: var(--border-main); user-select: none; }
 .crumbs .crumb-now { color: var(--text-muted); white-space: nowrap; overflow: hidden;
   text-overflow: ellipsis; max-width: 46ch; }
 
-/* Quick links. These used to live in the header's dead space beside the search
-   bar, which only exists above 1400px — below that they were hidden, so the
-   laptop half of the traffic never saw them at all. On this row there is no
-   width to compete for, so they show everywhere. All three are still in the
-   drawer as well. */
-.hdr-links { display: flex; align-items: center; gap: 10px; }
+/* Quick links. Three placements, and which one applies is decided by the LEFT
+   COLUMN's width rather than the window's — the sidebar splitter changes this
+   row's width without the viewport moving at all, so a @media query would keep
+   them beside a search box that no longer has room for them. .top-row-wrapper
+   is already a container for the ticker header below; this reuses it.
+
+     one row   beside the search box, which gave up its 640px cap to fit them
+     wrapped   search owns a line of its own, so they ride the F2P/P2P row
+               instead, hard right against the edge
+     <=700px   gone — the row is down to a logo and a search box by then, and
+               the drawer still carries all three */
+.hdr-links { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
 .hdr-link { color: var(--text-muted); font-size: 11.5px; font-weight: 600; text-decoration: none;
   white-space: nowrap; transition: color .12s ease; }
 .hdr-link:hover { color: var(--text-main); text-decoration: underline; }
@@ -529,18 +537,44 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 .hdr-palette i { width: 7px; height: 7px; border-radius: 50%; display: block; }
 .hdr-palette .hp-buy { background: var(--buy-color); }
 .hdr-palette .hp-sell { background: var(--sell-color); margin-left: -2px; }
-/* On a phone the two navs stop competing for one line. Side by side they fit
-   for a short name and then the breadcrumb wraps INSIDE itself, which drops
-   the links into the middle of the trail — "All items / # · Flip history ·
-   3rd age druidic staff". Giving the links the whole second line makes the
-   break the same one every time. */
-@media (max-width: 700px) {
-  .hdr-links { flex-basis: 100%; }
+/* Below 1024 the top panel wraps and the search box takes a row to itself,
+   which leaves the F2P/P2P row half empty. order:-1 lifts the links back onto
+   it — they are a SIBLING of .search-group rather than a child for exactly
+   this, since order only sorts between siblings — and the auto margin parks
+   them against the right edge. flex-basis:100% on the search group is what
+   guarantees the break, instead of leaving it to whichever item happens not
+   to fit at the width in front of us. */
+@media (max-width: 1023px) {
+  /* The search group is ordered DOWN, not the links up. order:-1 on the links
+     was the first try and it put them at the head of the row, in front of the
+     menu button — `order` sorts the whole line, so being last on row one means
+     keeping the default order and pushing everything else past you. */
+  .hdr-links { margin-left: auto; }
+  .search-group { order: 1; flex: 1 1 100%; }
 }
-@media (max-width: 560px) {
-  .crumbs { font-size: 11px; }
-  .hdr-link { font-size: 11px; }
+/* When there is no room, they go, and how much room is needed depends on which
+   of those two layouts is running — a whole search box's worth more in the
+   one-row case. Both thresholds are asked of the COLUMN, not the window: the
+   sidebar splitter takes width off this row without the viewport moving at
+   all, so a @media query alone would leave them crowding a search box that no
+   longer has room for them. .top-row-wrapper is already a container for the
+   ticker header below; this reuses it. */
+@media (min-width: 1024px) {
+  /* One row. 600 is menu + logo + F2P/P2P (236) + these (165) + a search box
+     still worth typing into (200): above it the search group gives up width
+     from its 464 cap rather than the links disappearing, which is the trade
+     the cap was lowered for in the first place. */
+  @container tickerrow (max-width: 600px) { .hdr-links { display: none; } }
 }
+@media (min-width: 641px) and (max-width: 1023px) {
+  /* Wrapped: they only have to share the brand row, so the floor is far lower. */
+  @container tickerrow (max-width: 400px) { .hdr-links { display: none; } }
+}
+/* Phone. The search box has swallowed the item name and its wiki link by here
+   and the row is a single nowrap line of essentials — there is nothing to
+   squeeze into, and everything in here is in the drawer two taps away. */
+@media (max-width: 640px) { .hdr-links { display: none; } }
+@media (max-width: 560px) { .crumbs { font-size: 11px; } }
 
 .theme-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 14px 10px; }
 .theme-swatch { display: flex; align-items: center; gap: 6px; padding: 5px 9px 5px 6px;
