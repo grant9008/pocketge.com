@@ -8058,6 +8058,10 @@ function drawChart(series) {
   }
 
   const buyRgb = paletteRgb('buy'), sellRgb = paletteRgb('sell');
+  /* Neither side. See --chart-flat in app.css for why the 5Y range cannot be
+     drawn in the sell colour. */
+  const flatRgb = cssVar('--chart-flat-rgb') || '169, 162, 150';
+  const flatColor = cssVar('--chart-flat') || '#A9A296';
   const buyColor = getComputedStyle(document.documentElement).getPropertyValue('--buy-color').trim();
   const sellColor = getComputedStyle(document.documentElement).getPropertyValue('--sell-color').trim();
 
@@ -8071,6 +8075,10 @@ function drawChart(series) {
     if (LO[i] != null && HI[i] != null) { bothCount++; if (Math.abs(HI[i] - LO[i]) < 1e-9) eqCount++; }
   }
   const singlePrice = bothCount > 0 && eqCount / bothCount > 0.9;
+  /* The legend follows the data. Left alone it named Lows and Highs on a
+     chart drawing neither, which is worse than naming nothing. */
+  const legendEl = document.getElementById('chartLegend');
+  if (legendEl) legendEl.classList.toggle('is-flat', singlePrice);
 
   /* Aggregated two-tone volume bars. Painting one thin bar per data point
      turned the strip into a dense noise band on 5D/1M/6M; grouping into
@@ -8117,7 +8125,7 @@ function drawChart(series) {
         /* Single-price historical (5Y): the "insta-sell / insta-buy" split
            is meaningless, so paint one unified teal bar matching the price
            line/area above. Prevents the all-gold band that looked broken. */
-        ctx.fillStyle = teal;
+        ctx.fillStyle = `rgba(${flatRgb}, ${alpha})`;
         ctx.fillRect(x, baseY - Math.max(lowH, highH, totalH), barWidth, Math.max(lowH, highH, totalH));
       } else {
         /* Insta-sells (gold) at the bottom, insta-buys (teal) above — same
@@ -8367,8 +8375,8 @@ function drawChart(series) {
        at 0.13 that column read as a solid teal wall that swallowed the dots
        and gridlines behind it — the fill is meant to say "this is the traded
        band", not to hide what's inside it. */
-    grad.addColorStop(0, chartFillOn ? `rgba(${sellRgb}, 0.065)` : 'rgba(0,0,0,0)');
-    grad.addColorStop(1, chartFillOn ? `rgba(${sellRgb}, 0.005)` : 'rgba(0,0,0,0)');
+    grad.addColorStop(0, chartFillOn ? `rgba(${flatRgb}, 0.065)` : 'rgba(0,0,0,0)');
+    grad.addColorStop(1, chartFillOn ? `rgba(${flatRgb}, 0.005)` : 'rgba(0,0,0,0)');
     ctx.fillStyle = grad;
     ctx.beginPath();
     let started = false, firstX = 0, lastX = 0;
@@ -8387,7 +8395,7 @@ function drawChart(series) {
     }
     /* Faint thread through every print — keeps spikes honest between the
        sampled dots without reading as a bold "line chart" line. */
-    ctx.strokeStyle = `rgba(${sellRgb}, 0.35)`; ctx.lineWidth = 1; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.strokeStyle = `rgba(${flatRgb}, 0.35)`; ctx.lineWidth = 1; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
     ctx.beginPath();
     started = false;
     for (let i = 0; i < HI.length; i++) {
@@ -8400,7 +8408,7 @@ function drawChart(series) {
        same recency ramp as the intraday scatter, so 1Y/5Y don't read louder
        or quieter than the timeframes either side of them. */
     const idxStep = Math.max(1, Math.round(4.5 / Math.max(0.1, stepX)));
-    ctx.fillStyle = sellColor;
+    ctx.fillStyle = flatColor;
     for (let i = 0; i < HI.length; i += idxStep) {
       if (HI[i] == null) continue;
       ctx.globalAlpha = dotAlphaAt(i, HI.length);

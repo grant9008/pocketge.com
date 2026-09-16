@@ -46,6 +46,17 @@
   --vol-sell: rgba(var(--sell-rgb), 0.35);
   --positive: #10B981;
   --negative: #EF5350;
+  /* A third colour that belongs to NEITHER side, for the 5Y view.
+     Five years back there is no buy/sell split to draw: that range comes from
+     the daily-consensus history, one price per day, because the wiki's
+     timeseries endpoints cap at 365 points and so run out after a year. The
+     chart used to paint that range in the SELL colour, which quietly claimed
+     five years of insta-buy prints — and made switching from 1Y look like the
+     buy series had vanished rather than like the data had changed.
+     Deliberately not a blend of the two palette colours: gold mixed with teal
+     lands on a sage green, a few shades from --positive. */
+  --chart-flat: #A9A296;
+  --chart-flat-rgb: 169, 162, 150;
   --fav-gold: #FFB300;
   --shadow: rgba(0, 0, 0, 0.5);
   /* RuneScape accent palette — used for favorite highlights and headline
@@ -1159,6 +1170,15 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 .legend-ring { width: 8px; height: 8px; border-radius: 50%; display: inline-block; border: 2px solid; box-sizing: border-box; }
 .legend .low .legend-dash, .legend .low .legend-dot { background: var(--buy-color); }
 .legend .high .legend-dash, .legend .high .legend-dot { background: var(--sell-color); }
+.legend .flat .legend-dash { background: var(--chart-flat); }
+/* Exactly one of these two is ever in the DOM flow. Period Low / Period High
+   stay in both states: those are the window's extremes, which a single-price
+   series still has, and their gold and teal halos are the only palette left on
+   a 5Y chart. */
+.legend .flat { display: none; }
+.legend.is-flat .legend-item.low:not(:has(.legend-dot)),
+.legend.is-flat .legend-item.high:not(:has(.legend-dot)) { display: none; }
+.legend.is-flat .flat { display: flex; }
 .legend .rlow .legend-ring { border-color: var(--buy-color); }
 .legend .rhigh .legend-ring { border-color: var(--sell-color); }
 /* pg-* type styles are kept for the GLOSSARY rows and the Analyst gauge
