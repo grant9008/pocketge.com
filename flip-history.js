@@ -259,7 +259,16 @@
     if (!el) return;
     var d = state.bank;
     var hasWealth = d && (Number(d.portfolioValue) > 0 || Number(d.cash) > 0);
-    if (!hasWealth) { el.hidden = true; return; }
+    /* An empty tab is worse than no tab, but hiding it was worse still: with
+       nothing here, the only route to Bank of Gielinor was a small link in the
+       top bar that people did not find. So the empty state says why it is
+       empty and still carries the link. */
+    if (!hasWealth) {
+      el.innerHTML = '<div class="fh-sparse" style="display:block">Nothing to show yet — the plugin ' +
+        'reads your wealth from the game, so log in with RuneLite running and this fills in.</div>' +
+        bankLink();
+      return;
+    }
 
     var stacks = Array.isArray(d.bankStacks) ? d.bankStacks.slice() : [];
     stacks.sort(function (a, b) { return (b.value || 0) - (a.value || 0); });
@@ -303,11 +312,36 @@
         '</div>';
     }
 
-    html += '<p class="fh-bank-link"><a href="/#bank">Open Bank of Gielinor →</a>' +
-      '<span>add your own stacks, set alerts, see live values</span></p>';
+    html += bankLink();
 
     el.innerHTML = html;
-    el.hidden = false;
+  }
+
+  /* One definition, used by both the populated and the empty state, so the way
+     into Bank of Gielinor cannot go missing from whichever branch runs. */
+  function bankLink() {
+    return '<p class="fh-bank-link"><a class="fh-bank-cta" href="/#bank">Open Bank of Gielinor →</a>' +
+      '<span>add your own stacks, set alerts, see live values</span></p>';
+  }
+
+  /* Tabs. The canvas sizes itself from its wrapper's clientWidth, which is 0
+     while the panel is hidden, so the chart is redrawn on the way back in
+     rather than left at whatever width it last saw. */
+  function mountTabs() {
+    var tabs = [['tabProfit', 'panelProfit'], ['tabBank', 'panelBank'], ['tabFlips', 'panelFlips']];
+    tabs.forEach(function (pair) {
+      var btn = $('#' + pair[0]);
+      if (!btn) return;
+      btn.onclick = function () {
+        tabs.forEach(function (o) {
+          var b = $('#' + o[0]), p = $('#' + o[1]);
+          var on = o[0] === pair[0];
+          if (b) { b.classList.toggle('is-on', on); b.setAttribute('aria-selected', String(on)); }
+          if (p) p.hidden = !on;
+        });
+        if (pair[0] === 'tabProfit') renderChart();
+      };
+    });
   }
 
   function renderChart() {
@@ -415,6 +449,11 @@
         return String(f.itemName || '').toLowerCase().indexOf(q) !== -1;
       });
     }
+    /* The caption compares grouped rows against the fills they came from, so
+       it needs the count AFTER filtering, not the size of the whole ledger:
+       filtering to one item was reporting "2 flips from 7 fills" when five of
+       those seven fills were a different item entirely. */
+    state.fills = rows.length;
     if (state.group) rows = groupFills(rows);
     return rows;
   }
@@ -516,12 +555,14 @@
     $('#fhBody').innerHTML = body ||
       '<tr><td class="l fh-dim" colspan="' + COLS.length + '">No flips to show.</td></tr>';
 
-    var fills = state.flips.length;
+    var fills = state.fills != null ? state.fills : state.flips.length;
     var cap = $('#fhCount');
     if (cap) {
+      var flipWord = rows.length === 1 ? ' flip' : ' flips';
       cap.textContent = rows.length === fills
-        ? rows.length.toLocaleString() + ' flips'
-        : rows.length.toLocaleString() + ' flips from ' + fills.toLocaleString() + ' fills';
+        ? rows.length.toLocaleString() + flipWord
+        : rows.length.toLocaleString() + flipWord + ' from ' + fills.toLocaleString() +
+          (fills === 1 ? ' fill' : ' fills');
     }
 
     $('#fhPager').innerHTML = rows.length > PAGE_SIZE
@@ -578,6 +619,7 @@
       clearTimeout(rt); rt = setTimeout(function () { if (state.loaded) renderChart(); }, 150);
     });
 
+    mountTabs();
     setStatus('wait', 'Looking for RuneLite on this computer…');
     loadBank();
     loadHistory().then(function () {

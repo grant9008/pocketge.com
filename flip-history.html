@@ -72,6 +72,29 @@
   .fh-sparse b { color:var(--text); }
 
   .fh-chart-wrap { background:var(--panel); border:1px solid var(--border); border-radius:6px; padding:10px 10px 4px; margin:0 0 18px; }
+
+  /* Account views. Pills on a rule rather than a stack of <h2>s, because
+     these are three readings of one account and not three sections of an
+     article — the rule is what says "everything below belongs to the tab that
+     is lit". Scrolls sideways rather than wrapping on a phone: a tab strip
+     that reflows to two rows stops reading as one row of choices. */
+  .fh-tabs { display:flex; gap:6px; margin:22px 0 0; padding:0 0 8px;
+    border-bottom:1px solid var(--border); overflow-x:auto; scrollbar-width:none; }
+  .fh-tabs::-webkit-scrollbar { display:none; }
+  .fh-tab { flex:0 0 auto; background:transparent; border:1px solid transparent;
+    border-radius:20px; padding:7px 14px; font-size:13px; font-weight:700;
+    color:var(--muted); cursor:pointer; white-space:nowrap;
+    transition:color .12s ease, background .12s ease, border-color .12s ease;
+    font-family:inherit; }
+  .fh-tab:hover { color:var(--text); border-color:var(--border); }
+  .fh-tab.is-on { background:var(--panel); border-color:var(--border); color:var(--head); }
+  .fh-tab:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .fh-panel { padding-top:6px; }
+  .fh-panel[hidden] { display:none; }
+  /* The tab already names the view; this is the same words at heading weight
+     for anyone who arrives by screen reader or lands on the panel directly. */
+  .fh-panel-h { position:absolute; width:1px; height:1px; margin:-1px; padding:0;
+    overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
   #fhChart { display:block; width:100%; }
 
   /* Eleven columns will not fit a phone and should not try. Its own scroller,
@@ -100,9 +123,16 @@
   .fh-stack-n { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .fh-stack-v { flex:0 0 auto; font-variant-numeric:tabular-nums; color:var(--head); }
   .fh-stack-more { padding:6px 0; font-size:12px; }
-  .fh-bank-link { margin:14px 0 0; font-size:13px; }
-  .fh-bank-link a { font-weight:700; }
-  .fh-bank-link span { color:var(--muted); margin-left:8px; font-size:12px; }
+  /* A button, not a link in a paragraph. This is the only route from here into
+     Bank of Gielinor and it was being read straight past as body text — the
+     same fate as the small "Bank of Gielinor" link up in the top bar. */
+  .fh-bank-link { margin:16px 0 0; font-size:13px; display:flex; align-items:center;
+    flex-wrap:wrap; gap:4px 10px; }
+  .fh-bank-cta { display:inline-flex; align-items:center; background:var(--accent);
+    color:#1C1300; font-weight:700; padding:9px 16px; border-radius:6px;
+    white-space:nowrap; transition:filter .12s ease; }
+  .fh-bank-cta:hover { filter:brightness(1.08); }
+  .fh-bank-link span { color:var(--muted); font-size:12px; }
   .fh-controls { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:0 0 12px; }
   .fh-controls input[type=search], .fh-controls select {
     background:var(--input); border:1px solid var(--border); color:var(--text);
@@ -148,37 +178,64 @@
 
   <div id="fhLive" hidden>
     <div class="fh-stats" id="fhStats"></div>
-    <div class="fh-sparse" id="fhSparse" hidden></div>
 
-    <h2>Your bank</h2>
-    <p class="sub" style="margin-bottom:10px">What you are holding, read from the same plugin. The ledger above is what you have made; this is what it is currently sitting in.</p>
-    <div id="fhBank" hidden></div>
+    <!-- One account, three views, on tabs rather than stacked end to end. The
+         headline figures stay above the tabs at all times — they are the thing
+         worth screenshotting and they describe every view below equally.
 
-    <h2>Cumulative profit</h2>
-    <div class="fh-chart-wrap"><canvas id="fhChart" height="220"></canvas></div>
-
-    <h2>Every flip</h2>
-    <p class="sub" style="margin-bottom:10px">Click any column to sort. <b>gp/hr</b> is the one worth sorting by: you have three Grand Exchange slots free-to-play and eight as a member, so slot time — not gold — is what you actually run out of.</p>
-    <div class="fh-controls">
-      <input type="search" id="fhQuery" placeholder="Filter by item…" aria-label="Filter by item name" autocomplete="off">
-      <select id="fhRange" aria-label="Time range">
-        <option value="all">All time</option>
-        <option value="7">Last 7 days</option>
-        <option value="30">Last 30 days</option>
-      </select>
-      <!-- On by default: the GE splitting one offer into four rows is the
-           surprising state, not the merged one. -->
-      <label class="fh-check"><input type="checkbox" id="fhGroup" checked> Group partial fills</label>
-      <span class="fh-count" id="fhCount"></span>
+         Stacked, the bank section pushed the chart off the first screen, the
+         ledger off the second, and still left the only route to Bank of
+         Gielinor as a small link in the top bar. -->
+    <div class="fh-tabs" role="tablist" aria-label="Account views">
+      <button type="button" class="fh-tab is-on" id="tabProfit" role="tab"
+              aria-selected="true" aria-controls="panelProfit">Overview</button>
+      <button type="button" class="fh-tab" id="tabBank" role="tab"
+              aria-selected="false" aria-controls="panelBank">Bank</button>
+      <button type="button" class="fh-tab" id="tabFlips" role="tab"
+              aria-selected="false" aria-controls="panelFlips">Every flip</button>
     </div>
 
-    <div class="fh-table-wrap">
-      <table class="fh">
-        <thead id="fhHead"></thead>
-        <tbody id="fhBody"></tbody>
-      </table>
+    <div class="fh-panel" id="panelProfit" role="tabpanel" aria-labelledby="tabProfit">
+      <h2 class="fh-panel-h">Cumulative profit</h2>
+      <div class="fh-chart-wrap"><canvas id="fhChart" height="220"></canvas></div>
     </div>
-    <div id="fhPager"></div>
+
+    <div class="fh-panel" id="panelBank" role="tabpanel" aria-labelledby="tabBank" hidden>
+      <h2 class="fh-panel-h">Your bank</h2>
+      <p class="sub" style="margin-bottom:10px">What you are holding, read from the same plugin. The ledger is what you have made; this is what it is currently sitting in.</p>
+      <div id="fhBank"></div>
+    </div>
+
+    <div class="fh-panel" id="panelFlips" role="tabpanel" aria-labelledby="tabFlips" hidden>
+      <h2 class="fh-panel-h">Every flip</h2>
+      <p class="sub" style="margin-bottom:10px">Click any column to sort. <b>gp/hr</b> is the one worth sorting by: you have three Grand Exchange slots free-to-play and eight as a member, so slot time — not gold — is what you actually run out of.</p>
+      <div class="fh-controls">
+        <input type="search" id="fhQuery" placeholder="Filter by item…" aria-label="Filter by item name" autocomplete="off">
+        <select id="fhRange" aria-label="Time range">
+          <option value="all">All time</option>
+          <option value="7">Last 7 days</option>
+          <option value="30">Last 30 days</option>
+        </select>
+        <!-- On by default: the GE splitting one offer into four rows is the
+             surprising state, not the merged one. -->
+        <label class="fh-check"><input type="checkbox" id="fhGroup" checked> Group partial fills</label>
+        <span class="fh-count" id="fhCount"></span>
+      </div>
+
+      <!-- In here, not up in the stat tiles. It explains the dashes in the hold
+           and gp/hr columns of the table directly below it, and sitting between
+           the tiles and the chart it broke up the one part of this page worth
+           screenshotting to say something only the table needs. -->
+      <div class="fh-sparse" id="fhSparse" hidden></div>
+
+      <div class="fh-table-wrap">
+        <table class="fh">
+          <thead id="fhHead"></thead>
+          <tbody id="fhBody"></tbody>
+        </table>
+      </div>
+      <div id="fhPager"></div>
+    </div>
   </div>
 
   <h2>What this page is</h2>
