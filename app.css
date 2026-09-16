@@ -3262,7 +3262,12 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 .fc-stats > div { display:flex; flex-direction:column; flex:1 1 auto; }
 .fc-stat-main { flex-direction:row !important; align-items:baseline; justify-content:space-between;
   gap:10px; width:100%; }
-.fc-stat-main .fc-sval { font-size:17px; letter-spacing:-0.3px; }
+.fc-stat-main .fc-sval { font-size:17px; letter-spacing:-0.3px; display:flex; align-items:baseline; gap:7px; }
+/* "Profit" rides with the number rather than labelling it from across the row,
+   because the left slot now carries the quantity that number is FOR. Muted and
+   small so the green figure stays the thing the eye lands on. */
+.fc-sword { font-size:9px; font-weight:700; letter-spacing:.3px; text-transform:uppercase;
+  color:var(--text-muted); }
 .fc-slabel { font-size:9px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.3px; }
 .fc-sval { font-size:12.5px; font-weight:700; color:var(--text-main); font-variant-numeric:tabular-nums; }
 .fc-sval.pos { color:var(--rs-green-deep); }

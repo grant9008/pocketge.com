@@ -6321,17 +6321,21 @@ function flipScoreTip(rec){
    everything tells you nothing about the item in front of you.
 
    Only the warning half survives, and only when it fires. Nothing replaces it
-   in the common case: the two facts that are left already vary per item, and
-   the rest of the card carries buy/sell, profit, per-4h and daily volume.
-   Fill speed and 5D range were the candidates, but hrsToLimit is just the
-   per-4h figure restated against volume already shown two rows down, and the
-   5D extremes are not computed on this path — inventing a signal here would
-   put a number on the card that nothing else validates. */
-function recWhy(edgePct, qtyEff, lowConf){
-  const bits = [ `${(edgePct * 100).toFixed(edgePct < 0.1 ? 2 : 1)}% net edge`,
-                 `${abbreviateNumber(qtyEff)}/4h fillable` ];
-  if (lowConf) bits.push('thinner tape — patient bid');
-  return bits.join(' · ');
+   in the common case. Fill speed and 5D range were the candidates, but
+   hrsToLimit is just the per-4h figure restated against volume, and the 5D
+   extremes are not computed on this path — inventing a signal here would put a
+   number on the card that nothing else validates. */
+/* Down to the caveat, and usually empty. The net-edge percentage went because
+   it is the same fact as the profit figure in a unit nobody places an offer
+   in — and the buy and sell prices it is derived from are the two biggest
+   numbers on the card, directly below. The fillable quantity moved to the
+   stats row, where it now labels the profit it produces instead of floating
+   above it.
+   lowConf survives because it is the one thing on this line that is not
+   derivable from anything else shown: it says the tape is thin and the bid
+   needs patience, which no price or total on the card implies. */
+function recWhy(lowConf){
+  return lowConf ? 'Thinner tape — patient bid' : '';
 }
 function buildRec(c, eng){
   const item = c.item, node = c.node;
@@ -6353,7 +6357,7 @@ function buildRec(c, eng){
     vol: c.vol, flipScore, parts, verdict: v.word,
     verdictShort: v.word.replace(/\s*Flip$/, ''), color: v.color,
     rankValue: edge * qtyEff * recLiqMult(c.vol) * (eng.lowConf ? 0.8 : 1),
-    why: recWhy(edgePct, qtyEff, eng.lowConf), series: null
+    why: recWhy(eng.lowConf), series: null
   };
 }
 /* Confirm the shortlist with the real engine (<=REC_SHORTLIST timeseries fetches,
@@ -6450,7 +6454,7 @@ function renderFlipCard(rec){
           <img class="fc-icon" src="${itemIconUrl(rec.id)}" alt="${rec.item.name} icon" loading="lazy">
           <div class="fc-main">
             <div class="fc-name">${rec.item.name}</div>
-            <div class="fc-why">${rec.why}</div>
+            ${rec.why ? `<div class="fc-why">${rec.why}</div>` : ''}
           </div>
           <div class="fc-gauge">
             <button type="button" class="fc-score-btn" id="btnFlipScore" aria-label="How this flip score is calculated" aria-expanded="false">
@@ -6482,8 +6486,8 @@ function renderFlipCard(rec){
              where it actually was: the gap to the chevron. -->
         <div class="fc-stats">
           <div class="fc-stat-main">
-            <span class="fc-slabel">Profit per 4h limit</span>
-            <span class="fc-sval pos">+${abbreviateNumber(rec.realizable)} gp</span>
+            <span class="fc-slabel">${abbreviateNumber(rec.qtyEff)} / 4h limit</span>
+            <span class="fc-sval pos"><span class="fc-sword">Profit</span>+${abbreviateNumber(rec.realizable)} gp</span>
           </div>
         </div>
       </div>
