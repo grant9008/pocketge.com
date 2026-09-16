@@ -2819,7 +2819,14 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
      resolves to `none`, and a long favourites list would grow this column to
      its full content height instead of scrolling inside it. Same trap as the
      desktop cap and the splitter's. */
-  .watchlist-container { width: 234px; font-size: 11px; overflow-y: auto; -webkit-overflow-scrolling: touch; max-height: calc(100dvh - 6px); }
+  /* -webkit-overflow-scrolling:touch is gone from here. It has done nothing
+     since iOS 13 made momentum scrolling the default and Apple dropped the
+     property, and on the versions that did honour it it put the scroller on
+     its own compositor layer with its own scroll state — a well-known way for
+     a scroll position to be lost when the DOM inside mutates, which is exactly
+     the bug paintFlip() is guarding against one layer up. No reason to keep a
+     dead property that is a suspect in the thing being fixed. */
+  .watchlist-container { width: 234px; font-size: 11px; overflow-y: auto; max-height: calc(100dvh - 6px); }
   /* 234px is BELOW the 264px at which the container query drops the VOL
      column, so in landscape VOL could never appear no matter what the column
      menu said — the checkbox was checked, the cell rendered, and CSS hid it.
