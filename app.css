@@ -3114,7 +3114,11 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
    read as bolted on rather than as the last row of the card, which is the
    opposite of what a bar is for. The buttons are already fenced by their own
    borders; a second fence around them was one too many. */
-.fc-foot { display:flex; align-items:center; justify-content:center; gap:10px;
+/* Right, not centred. Everything else on this card that is a control rather
+   than data sits against the right edge — the collapse chevron above it, and
+   the profit figure it lines up under — so a centred pager was the one element
+   floating free of that rail. */
+.fc-foot { display:flex; align-items:center; justify-content:flex-end; gap:10px;
   margin-top:10px; }
 .fc-page { width:26px; height:26px; display:flex; align-items:center; justify-content:center;
   padding:0; border-radius:6px; cursor:pointer; font:700 17px/1 inherit;
@@ -3311,6 +3315,15 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 .fc-stat-main { flex-direction:row !important; align-items:baseline; justify-content:space-between;
   gap:10px; width:100%; }
 .fc-stat-main .fc-sval { font-size:17px; letter-spacing:-0.3px; display:flex; align-items:baseline; gap:7px; }
+/* The left half, built the same way as the right so the row reads as a pair.
+   It was the whole fact crammed into one 9px uppercase label — "25K / 4H
+   LIMIT" — which is the treatment a caption gets, not a figure, and the number
+   inside it was the least legible thing on the card. The value now gets the
+   same weight and case as any other number here; it stays smaller than the
+   profit figure, which is still the one the eye should land on. */
+.fc-stat-side { display:flex; align-items:baseline; gap:7px; min-width:0; }
+.fc-sval-sm { font-size:13px; font-weight:700; color:var(--text-main);
+  font-variant-numeric:tabular-nums; letter-spacing:-0.1px; white-space:nowrap; }
 /* "Profit" rides with the number rather than labelling it from across the row,
    because the left slot now carries the quantity that number is FOR. Muted and
    small so the green figure stays the thing the eye lands on. */
