@@ -560,8 +560,17 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
      was the first try and it put them at the head of the row, in front of the
      menu button — `order` sorts the whole line, so being last on row one means
      keeping the default order and pushing everything else past you. */
-  .hdr-links { margin-left: auto; }
   .search-group { order: 1; flex: 1 1 100%; }
+  /* Only the palette survives the wrap. Two text links pinned to the right of
+     a half-empty brand row read as leftovers rather than as navigation — and
+     they are the two things on this row that the drawer directly below the
+     menu button already lists by name. The palette is not in that position:
+     it is a control, its state IS its label, and there is nowhere else to put
+     it on a page this narrow.
+     No auto margin either, so it sits WITH the mode pill rather than floating
+     alone against the far edge with 180px of nothing between them. */
+  .hdr-link { display: none; }
+  .hdr-links { margin-left: 0; }
 }
 /* When there is no room, they go, and how much room is needed depends on which
    of those two layouts is running — a whole search box's worth more in the
@@ -578,8 +587,10 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
   @container tickerrow (max-width: 600px) { .hdr-links { display: none; } }
 }
 @media (min-width: 641px) and (max-width: 1023px) {
-  /* Wrapped: they only have to share the brand row, so the floor is far lower. */
-  @container tickerrow (max-width: 400px) { .hdr-links { display: none; } }
+  /* Wrapped: what is left is a 32px chip sharing the brand row, so the floor
+     drops to menu + logo + F2P/P2P + chip + gaps. Was 400 when the two text
+     links were still here. */
+  @container tickerrow (max-width: 280px) { .hdr-links { display: none; } }
 }
 /* Phone, either way up. The search box has swallowed the item name and its wiki
    link by here and the row is a single nowrap line of essentials — there is
