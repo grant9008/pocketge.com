@@ -492,7 +492,11 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
                  fit. All three are still in the drawer. -->
             <nav class="hdr-links" aria-label="Quick links">
               <a class="hdr-link" href="/flip-history.html">Flip history</a>
-              <a class="hdr-link" href="/runelite-plugin.html">RuneLite</a>
+              <!-- "Link RuneLite", not "RuneLite". The old label named a thing;
+                   this names the thing you came here to do, and linking the
+                   plugin is the highest-value action on the site for someone
+                   who already flips. -->
+              <a class="hdr-link" href="/runelite-plugin.html">Link RuneLite</a>
               <button type="button" class="hdr-palette" id="hdrPalette"
                       title="Buy / sell colours" aria-label="Change buy and sell colours">
                 <i class="hp-buy"></i><i class="hp-sell"></i>
@@ -858,6 +862,7 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
      prerender_items.py; an empty list until it has run, which leaves the
      app on its pre-existing ?q= behaviour. Must load before app.js. -->
 <script src="/flip-group.js"></script>
+<script src="/bridge-port.js"></script>
 <script src="/item-pages.js"></script>
 <!-- Extracted to /app.js. Plain src, no defer/async on purpose: the
      inline block this replaces was a synchronous script in the middle

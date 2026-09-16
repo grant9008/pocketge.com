@@ -15,7 +15,12 @@
   'use strict';
 
   var root = window;
-  var BRIDGE = 'http://127.0.0.1:8477';
+  /* A function, not a constant: the port is a plugin setting and the visitor
+     can change the browser's copy of it from the status box below without
+     reloading. See bridge-port.js. */
+  function bridge(path) {
+    return root.PGEBridge ? root.PGEBridge.url(path) : 'http://127.0.0.1:8477' + (path || '');
+  }
   var POLL_MS = 5000;
   var PAGE_SIZE = 50;
   /* Under a minute of hold, gp/hr is a division by almost nothing: a 40-second
@@ -120,9 +125,26 @@
     '<b>Local website bridge</b>. It is off by default, which is the usual reason ' +
     'this page finds nothing.';
 
+  /* The second reason, and the one nobody can guess: the plugin's Bridge port
+     is a setting with a 1024-65535 range, and this page was hardcoded to the
+     default. Anyone who moved it — because something else already had 8477, or
+     because they run two clients — had no way to say so. The number goes here,
+     next to the failure it explains. */
+  function portControl() {
+    var port = root.PGEBridge ? root.PGEBridge.get() : 8477;
+    return '<div class="fh-port">' +
+      '<label for="fhPort">Bridge port</label>' +
+      '<input type="number" id="fhPort" min="1024" max="65535" step="1" value="' + port + '" ' +
+        'inputmode="numeric" autocomplete="off">' +
+      '<button type="button" id="fhPortGo">Connect</button>' +
+      '<span class="fh-port-note">Match the <b>Bridge port</b> in the plugin\'s settings. ' +
+        'Default is 8477.</span>' +
+      '</div>';
+  }
+
   async function loadHistory() {
     try {
-      var res = await fetch(BRIDGE + '/history', { cache: 'no-store', mode: 'cors' });
+      var res = await fetch(bridge('/history'), { cache: 'no-store', mode: 'cors' });
       /* A 404 here with the bridge otherwise answering means the plugin predates
          the release that serves the ledger. Worth saying precisely, because
          "no connection" would send someone to check a setting that is already
@@ -143,7 +165,8 @@
     } catch (e) {
       setStatus('off',
         '<b>No RuneLite bridge on this computer.</b> ' + OFFER_HELP +
-        ' <a href="/runelite-plugin.html">How to install the plugin →</a>');
+        ' <a href="/runelite-plugin.html">Full setup steps →</a>' +
+        portControl());
       return false;
     }
   }
@@ -153,7 +176,7 @@
   async function pollForGrowth() {
     loadBank();
     try {
-      var res = await fetch(BRIDGE + '/flips', { cache: 'no-store', mode: 'cors' });
+      var res = await fetch(bridge('/flips'), { cache: 'no-store', mode: 'cors' });
       if (!res.ok) return;
       var data = await res.json();
       var live = Number(data.flipCount);
@@ -348,7 +371,7 @@
      flip closes, which is why they are fetched differently. */
   async function loadBank() {
     try {
-      var res = await fetch(BRIDGE + '/flips', { cache: 'no-store', mode: 'cors' });
+      var res = await fetch(bridge('/flips'), { cache: 'no-store', mode: 'cors' });
       if (!res.ok) return;
       var d = await res.json();
       state.bank = d && typeof d === 'object' ? d : null;
@@ -702,6 +725,24 @@
       if (e.target.id === 'fhPrev') { state.page = Math.max(0, state.page - 1); renderTable(); }
       if (e.target.id === 'fhNext') { state.page += 1; renderTable(); }
       if (e.target.id === 'fhGroup') { state.group = e.target.checked; state.page = 0; renderTable(); }
+      if (e.target.id === 'fhPortGo') {
+        var input = $('#fhPort');
+        /* set() returns what was actually stored, so an out-of-range number is
+           corrected in the box rather than left sitting there looking accepted. */
+        var saved = root.PGEBridge ? root.PGEBridge.set(input.value) : null;
+        if (saved != null) input.value = saved;
+        setStatus('wait', 'Looking for RuneLite on 127.0.0.1:' + saved + '…');
+        loadBank();
+        loadHistory();
+      }
+    });
+    /* Enter in the port box means the same as pressing Connect. */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && e.target && e.target.id === 'fhPort') {
+        e.preventDefault();
+        var go = $('#fhPortGo');
+        if (go) go.click();
+      }
     });
     var fq = $('#fhQuery');
     if (fq) fq.addEventListener('input', function () {

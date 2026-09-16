@@ -59,6 +59,18 @@
   .fh-status.fh-warn { border-left-color:var(--gold); background:rgba(255,179,0,0.08); }
   .fh-status.fh-off { border-left-color:var(--gold); background:rgba(255,179,0,0.08); }
   .fh-status b { color:var(--head); }
+  /* The port, offered right where the failure is reported. On its own line so
+     it reads as a thing to do rather than as more of the sentence above it. */
+  .fh-port { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .fh-port label { font-size:11px; font-weight:700; letter-spacing:0.4px;
+    text-transform:uppercase; color:var(--muted); }
+  .fh-port input { width:88px; background:var(--input); border:1px solid var(--border);
+    border-radius:5px; color:var(--text); font:inherit; font-size:13px; padding:6px 8px; }
+  .fh-port input:focus { outline:none; border-color:var(--accent); }
+  .fh-port button { background:var(--accent); color:#1C1300; border:none; border-radius:5px;
+    font:inherit; font-size:12.5px; font-weight:700; padding:7px 14px; cursor:pointer; }
+  .fh-port button:hover { background:#E5C158; }
+  .fh-port-note { flex:1 1 220px; min-width:0; font-size:11.5px; color:var(--muted); }
 
   .fh-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin:0 0 16px; }
   .fh-stat { background:var(--panel); border:1px solid var(--border); border-radius:6px; padding:10px 12px; }
@@ -280,6 +292,7 @@
 </div>
 <script src="site-nav.js"></script>
 <script src="flip-group.js"></script>
+<script src="bridge-port.js"></script>
 <script src="flip-history.js"></script>
 </body>
 </html>
