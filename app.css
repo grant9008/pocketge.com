@@ -541,8 +541,10 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 .hdr-link:hover { color: var(--text-main); text-decoration: underline; }
 /* The two dots ARE the current palette, so the control shows its own state
    rather than needing a label. */
+/* 6px like everything else in the terminal. This was a 20px pill, which with
+   .fc-next's 999px made two rounded shapes in a page of 6px rectangles. */
 .hdr-palette { display: inline-flex; align-items: center; gap: 0; background: transparent;
-  border: 1px solid var(--border-main); border-radius: 20px; padding: 3px 5px; cursor: pointer;
+  border: 1px solid var(--border-main); border-radius: 6px; padding: 3px 6px; cursor: pointer;
   line-height: 0; transition: border-color .12s ease; }
 .hdr-palette:hover { border-color: var(--border-active); }
 .hdr-palette i { width: 7px; height: 7px; border-radius: 50%; display: block; }
@@ -3054,15 +3056,29 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
    them. */
 .fc-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
 .fc-kicker { font-size:var(--hdr-size); font-weight:var(--hdr-weight); letter-spacing:var(--hdr-track); color:var(--text-structural); text-transform:uppercase; }
-.fc-head-ctrls { display:flex; align-items:center; gap:6px; flex:0 0 auto; }
+/* 18px, not 6. Collapsed is the one state where Next is still up here beside
+   the chevron, and at 6px the two read as a single two-part widget — exactly
+   what the .rg-toggle note further down records fixing on the other chevron,
+   where 10px was tried first and was still too tight. Same pair, same answer. */
+.fc-head-ctrls { display:flex; align-items:center; gap:18px; flex:0 0 auto; }
 /* Same quiet control as Refresh and Save: transparent, hairline, muted,
    brightening on hover. It was a filled chip, which made the one button in
    this card that only cycles a suggestion look heavier than the buy/sell
    prices underneath it. */
-.fc-next { min-height:34px; font-size:11.5px; font-weight:700; padding:6px 12px; border-radius:999px; cursor:pointer;
-  color:var(--text-muted); background:transparent; border:1px solid var(--border-main);
-  transition:color .15s ease, border-color .15s ease, transform .12s ease; }
-.fc-next:hover:not(:disabled) { color:#fff; border-color:var(--border-active); }
+/* 6px, not 999px. Every other control on this page — the chart toggles,
+   Refresh, Save, the palette chip, the theme swatches — is a 6px rounded
+   rectangle, and a full pill here was the one oval in the terminal.
+   Gold rather than the hairline-muted treatment it had. The old note said a
+   filled chip "made the one button in this card that only cycles a suggestion
+   look heavier than the buy/sell prices underneath it" — which was true of a
+   FILLED chip. A 12% tint with a 45% border is the same weight as .calc-caret,
+   which is the site's existing answer to "a real control, quieter than the
+   data": it sits under the two solid-bordered price buttons, not over them. */
+.fc-next { min-height:34px; font-size:11.5px; font-weight:700; padding:6px 14px; border-radius:6px; cursor:pointer;
+  color:var(--border-active); background:rgba(201,166,77,0.12); border:1px solid rgba(201,166,77,0.45);
+  flex:0 0 auto;
+  transition:color .15s ease, background .15s ease, border-color .15s ease, transform .12s ease; }
+.fc-next:hover:not(:disabled) { color:#FFD98A; background:rgba(201,166,77,0.26); border-color:var(--border-active); }
 .fc-next:active { transform:translateY(1px); }
 .fc-next:disabled { opacity:.5; cursor:default; }
 /* Collapse toggle + collapsed one-line summary. Collapsing hides everything
@@ -3227,8 +3243,15 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 .fc-price.buy .fc-plabel { color:var(--buy-color); }
 .fc-price.sell .fc-plabel { color:var(--sell-color); }
 .fc-pval { display:block; font-size:15px; font-weight:800; color:var(--text-main); margin-top:1px; }
-.fc-stats { display:flex; flex-wrap:wrap; gap:4px 12px; }
+/* One figure now, laid out label-left / value-right like the Potential Profit
+   block two sections up: with a single stat left it is the same shape of
+   statement and should read the same way. It was three stacked label/value
+   columns, which is the right shape for three and reads as a leftover for one. */
+.fc-stats { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; }
 .fc-stats > div { display:flex; flex-direction:column; flex:1 1 auto; }
+.fc-stat-main { flex-direction:row !important; align-items:baseline; justify-content:space-between;
+  gap:10px; width:100%; }
+.fc-stat-main .fc-sval { font-size:17px; letter-spacing:-0.3px; }
 .fc-slabel { font-size:9px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.3px; }
 .fc-sval { font-size:12.5px; font-weight:700; color:var(--text-main); font-variant-numeric:tabular-nums; }
 .fc-sval.pos { color:var(--rs-green-deep); }
