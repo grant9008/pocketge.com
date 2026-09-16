@@ -651,6 +651,19 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
              chip would cost another slot in this row, and the circular
              refresh arrow already reads as "put it back" anyway. -->
         <button id="btnRefreshPrices" class="qf-refresh" type="button" title="Refresh live prices now" aria-label="Refresh live prices now"><svg class="ui-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span class="qf-rlabel" id="refreshLabel">Refresh</span></button>
+        <!-- Buy / sell colours, on the chart's own control row. Same class as
+             the header control, so headerPalette() binds it and applyPalette()
+             keeps its dots current with no extra wiring — it opens the same
+             dropdown. It is here because the header copy is hidden on a phone
+             and in landscape, which left the palette reachable only through
+             the drawer on exactly the screens where the two colours are
+             hardest to tell apart. Placed after Refresh in source so the Share
+             button, which placeShareButton() inserts directly after Refresh,
+             still lands between them. -->
+        <button type="button" class="hdr-palette qf-palette"
+                title="Buy / sell colours" aria-label="Change buy and sell colours">
+          <i class="hp-buy"></i><i class="hp-sell"></i>
+        </button>
       </div>
       <!-- 30-day price-position meter: where the live price sits between its
            30-day floor and ceiling. The one fact on this row that nothing
