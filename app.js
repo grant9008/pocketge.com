@@ -6431,12 +6431,67 @@ function markRecSeen(id){
   recSeenSave(store); recLastId = id;
 }
 function flipHost(){ return document.getElementById('flipFinder'); }
+/* Every re-render of this card replaces the host's innerHTML, which throws the
+   whole subtree away and builds a new one. In the landscape layout the card
+   lives inside .watchlist-container — a real scrolling box, capped at
+   calc(100dvh - 6px) — and a scroller whose content shrinks clamps its
+   scrollTop to the new maximum. Measured with scroll anchoring off, emptying
+   #flipFinder moves the box from 551 to 402: exactly one card height, and it
+   does not come back when the new card lands.
+
+   Chrome hides this. Scroll anchoring silently compensates, which is why every
+   measurement taken in Chromium showed 551 before and after. Safari implements
+   no scroll anchoring at all, so on iOS it fires on every press of < and >,
+   in both directions, and scrolls the card you are reading off the screen.
+
+   Three guards, because there is more than one way for this to go wrong and
+   only one of them can be reproduced in this browser:
+     - minHeight pins the host across the swap, so nothing ever shrinks and
+       there is no clamp to recover from. This is the actual fix.
+     - scrollTop is captured and restored regardless, which covers a genuine
+       height change between two picks — one carrying the "thin tape" note is
+       a line taller than one without.
+     - focus moves to the same button in the new card. It was being dropped on
+       the floor, which is a keyboard bug on its own, and an element vanishing
+       from under the focus ring is its own reason for a browser to scroll. */
+function flipScrollBox(){
+  let el = flipHost();
+  while (el && el !== document.body) {
+    const s = getComputedStyle(el);
+    if (/auto|scroll/.test(s.overflowY) && el.scrollHeight > el.clientHeight + 1) return el;
+    el = el.parentElement;
+  }
+  return null;   // nothing scrolls between here and the body: the window does
+}
+function paintFlip(html, wire){
+  const h = flipHost(); if (!h) return;
+  const box = flipScrollBox();
+  const top = box ? box.scrollTop : (window.scrollY || 0);
+  const act = document.activeElement;
+  const keep = (act && h.contains(act) && act.classList)
+    ? (act.classList.contains('js-flip-prev') ? '.js-flip-prev'
+      : act.classList.contains('js-flip-next') ? '.js-flip-next' : '')
+    : '';
+  const held = h.offsetHeight;
+  if (held) h.style.minHeight = held + 'px';
+  h.innerHTML = html;
+  if (wire) wire();
+  if (held) h.style.minHeight = '';
+  /* After minHeight is released, not before — releasing it is the one moment
+     the host can still get shorter than it was. */
+  if (box) { if (box.scrollTop !== top) box.scrollTop = top; }
+  else if ((window.scrollY || 0) !== top) window.scrollTo(0, top);
+  if (keep) {
+    const btn = h.querySelector('.fc-stat-main ' + keep) || h.querySelector(keep);
+    if (btn && !btn.disabled) { try { btn.focus({ preventScroll: true }); } catch (e) {} }
+  }
+}
 function initFlipFinder(){ const b = document.getElementById('btnFindFlip'); if (b) b.onclick = () => findFlip({ advance: false }); }
 function renderFlipIdle(){
   const h = flipHost(); if (!h) return;
-  h.innerHTML = `<button type="button" id="btnFindFlip" class="find-flip-btn">` +
-    `<span class="ff-bolt" aria-hidden="true">${uiIcon('zap')}</span><span class="ff-label">Find me a flip</span></button>`;
-  initFlipFinder();
+  paintFlip(`<button type="button" id="btnFindFlip" class="find-flip-btn">` +
+    `<span class="ff-bolt" aria-hidden="true">${uiIcon('zap')}</span><span class="ff-label">Find me a flip</span></button>`,
+    initFlipFinder);
 }
 function renderFlipState(kind){
   const h = flipHost(); if (!h) return;
@@ -6446,8 +6501,7 @@ function renderFlipState(kind){
     moved: `<span class="ff-msg-txt">Prices moved since we found this — grab a fresh flip.</span><button class="fc-next" id="btnNextFlip">↻ Next</button>`,
     offline: `<span class="ff-msg-txt">Couldn't reach live prices. Check your connection.</span><button class="fc-next" id="btnNextFlip">↻ Retry</button>`
   }[kind];
-  h.innerHTML = `<div class="flip-card ff-msg">${msg}</div>`;
-  wireFlipButtons();
+  paintFlip(`<div class="flip-card ff-msg">${msg}</div>`, wireFlipButtons);
 }
 function flipCollapsed(){
   try {
@@ -6504,7 +6558,7 @@ function flipCount(){
 function renderFlipCard(rec){
   const h = flipHost(); if (!h) return;
   const collapsed = flipCollapsed();
-  h.innerHTML = `
+  paintFlip(`
     <div class="flip-card${collapsed ? ' collapsed' : ''}" role="button" tabindex="0" data-id="${rec.id}" aria-label="Open ${rec.item.name} — recommended flip">
       <div class="fc-head">
         <span class="fc-kicker"><span class="fc-kicker-txt">Recommended flip</span></span>
@@ -6573,8 +6627,7 @@ function renderFlipCard(rec){
           </div>
         </div>
       </div>
-    </div>`;
-  wireFlipButtons();
+    </div>`, wireFlipButtons);
 }
 /* Dismissal is bound once, not per render — wireFlipButtons runs on every
    Next / 5-min re-validate, so binding here would stack a listener per card.
