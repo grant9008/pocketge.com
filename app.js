@@ -5744,10 +5744,25 @@ function computeGrade(item, side) {
     color = '#D6CCB2';
     return { grade, verdict, color, parts };
   }
-  /* Verdict colors lean on the RuneScape palette: bright RS-green for the
-     elite tier, RS-gold for the middle, scaling down to red. */
-  if (grade >= 85) { verdict = side === 'buy' ? 'Steal Buy' : 'Top Sell'; color = '#4FFF8E'; }
-  else if (grade >= 70) { verdict = side === 'buy' ? 'Strong Entry' : 'Strong Exit'; color = '#10B981'; }
+  /* Warm the whole way up, and green nowhere on it — the same ramp and the
+     same two top values as REC_BANDS, for the same reason. The top tier was
+     #4FFF8E and the one below it #10B981, which is not merely LIKE --positive,
+     it IS --positive: a rating and a profit figure making two different claims
+     ("this is a good entry" and "this is money you make") in one colour.
+     Measured across normal vision and both kinds of red-green colour blindness,
+     the closest any band now comes to --positive is 23.5 against 0.0 before,
+     and the tightest gap between adjacent bands goes from 15.6 to 40.2.
+
+     Avoid keeps --negative deliberately. That was the one band where the
+     shared colour was never the problem: "Avoid Buying" and a red loss figure
+     are the SAME claim, not two claims wearing one colour.
+
+     NOTE: nothing renders this field today. The per-box grade badges that used
+     to (see below) were removed, and the Analyst Rating gauge colours its own
+     label from --buy-color / --sell-color instead. Kept correct rather than
+     left as a trap for whoever wires a badge back up. */
+  if (grade >= 85) { verdict = side === 'buy' ? 'Steal Buy' : 'Top Sell'; color = '#FFFFFF'; }
+  else if (grade >= 70) { verdict = side === 'buy' ? 'Strong Entry' : 'Strong Exit'; color = '#FFD24D'; }
   else if (grade >= 50) { verdict = side === 'buy' ? 'OK Buy' : 'OK Sell'; color = '#D6CCB2'; }
   else if (grade >= 30) { verdict = side === 'buy' ? 'Weak Buy' : 'Weak Sell'; color = '#FF9F43'; }
   else { verdict = side === 'buy' ? 'Avoid Buying' : 'Avoid Selling'; color = '#EF5350'; }
