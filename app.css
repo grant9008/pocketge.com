@@ -1146,9 +1146,15 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
    read as compact quote bars that use the full width. */
 @media screen and (min-width: 1024px) {
   .price-strip { gap: 10px; }
-  .price-box { display: flex; align-items: center; gap: 18px; padding: 10px 18px 10px 20px; }
+  /* 8px and 26px, not 10px and 28px. At the old sizes this row was 54px tall
+     — ten more than the 1024-1279px band renders the identical content in,
+     for no reason except that there was room. Nothing in the box got harder
+     to read for it: the number is still by a distance the largest thing on
+     the page, the +/- targets stay 30px, and the seven pixels come back to
+     the chart, which is the element that actually wants them. */
+  .price-box { display: flex; align-items: center; gap: 18px; padding: 8px 18px 8px 20px; }
   .price-label { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; flex-shrink: 0; }
-  .price-val { font-size: 28px; margin-top: 0; flex-shrink: 0; white-space: nowrap; letter-spacing: -0.7px; margin-left: auto; gap: 12px; }
+  .price-val { font-size: 26px; margin-top: 0; flex-shrink: 0; white-space: nowrap; letter-spacing: -0.7px; margin-left: auto; gap: 12px; }
   /* The hero cards were sharing .main-column's flat 8px gap with everything
      else in the column; a few px more separates the recommendation from the
      evidence for it. Only on the layout with height to spare. */
