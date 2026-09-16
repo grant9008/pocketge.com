@@ -3464,13 +3464,38 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
   .flip-card .fc-pval { font-size: 13px; }
   .flip-card .fc-plabel { font-size: 9px; }
   .flip-card .fc-stats { flex-wrap: nowrap; gap: 8px; }
-  /* Wrapping, and a real gap. Written for three stacked label/value columns
+  /* One line, pager included. Written for three stacked label/value columns
      crammed edge to edge, where 3px was all there was; the row is now two
-     left-packed figures plus the pager, and at 220px those three cannot share
-     a line at any gap — the pager takes a second one. 3px between the two
-     figures that DO share a line read as a single phrase, so it goes back up
-     to 12, which the row can afford now that it is allowed to wrap. */
-  .flip-card .fc-stats > div { flex-direction: row; align-items: baseline; flex-wrap: wrap; gap: 6px 12px; min-width: 0; flex: 0 1 auto; }
+     left-packed figures plus the pager, and measured at this width they need
+     274px of the 220 available — so the pager took a second line, and two
+     26px buttons on a row of their own is the worst thing to spend height on
+     in the one layout that has none to spare.
+     Dropping the FILLABLE label (see below) pays for most of it: 53px back,
+     which is what the pager plus a gap costs. The rest comes from the gaps —
+     8px between the two figures rather than the 14 the wide card uses, and 5px
+     inside each rather than 7.
+     Those last few px are not decoration. Swept across every figure this card
+     prints, the widest content is 203px of the 220 available, so at 10/7 the
+     row needed 223 and an M-scale profit — "+4.28M gp", which a 13K/4h fill at
+     a few hundred gp an item reaches easily — pushed the pager back onto its
+     own line. At 8/5, with 22px buttons below, the same worst case lands at
+     213 and every case in the sweep holds one line. */
+  .flip-card .fc-stats > div { flex-direction: row; align-items: baseline; flex-wrap: wrap; gap: 6px 8px; min-width: 0; flex: 0 1 auto; }
+  .flip-card .fc-stat-main .fc-sval, .flip-card .fc-stat-side { gap: 5px; }
+  /* 22px, against 24 everywhere else. Smaller than a touch target wants to be
+     in the abstract, and still bigger than the 18px collapse chevron this same
+     block already ships two rules down for the same reason: this is the layout
+     with no height to spare, and 4px of button chrome is what keeps the pager
+     out of a row of its own. */
+  .flip-card .fc-stat-main .fc-page { width: 22px; height: 22px; font-size: 15px; }
+  /* The word goes, the figure stays. "13K / 4h" carries its own unit — it is
+     a rate, and reads as one without a caption over it — whereas "+26K gp"
+     next to it would be an unlabelled number if PROFIT went instead. So this
+     is the one of the two labels that can be spared, and sparing it is what
+     buys the pager its place on this line.
+     Scoped to .fc-stat-side: the PROFIT label beside the figure that matters
+     stays, here and everywhere else. */
+  .flip-card .fc-stat-side .fc-sword { display: none; }
   .flip-card .fc-slabel { font-size: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .flip-card .fc-sval { font-size: 11px; white-space: nowrap; }
   /* The profit figure is the one number this card exists to show, and the
