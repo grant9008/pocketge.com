@@ -6432,6 +6432,33 @@ function flipCollapsed(){
   } catch (e) { return true; }
 }
 function setFlipCollapsed(v){ try { localStorage.setItem(collapseKey('ge_flipCollapsed'), v ? '1' : '0'); } catch (e) {} }
+/* Back / position / forward, in place of a lone Next.
+   The count is the CURRENT shortlist, not a total of every flip in the game —
+   there is no such number. scanFlips engine-confirms at most REC_SHORTLIST
+   picks per scan and findFlip walks that buffer, re-scanning when it runs out,
+   so "2 / 5" honestly says "three more queued before I go back to the market".
+   A made-up global total would have been the easier thing to print and a lie.
+
+   Back exists because the plugin has had it and the site had not: clicking
+   past a pick you wanted meant scanning until it came round again, which with
+   markRecSeen filtering repeats it never does. It is free — the buffer is
+   already in memory and re-validating a rec costs no API call. */
+function flipPager(){
+  const total = recBuffer.length;
+  const pos = total ? Math.min(recIdx + 1, total) : 0;
+  const atStart = recIdx <= 0;
+  return `
+    <div class="fc-pager" role="group" aria-label="Cycle recommended flips">
+      <button type="button" class="fc-page" id="btnPrevFlip" ${atStart ? 'disabled' : ''}
+              title="Previous flip" aria-label="Previous recommended flip">‹</button>
+      <span class="fc-pos" ${total ? '' : 'hidden'}
+            title="Position in the current shortlist — a new scan starts a new one">
+        <b>${pos}</b>/${total}</span>
+      <button type="button" class="fc-page" id="btnNextFlip"
+              title="Next flip" aria-label="Next recommended flip">›</button>
+    </div>`;
+}
+
 function renderFlipCard(rec){
   const h = flipHost(); if (!h) return;
   const collapsed = flipCollapsed();
@@ -6440,7 +6467,7 @@ function renderFlipCard(rec){
       <div class="fc-head">
         <span class="fc-kicker"><span class="fc-kicker-txt">Recommended flip</span></span>
         <div class="fc-head-ctrls">
-          <button type="button" class="fc-next" id="btnNextFlip" title="Show another flip">↻ Next</button>
+          ${flipPager()}
           <button type="button" class="fc-collapse calc-caret${collapsed ? ' closed' : ''}" id="btnFlipCollapse" aria-label="Collapse recommended flip" aria-expanded="${collapsed ? 'false' : 'true'}" title="Collapse / expand">${uiIcon('chev')}</button>
         </div>
       </div>
@@ -6533,6 +6560,8 @@ function wireFlipButtons(){
   const h = flipHost(); if (!h) return;
   const next = h.querySelector('#btnNextFlip');
   if (next) { next.disabled = recBusy; next.onclick = e => { e.stopPropagation(); track('recommended_flip_next'); findFlip({ advance: true }); }; }
+  const prev = h.querySelector('#btnPrevFlip');
+  if (prev) { prev.onclick = e => { e.stopPropagation(); track('recommended_flip_prev'); findFlipBack(); }; }
   const card = h.querySelector('.flip-card[data-id]');
   /* Collapse toggle: hides the card body, leaving a one-line summary (name ·
      score · edge). Persisted so it stays collapsed across re-renders (Next,
@@ -6682,6 +6711,23 @@ function maybeLandOnFlip(rec) {
      whichever flip happened to win this minute. */
   setItem(rec.item, { keepHomepage: true });
 }
+/* Walks the buffer backwards. Re-validates on the way, same as forward, and
+   keeps stepping past anything the market has moved out from under rather than
+   showing a pick the engine would no longer stand behind. Never scans: going
+   back means going to something already seen, and a scan would replace the
+   buffer that "back" refers to. */
+function findFlipBack(){
+  if (recBusy) return;
+  while (recIdx > 0) {
+    const cand = revalidateRec(recBuffer[--recIdx]);
+    if (cand) { recBuffer[recIdx] = cand; renderFlipCard(cand); return; }
+  }
+  /* Nothing valid behind the current pick. recIdx has walked to 0 by now, so
+     re-render to settle the pager's disabled state on whatever is showing. */
+  const cur = recBuffer[recIdx] && revalidateRec(recBuffer[recIdx]);
+  if (cur) renderFlipCard(cur);
+}
+
 async function findFlip({ advance = false } = {}){
   if (recBusy) return;
   if (advance) {
