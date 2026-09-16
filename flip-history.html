@@ -91,6 +91,23 @@
   .fh-tab:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
   .fh-panel { padding-top:6px; }
   .fh-panel[hidden] { display:none; }
+  .fh-sub-h { font-size:13px; font-weight:700; color:var(--head); margin:18px 0 10px;
+    letter-spacing:0.2px; }
+  .fh-panel > .fh-sub-h:first-of-type { margin-top:12px; }
+
+  /* Key facts, not more tiles. The five bordered cards above the tabs are the
+     account's totals; borderless rows here read as a different KIND of fact and
+     stop the top of the page being two near-identical grids. */
+  .fh-keys { display:grid; gap:16px 28px; margin:0 0 4px;
+    grid-template-columns:repeat(auto-fit, minmax(186px, 1fr)); }
+  .fh-key-label { font-size:10px; font-weight:700; letter-spacing:0.6px;
+    text-transform:uppercase; color:var(--muted); }
+  .fh-key-val { font-size:19px; font-weight:800; color:var(--head); margin-top:3px;
+    line-height:1.2; }
+  .fh-key-val.pos { color:var(--pos); }
+  .fh-key-val.neg { color:var(--neg); }
+  .fh-key-note { font-size:11.5px; color:var(--muted); margin-top:3px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   /* The tab already names the view; this is the same words at heading weight
      for anyone who arrives by screen reader or lands on the panel directly. */
   .fh-panel-h { position:absolute; width:1px; height:1px; margin:-1px; padding:0;
@@ -196,7 +213,13 @@
     </div>
 
     <div class="fh-panel" id="panelProfit" role="tabpanel" aria-labelledby="tabProfit">
-      <h2 class="fh-panel-h">Cumulative profit</h2>
+      <h2 class="fh-panel-h">Overview</h2>
+      <!-- The tiles above the tabs are totals. These are the things that
+           actually happened — read off the same ledger, compared only against
+           your own history and never against anyone else's. -->
+      <h3 class="fh-sub-h">Highlights</h3>
+      <div class="fh-keys" id="fhKeys" hidden></div>
+      <h3 class="fh-sub-h">Cumulative profit</h3>
       <div class="fh-chart-wrap"><canvas id="fhChart" height="220"></canvas></div>
     </div>
 

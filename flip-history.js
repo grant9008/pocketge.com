@@ -233,6 +233,108 @@
     }
   }
 
+  // ── highlights ──────────────────────────────────────────────────────────
+  /* The totals above say how much. These say what happened — the single flip
+     that went best, the day that went best, the item carrying the account.
+     Every one of them is derived from the ledger already on this page: no
+     upload, no account, no comparison to anybody else.
+
+     Deliberately NOT here: any ranking against other players. That needs a
+     population this page does not have and by design never will, and the
+     ledger it would rank is a file on the player's own machine that anyone can
+     edit — a leaderboard of unverifiable self-reported gp ranks whoever is
+     most willing to type a big number. Measured against your own history,
+     every figure below is exactly as true as the ledger is. */
+  function dayKey(ms) {
+    var d = new Date(ms);
+    return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+  }
+
+  function shortDay(ms) {
+    var d = new Date(ms);
+    return isNaN(d.getTime()) ? '—'
+      : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+  }
+
+  function plural(n, word) {
+    return n.toLocaleString() + ' ' + word + (n === 1 ? '' : 's');
+  }
+
+  function highlights(raw) {
+    /* Over GROUPED flips, not raw fills. The Grand Exchange splitting one
+       offer into six rows would otherwise hand "best flip" to whichever
+       fragment happened to be biggest, and count one decision six times in
+       the win rate. */
+    var flips = groupFills(raw);
+    if (!flips.length) return [];
+
+    var best = null, byDay = {}, byItem = {}, green = 0;
+    flips.forEach(function (f) {
+      if (!best || f.profit > best.profit) best = f;
+      if (f.profit > 0) green++;
+      var dk = dayKey(f.closedAt);
+      byDay[dk] = byDay[dk] || { at: f.closedAt, profit: 0, n: 0 };
+      byDay[dk].profit += f.profit; byDay[dk].n++;
+      var ik = f.itemName || '—';
+      byItem[ik] = byItem[ik] || { profit: 0, n: 0 };
+      byItem[ik].profit += f.profit; byItem[ik].n++;
+    });
+
+    var topDay = Object.keys(byDay).map(function (k) { return byDay[k]; })
+      .sort(function (a, b) { return b.profit - a.profit; })[0];
+    var topName = Object.keys(byItem).sort(function (a, b) {
+      return byItem[b].profit - byItem[a].profit;
+    })[0];
+    var topItem = byItem[topName];
+
+    /* The streak walks BACKWARDS from the most recent close, because "current"
+       means the run you are on and that is the one worth posting. When the last
+       flip was a loss there is no current run, so it falls back to the best run
+       ever rather than showing a zero. */
+    var order = flips.slice().sort(function (a, b) { return a.closedAt - b.closedAt; });
+    var cur = 0;
+    for (var i = order.length - 1; i >= 0 && order[i].profit > 0; i--) cur++;
+    var bestRun = 0, run = 0;
+    order.forEach(function (f) {
+      run = f.profit > 0 ? run + 1 : 0;
+      if (run > bestRun) bestRun = run;
+    });
+
+    return [
+      { label: 'Best flip', value: signed(best.profit) + ' gp', pos: best.profit >= 0,
+        note: esc(best.itemName || '—') + ' · ' + shortDay(best.closedAt) },
+      { label: 'Best day', value: signed(topDay.profit) + ' gp', pos: topDay.profit >= 0,
+        note: shortDay(topDay.at) + ' · ' + plural(topDay.n, 'flip') },
+      { label: 'Top earner', value: signed(topItem.profit) + ' gp', pos: topItem.profit >= 0,
+        note: esc(topName) + ' · ' + plural(topItem.n, 'flip') },
+      { label: 'Win rate', value: Math.round((green / flips.length) * 100) + '%',
+        note: green.toLocaleString() + ' of ' + plural(flips.length, 'flip') + ' in the green' },
+      /* Three states, not two. "0 flips — best run so far" was what fell out of
+         treating this as one number with a caption, and it reads as a taunt;
+         a ledger with no green flip in it has no streak to report. */
+      cur ? { label: 'Green streak', value: plural(cur, 'flip'), pos: true, note: 'running now' }
+        : bestRun ? { label: 'Green streak', value: plural(bestRun, 'flip'), pos: true,
+          note: 'best run so far' }
+          : { label: 'Green streak', value: '—', note: 'no green run yet' },
+    ];
+  }
+
+  function renderHighlights() {
+    var el = $('#fhKeys');
+    if (!el) return;
+    var rows = highlights(state.flips);
+    if (!rows.length) { el.hidden = true; return; }
+    el.innerHTML = rows.map(function (r) {
+      return '<div class="fh-key">' +
+        '<div class="fh-key-label">' + r.label + '</div>' +
+        '<div class="fh-key-val' + (r.pos === true ? ' pos' : r.pos === false ? ' neg' : '') +
+          '">' + r.value + '</div>' +
+        '<div class="fh-key-note">' + r.note + '</div>' +
+        '</div>';
+    }).join('');
+    el.hidden = false;
+  }
+
   // ── cumulative profit ───────────────────────────────────────────────────
   // ── bank ────────────────────────────────────────────────────────────────
   /* The ledger answers "what have I made"; this answers "what am I holding".
@@ -579,6 +681,7 @@
     setStatus('ok', 'Connected to RuneLite · <b>' + state.flips.length.toLocaleString() +
       '</b> flips in the ledger · read ' + when(state.generatedAt));
     renderSummary();
+    renderHighlights();
     renderBank();
     renderChart();
     renderTable();
