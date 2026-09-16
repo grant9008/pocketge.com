@@ -599,9 +599,16 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
         <div id="chartLoading" class="chart-loading"><div class="cl-spinner"></div>Loading live prices…</div>
         <div id="tip" class="chart-tip"></div>
 
-        <div class="chart-footer legend">
+        <!-- .is-flat is set by drawChart when the series carries one price per
+             point instead of a buy/sell pair — 5Y, where the daily-consensus
+             history is the only source that reaches back that far. The Lows /
+             Highs entries are swapped for one "Daily price" entry there, since
+             on that range the chart has neither and a legend that names two
+             series it is not drawing is worse than no legend. -->
+        <div class="chart-footer legend" id="chartLegend">
           <div class="legend-item low"><span class="legend-dash"></span> Lows</div>
           <div class="legend-item high"><span class="legend-dash"></span> Highs</div>
+          <div class="legend-item flat"><span class="legend-dash"></span> Daily price</div>
           <div class="legend-item low"><span class="legend-dot"></span> Period Low</div>
           <div class="legend-item high"><span class="legend-dot"></span> Period High</div>
           <div class="legend-item rlow"><span class="legend-ring"></span> Recent Low</div>
