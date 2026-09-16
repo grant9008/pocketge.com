@@ -6461,19 +6461,29 @@ function setFlipCollapsed(v){ try { localStorage.setItem(collapseKey('ge_flipCol
    markRecSeen filtering repeats it never does. It is free — the buffer is
    already in memory and re-validating a rec costs no API call. */
 function flipPager(where){
-  const total = recBuffer.length;
-  const pos = total ? Math.min(recIdx + 1, total) : 0;
   const atStart = recIdx <= 0;
   return `
     <div class="fc-pager fc-pager-${where}" role="group" aria-label="Cycle recommended flips">
       <button type="button" class="fc-page js-flip-prev" ${atStart ? 'disabled' : ''}
               title="Previous flip" aria-label="Previous recommended flip">‹</button>
-      <span class="fc-pos" ${total ? '' : 'hidden'}
-            title="Position in the current shortlist — a new scan starts a new one">
-        <b>${pos}</b>/${total}</span>
       <button type="button" class="fc-page js-flip-next"
               title="Next flip" aria-label="Next recommended flip">›</button>
     </div>`;
+}
+/* The count, in the kicker rather than between the two buttons.
+   It sat inside the pager, which is where it reads most naturally, and that is
+   where it stayed until the pager moved down onto the stats row. Measured, the
+   two figures plus a 75px pager need 311px of a 300px sidebar; without the
+   readout the pager is 51px and the row clears by 27. Something had to give,
+   and this is the piece with somewhere else to be: the header has room to
+   spare in both states, a count is metadata about the section rather than part
+   of the control, and up here it is on screen while the card is COLLAPSED too,
+   which the old placement only managed by rendering itself twice. */
+function flipCount(){
+  const total = recBuffer.length;
+  const pos = total ? Math.min(recIdx + 1, total) : 0;
+  if (!total) return '';
+  return `<span class="fc-count" title="Position in the current shortlist — a new scan starts a new one"><b>${pos}</b>/${total}</span>`;
 }
 
 function renderFlipCard(rec){
@@ -6483,6 +6493,7 @@ function renderFlipCard(rec){
     <div class="flip-card${collapsed ? ' collapsed' : ''}" role="button" tabindex="0" data-id="${rec.id}" aria-label="Open ${rec.item.name} — recommended flip">
       <div class="fc-head">
         <span class="fc-kicker"><span class="fc-kicker-txt">Recommended flip</span></span>
+        ${flipCount()}
         <div class="fc-head-ctrls">
           ${flipPager('head')}
           <button type="button" class="fc-collapse calc-caret${collapsed ? ' closed' : ''}" id="btnFlipCollapse" aria-label="Collapse recommended flip" aria-expanded="${collapsed ? 'false' : 'true'}" title="Collapse / expand">${uiIcon('chev')}</button>
@@ -6513,43 +6524,40 @@ function renderFlipCard(rec){
           <button type="button" class="fc-price buy" data-side="buy" title="Show the buy target line on the chart"><span class="fc-plabel">Buy @</span><span class="fc-pval">${fmtGp(rec.buy)}</span></button>
           <button type="button" class="fc-price sell" data-side="sell" title="Show the sell target line on the chart"><span class="fc-plabel">Sell @</span><span class="fc-pval">${fmtGp(rec.sell)}</span></button>
         </div>
-        <!-- One figure, not three. "Profit +4" was the per-unit edge, which the
-             Buy @ / Sell @ buttons directly above already state as the two
-             numbers it is the difference between, and "Daily vol" repeated the
-             liquidity half of the line under the item's name ("30K/4h
-             fillable"). What is left is the one thing you actually want from a
-             recommendation: how much gold a full cycle of it makes.
-             Laid out label-left / figure-right like the Potential Profit block
-             two sections up, because with one stat left it is the same shape of
-             statement and should read the same way.
-             Next deliberately stays in the header rather than moving down here.
-             It has to exist while the card is COLLAPSED, and collapsing only
-             toggles a class — nothing re-renders — so a copy in this row, which
-             lives inside .fc-collapsible, would either vanish when collapsed or
-             need a second element sharing its id. The crowding it had is fixed
-             where it actually was: the gap to the chevron. -->
+        <!-- One row, three slots: what you can move, what moving it is worth,
+             and the control for fetching another. The pager had a bar of its
+             own under this row, which spent a whole band of card height on two
+             26px buttons while the row above them ended in white space — the
+             two facts sat at the far ends of it with nothing in between. Both
+             problems have the same answer: pack the facts against the left and
+             let the pager take the right edge it was already aligned to.
+
+             "Profit +4" (per-unit edge) and "Daily vol" used to be here too.
+             The first is the difference between the two numbers the Buy @ /
+             Sell @ buttons state directly above; the second repeats the
+             liquidity fact that Fillable carries. What is left is the one thing
+             you want from a recommendation: how much gold a cycle makes. -->
         <div class="fc-stats">
           <div class="fc-stat-main">
             <!-- "Fillable", not "buy limit": recQtyEff is min(the item's 4-hour
                  buy limit, a share of its daily volume), so on a thin item the
                  volume is what binds and calling it the limit would be wrong.
-                 Label + value on both sides now, so the two read as a pair —
+                 Label + value on both sides, so the two read as a pair —
                  how many you can move, and what moving them is worth. -->
             <span class="fc-stat-side">
               <span class="fc-sword">Fillable</span>
               <span class="fc-sval-sm">${abbreviateNumber(rec.qtyEff)} / 4h</span>
             </span>
             <span class="fc-sval pos"><span class="fc-sword">Profit</span>+${abbreviateNumber(rec.realizable)} gp</span>
+            <!-- Inside .fc-collapsible, so it goes away with the body — which is
+                 why the header carries a second copy for the collapsed state.
+                 Collapsing only toggles a class and cannot move an element
+                 between the two. CSS shows exactly one; both are wired, which
+                 is why the buttons are addressed by class and not by id. -->
+            ${flipPager('row')}
           </div>
         </div>
       </div>
-      <!-- Bottom bar, matching the plugin's. A sibling of .fc-collapsible, not
-           a child, so it does not disappear with the body — but the header
-           carries its own copy for the collapsed state, because collapsing
-           only toggles a class and cannot move an element between the two.
-           CSS shows exactly one; both are wired, which is why the buttons are
-           addressed by class rather than by id. -->
-      <div class="fc-foot">${flipPager('foot')}</div>
     </div>`;
   wireFlipButtons();
 }
