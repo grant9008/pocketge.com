@@ -157,7 +157,7 @@
       "name": "What does the Recommended Flip score mean?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "How good that particular flip looks right now - not a rating of the item. Two things drive it: the net edge after tax, which maxes out at a 3% edge, and liquidity, which maxes out around 10M traded a day. If one side of the trade hasn't printed recently the score takes a 20% cut. Under 55 is Thin, 55+ Solid, 70+ Strong, 85+ Prime. Hover the score to see the exact arithmetic, and use the arrows at the foot of the card to walk the shortlist."
+        "text": "How good that particular flip looks right now - not a rating of the item. Two things drive it: the net edge after tax, which maxes out at a 3% edge, and liquidity, which maxes out around 10M traded a day. If one side of the trade hasn't printed recently the score takes a 20% cut. Under 55 is Thin, 55+ Solid, 70+ Strong, 85+ Prime. Hover the score to see the exact arithmetic, and use the arrows on the card to walk the shortlist."
       }
     },
     {
@@ -785,8 +785,8 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
            neither was explained anywhere. The numbers here mirror REC_BANDS
            and recScoreParts exactly — change both together. -->
       <div class="glossary-section">Recommended Flip (the &#9889; card)</div>
-      <div class="glossary-row"><span class="pg-verdict" style="color:#4FFF8E;font-size:10px;">SCORE / 100</span><span>How good <em>this particular flip</em> looks right now — not a rating of the item itself. Two things drive it: the net edge after tax (full marks at a 3% edge, and it stops counting above that, so a 12% edge scores the same as a 3% one) and liquidity (full marks at 10M traded a day). If one side hasn't traded recently the score takes a 20% cut. Hover or tap the score on the card to see the exact arithmetic.</span></div>
-      <div class="glossary-row"><span style="display:inline-flex;gap:3px;flex-wrap:wrap;max-width:118px"><span style="display:inline-block;font-size:9px;font-weight:900;padding:2px 6px;border-radius:3px;letter-spacing:.4px;white-space:nowrap;color:#0C0B09;background:#FF9F43">THIN</span><span style="display:inline-block;font-size:9px;font-weight:900;padding:2px 6px;border-radius:3px;letter-spacing:.4px;white-space:nowrap;color:#0C0B09;background:#FFD24D">SOLID</span><span style="display:inline-block;font-size:9px;font-weight:900;padding:2px 6px;border-radius:3px;letter-spacing:.4px;white-space:nowrap;color:#0C0B09;background:#FFEFC2">STRONG</span><span style="display:inline-block;font-size:9px;font-weight:900;padding:2px 6px;border-radius:3px;letter-spacing:.4px;white-space:nowrap;color:#0C0B09;background:#FFFFFF">PRIME</span></span><span><strong>Thin</strong> under 55 · <strong>Solid</strong> 55+ · <strong>Strong</strong> 70+ · <strong>Prime</strong> 85+. Because the finder only ever offers flips it has already checked are viable and fillable, a shown pick starts at 20 points before edge or volume are counted — so in practice you'll see the upper bands far more often than Thin. Use &#8249; &#8250; at the foot of the card to walk the shortlist; the score falls as the picks get thinner.</span></div>
+      <div class="glossary-row"><span class="pg-verdict" style="color:#FFFFFF;font-size:10px;">SCORE / 100</span><span>How good <em>this particular flip</em> looks right now — not a rating of the item itself. Two things drive it: the net edge after tax (full marks at a 3% edge, and it stops counting above that, so a 12% edge scores the same as a 3% one) and liquidity (full marks at 10M traded a day). If one side hasn't traded recently the score takes a 20% cut. Hover or tap the score on the card to see the exact arithmetic.</span></div>
+      <div class="glossary-row"><span style="display:inline-flex;gap:3px;flex-wrap:wrap;max-width:118px"><span style="display:inline-block;font-size:9px;font-weight:900;padding:2px 6px;border-radius:3px;letter-spacing:.4px;white-space:nowrap;color:#0C0B09;background:#FF9F43">THIN</span><span style="display:inline-block;font-size:9px;font-weight:900;padding:2px 6px;border-radius:3px;letter-spacing:.4px;white-space:nowrap;color:#0C0B09;background:#FFD24D">SOLID</span><span style="display:inline-block;font-size:9px;font-weight:900;padding:2px 6px;border-radius:3px;letter-spacing:.4px;white-space:nowrap;color:#0C0B09;background:#FFEFC2">STRONG</span><span style="display:inline-block;font-size:9px;font-weight:900;padding:2px 6px;border-radius:3px;letter-spacing:.4px;white-space:nowrap;color:#0C0B09;background:#FFFFFF">PRIME</span></span><span><strong>Thin</strong> under 55 · <strong>Solid</strong> 55+ · <strong>Strong</strong> 70+ · <strong>Prime</strong> 85+. Because the finder only ever offers flips it has already checked are viable and fillable, a shown pick starts at 20 points before edge or volume are counted — so in practice you'll see the upper bands far more often than Thin. Use &#8249; &#8250; on the card to walk the shortlist; the score falls as the picks get thinner.</span></div>
       <div class="glossary-section">Target prices</div>
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--buy-color)">Target Buy</span><span>Shown on the 1D timeframe — the day-flip bid. 15th-percentile of insta-sell prints in the last ~90 minutes (wall-clock), nudged toward the very-recent realised low. For high-volatility items (24h range &gt;4%) the anchor blends toward 0.5% above the 24h low, so a patient bid can catch multi-hour dips.</span></div>
       <div class="glossary-row"><span class="pg-verdict" style="color:var(--sell-color)">Target Sell</span><span>Shown on the 1D timeframe — the day-flip ask. -1 below the 85th-percentile of insta-buy prints in the last ~90 minutes, floored at live insta-buy so we never recommend selling below where buyers are paying right now. For high-volatility items the anchor blends toward 0.5% below the 24h high. If the live spread can't beat the 2% tax, both 1D boxes switch to the day's realized dip/peak (recency-weighted percentiles of the day's prints) — the levels worth placing patient orders at.</span></div>
@@ -1029,21 +1029,21 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
   <h2>When you don't have a list yet</h2>
   <p>Use the <strong>Analyst Rating</strong> when you already have an item open. Use <strong>Recommended Flip</strong> when you don't.</p>
   <p><strong>Analyst Rating</strong> judges the item in front of you. It grades the current price against the selected timeframe's range: near the floor with a real margin reads Buy, near the ceiling reads Sell, mid-range reads neutral and shows no word at all. A read on where the price <em>sits</em> — never a call on where it goes next. Because each timeframe has its own range, the same price can rate differently on 1D and 6M; that is the window changing, not the item.</p>
-  <p><strong>Recommended Flip</strong> finds the item you weren't looking at. It scans the market and hands you one, with a buy level, a sell level, its net edge, the realistic 4-hour fill and the daily volume. Every pick is scored out of 100 on edge and liquidity — Thin, Solid, Strong or Prime — and tapping the score shows the arithmetic. Use <b>&#8249; &#8250;</b> at the foot of the card for another.</p>
+  <p><strong>Recommended Flip</strong> finds the item you weren't looking at. It scans the market and hands you one, with a buy level, a sell level, its net edge, the realistic 4-hour fill and the daily volume. Every pick is scored out of 100 on edge and liquidity — Thin, Solid, Strong or Prime — and tapping the score shows the arithmetic. Use <b>&#8249; &#8250;</b> on the card's stats row for another; the count beside the heading says how many are queued.</p>
   <p>Both are advisory. The target prices are the actual trade.</p>
   <figure class="ex">
     <div class="ex-frame ex-frame-pad">
       <div class="flip-card" style="cursor:default">
-        <div class="fc-head"><span class="fc-kicker"><span class="fc-kicker-txt">Recommended Flip</span></span></div>
+        <div class="fc-head"><span class="fc-kicker"><span class="fc-kicker-txt">Recommended Flip</span></span><span class="fc-count"><b>1</b>/5</span></div>
         <div class="fc-body">
           <img class="fc-icon" src="https://static.runelite.net/cache/item/icon/1654.png" alt="" loading="lazy">
           <div class="fc-main">
             <div class="fc-name">Gold necklace</div>
           </div>
           <div class="fc-gauge">
-            <div class="fc-score" style="color:#4FFF8E">91</div>
-            <div class="fc-verdict" style="color:#4FFF8E">Prime Flip</div>
-            <div class="fc-meter"><span style="width:91%;background:#4FFF8E"></span></div>
+            <div class="fc-score" style="color:#FFFFFF">91</div>
+            <div class="fc-verdict" style="color:#FFFFFF">Prime Flip</div>
+            <div class="fc-meter"><span style="width:91%;background:#FFFFFF"></span></div>
           </div>
         </div>
         <div class="fc-prices">
@@ -1060,6 +1060,10 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
               <span class="fc-sval-sm">18K / 4h</span>
             </span>
             <span class="fc-sval pos"><span class="fc-sword">Profit</span>+108K gp</span>
+            <div class="fc-pager" role="group" aria-label="Cycle recommended flips">
+              <span class="fc-page">&#8249;</span>
+              <span class="fc-page">&#8250;</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1204,7 +1208,7 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
     </details>
     <details>
       <summary>What does the Recommended Flip score mean?</summary>
-      <p>How good <em>that particular flip</em> looks right now &mdash; not a rating of the item. Two things drive it: the net edge after tax, which maxes out at a 3% edge, and liquidity, which maxes out around 10M traded a day. If one side of the trade hasn't printed recently the score takes a 20% cut. Under 55 is Thin, 55+ Solid, 70+ Strong, 85+ Prime. Hover the score to see the exact arithmetic, and use the arrows at the foot of the card to walk the shortlist.</p>
+      <p>How good <em>that particular flip</em> looks right now &mdash; not a rating of the item. Two things drive it: the net edge after tax, which maxes out at a 3% edge, and liquidity, which maxes out around 10M traded a day. If one side of the trade hasn't printed recently the score takes a 20% cut. Under 55 is Thin, 55+ Solid, 70+ Strong, 85+ Prime. Hover the score to see the exact arithmetic, and use the arrows on the card to walk the shortlist.</p>
     </details>
     <details>
       <summary>What does a 5-day high or low badge mean?</summary>

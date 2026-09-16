@@ -3095,33 +3095,30 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
    FILLED chip. A 12% tint with a 45% border is the same weight as .calc-caret,
    which is the site's existing answer to "a real control, quieter than the
    data": it sits under the two solid-bordered price buttons, not over them. */
-/* The pager. Three parts that act as one control, so they are grouped tight
-   (4px) and the group as a whole keeps its distance from anything else.
+/* Back and forward, grouped tight (4px) because they are one control, with the
+   group keeping its distance from anything else. The position readout used to
+   sit between them; it is in the kicker now — see .fc-count and flipCount().
 
-   Rendered twice — once in the bottom bar, once in the header — because
+   Rendered twice — once on the stats row, once in the header — because
    collapsing this card only toggles a class and cannot move an element between
    the two. Exactly one is ever displayed:
-     expanded   the bottom bar, where the plugin puts the same control
-     collapsed  the header, since the bar's row is gone with the body and a
+     expanded   the stats row, riding the right edge
+     collapsed  the header, since the stats row is gone with the body and a
                 collapsed card that cannot be cycled is worse than a tidy one */
 .fc-pager { display:flex; align-items:center; gap:4px; flex:0 0 auto; }
 .fc-pager-head { display:none; }
 .flip-card.collapsed .fc-pager-head { display:flex; }
-.flip-card.collapsed .fc-foot { display:none; }
-/* No rule above it, and the same 10px every other band in this card is
-   separated by. The divider plus its 9px of padding made a 20px trough under
-   the stats where the three gaps above it are 11, 10 and 11 — the controls
-   read as bolted on rather than as the last row of the card, which is the
-   opposite of what a bar is for. The buttons are already fenced by their own
-   borders; a second fence around them was one too many. */
-/* Right, not centred. Everything else on this card that is a control rather
-   than data sits against the right edge — the collapse chevron above it, and
-   the profit figure it lines up under — so a centred pager was the one element
-   floating free of that rail. */
-.fc-foot { display:flex; align-items:center; justify-content:flex-end; gap:10px;
-  margin-top:10px; }
-.fc-page { width:26px; height:26px; display:flex; align-items:center; justify-content:center;
-  padding:0; border-radius:6px; cursor:pointer; font:700 17px/1 inherit;
+/* The expanded copy needs no collapsed rule: it lives inside .fc-collapsible,
+   which collapsing hides outright. */
+/* 24px, down from 26. The stats row it moved onto has two figures and the card
+   edge to share 300px with, and the collapsed header has to fit it next to the
+   section name and the chevron in a 220px landscape sidebar — where the name
+   was ellipsizing by 7px. Same size in both copies: they are the same control
+   and are never on screen together to be compared, but a second figure here
+   would be one more number to keep in step for no gain. Still the 24px target
+   the timeframe pills use. */
+.fc-page { width:24px; height:24px; display:flex; align-items:center; justify-content:center;
+  padding:0; border-radius:6px; cursor:pointer; font:700 16px/1 inherit;
   color:var(--border-active); background:rgba(201,166,77,0.12);
   border:1px solid rgba(201,166,77,0.45);
   transition:color .15s ease, background .15s ease, border-color .15s ease, transform .12s ease; }
@@ -3132,10 +3129,6 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
    width under the cursor between one pick and the next. */
 .fc-page:disabled { opacity:.32; cursor:default; }
 .fc-page:focus-visible { outline:2px solid var(--border-active); outline-offset:1px; }
-.fc-pos { font-size:11px; font-variant-numeric:tabular-nums; color:var(--text-muted);
-  padding:0 3px; white-space:nowrap; user-select:none; }
-.fc-pos b { color:var(--text-main); font-weight:800; }
-.fc-pos[hidden] { display:none; }
 
 .fc-next { min-height:34px; font-size:11.5px; font-weight:700; padding:6px 14px; border-radius:6px; cursor:pointer;
   color:var(--border-active); background:rgba(201,166,77,0.12); border:1px solid rgba(201,166,77,0.45);
@@ -3239,17 +3232,45 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
    "Potential Profit". Wrapping costs a whole line of a section that is meant
    to be one; ellipsizing costs a couple of characters of a name you can
    already infer. */
-.fc-kicker { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* The ellipsis belongs on the TEXT, not on .fc-kicker — that is an inline-flex
+   box (see the rule further up), and text-overflow does nothing on a flex
+   container. The label has been clipping mid-glyph in the 220px landscape
+   sidebar all along, which is what this pair of properties was put here to
+   prevent; it only looked like it worked because nothing narrow enough had
+   been measured. min-width:0 stays on the container so it can still shrink. */
+.fc-kicker { min-width:0; }
+.fc-kicker-txt { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* Sibling of the kicker, not a child of it, so the ellipsis above can eat into
+   the section name without ever clipping the count. margin-right:auto keeps it
+   tucked against the name while .fc-head's space-between still throws the
+   controls to the far edge. Muted and 11px: the same weight .fc-pos had inside
+   the pager, because it is the same fact. */
+.fc-count { flex:0 0 auto; margin-right:auto; font-size:11px; color:var(--text-muted);
+  font-variant-numeric:tabular-nums; letter-spacing:0; text-transform:none; }
+.fc-count b { font-weight:800; color:var(--text-main); }
 /* Collapsed used to drop the label to 9.5px, which made this section name
    visibly smaller than its four peers in the state users see most. It fits
-   at full size next to Next + chevron; the ellipsis above is the safety net
-   if a narrower container ever proves otherwise. */
+   at full size next to the count, the pager and the chevron everywhere but the
+   220px landscape sidebar, where the ellipsis above takes the last character
+   or two rather than the label shrinking. */
 .fc-body { display:flex; align-items:center; gap:8px; }
 .fc-icon { width:30px; height:30px; flex:0 0 30px; image-rendering:pixelated; }
 .fc-main { flex:1 1 auto; min-width:0; }
 .fc-name { font-weight:800; font-size:14px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .fc-why { font-size:10.5px; color:var(--text-muted); margin-top:3px; line-height:1.45; }
-.fc-gauge { flex:0 0 auto; text-align:center; min-width:58px; position:relative; }
+/* padding-right, so the whole block — number, verdict and meter — shifts left
+   together and keeps its own internal centring.
+   The gauge sits flush with the card's right edge, directly under the collapse
+   chevron, and the score is centred in it: a two-digit number's right edge
+   landed 2px INSIDE the chevron's left edge, so the two stacked into a column
+   and the number read as a caption on the control. 16px, measured, is what a
+   centred THREE-digit score needs to clear it — recScoreParts tops out at
+   exactly 100, so that case is rare but real, and sizing for the two-digit one
+   would have put the fix back where it started on the best pick the app finds.
+   The meter gives up being flush right to do it, which is the cheaper loss —
+   it is a bar whose length is the message, not an edge anyone aligns to. */
+.fc-gauge { flex:0 0 auto; text-align:center; min-width:58px; position:relative;
+  padding-right:16px; }
 .fc-score { font-size:18px; font-weight:800; line-height:1; }
 .fc-verdict { font-size:9.5px; font-weight:700; margin-top:1px; }
 .fc-meter { height:3px; border-radius:2px; background:rgba(255,255,255,.10); margin-top:3px; overflow:hidden; }
@@ -3306,14 +3327,36 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 .fc-price.buy .fc-plabel { color:var(--buy-color); }
 .fc-price.sell .fc-plabel { color:var(--sell-color); }
 .fc-pval { display:block; font-size:15px; font-weight:800; color:var(--text-main); margin-top:1px; }
-/* One figure now, laid out label-left / value-right like the Potential Profit
-   block two sections up: with a single stat left it is the same shape of
-   statement and should read the same way. It was three stacked label/value
-   columns, which is the right shape for three and reads as a leftover for one. */
+/* Facts left, control right. The two figures were pinned to opposite ends by
+   space-between, which on the default 300px sidebar left ~110px of nothing
+   between them — two statements shouting across a room rather than a pair you
+   read in one movement. Packed against the left they scan as one line, and the
+   space they give back is where the pager now lives, which is what let the
+   whole bottom bar go.
+
+   14px between the two units against 7px inside each, rather than the 18px
+   this page usually spends on "these are two things, not one". Measured, the
+   three slots need 260px of the 300 available before any gap at all, and 18px
+   leaves 4px of slack for a device whose glyphs run wider than Chromium's —
+   which is the sort of margin the .fc-kicker note further up records not
+   trusting. 14 doubles the binding gap and keeps 12px in hand. */
 .fc-stats { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; }
 .fc-stats > div { display:flex; flex-direction:column; flex:1 1 auto; }
-.fc-stat-main { flex-direction:row !important; align-items:baseline; justify-content:space-between;
-  gap:10px; width:100%; }
+/* flex-wrap is the floor, not the plan. Nothing a real pick prints overflows
+   this row — 4-hour buy limits top out in the tens of thousands, so FILLABLE is
+   at most "30K / 4h" — but a wrap that drops the pager onto its own
+   right-aligned line is just the old bottom bar, which is a fine thing to
+   degrade into and much better than three slots overlapping. It is also what
+   the 220px landscape sidebar gets, where three across is impossible. */
+.fc-stat-main { flex-direction:row !important; align-items:baseline;
+  justify-content:flex-start; flex-wrap:wrap; gap:8px 14px; width:100%; }
+/* margin-left:auto, not justify-content:space-between — the two figures stay
+   packed together on the left however much room is going spare, and only the
+   pager takes the slack.
+   align-self:center because the row is baseline-aligned: a button box has no
+   baseline worth sharing with 13px and 17px text, and left in the baseline
+   group it hangs below the line by the height of its own bottom border. */
+.fc-stat-main .fc-pager { margin-left:auto; align-self:center; }
 .fc-stat-main .fc-sval { font-size:17px; letter-spacing:-0.3px; display:flex; align-items:baseline; gap:7px; }
 /* The left half, built the same way as the right so the row reads as a pair.
    It was the whole fact crammed into one 9px uppercase label — "25K / 4H
@@ -3414,9 +3457,21 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
   .flip-card .fc-pval { font-size: 13px; }
   .flip-card .fc-plabel { font-size: 9px; }
   .flip-card .fc-stats { flex-wrap: nowrap; gap: 8px; }
-  .flip-card .fc-stats > div { flex-direction: row; align-items: baseline; gap: 3px; min-width: 0; flex: 0 1 auto; }
+  /* Wrapping, and a real gap. Written for three stacked label/value columns
+     crammed edge to edge, where 3px was all there was; the row is now two
+     left-packed figures plus the pager, and at 220px those three cannot share
+     a line at any gap — the pager takes a second one. 3px between the two
+     figures that DO share a line read as a single phrase, so it goes back up
+     to 12, which the row can afford now that it is allowed to wrap. */
+  .flip-card .fc-stats > div { flex-direction: row; align-items: baseline; flex-wrap: wrap; gap: 6px 12px; min-width: 0; flex: 0 1 auto; }
   .flip-card .fc-slabel { font-size: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .flip-card .fc-sval { font-size: 11px; white-space: nowrap; }
+  /* The profit figure is the one number this card exists to show, and the
+     .fc-sval rule above was quietly shrinking it to 11px while FILLABLE beside
+     it stayed at 13 — the secondary figure rendering larger than the primary.
+     Both drop a notch instead, keeping the order right. */
+  .flip-card .fc-stat-main .fc-sval { font-size: 14px; }
+  .flip-card .fc-sval-sm { font-size: 11.5px; }
 }
 
 /* ── Analyst Rating gauge ────────────────────────────────────────────────── */
