@@ -570,10 +570,34 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
   /* Wrapped: they only have to share the brand row, so the floor is far lower. */
   @container tickerrow (max-width: 400px) { .hdr-links { display: none; } }
 }
-/* Phone. The search box has swallowed the item name and its wiki link by here
-   and the row is a single nowrap line of essentials — there is nothing to
-   squeeze into, and everything in here is in the drawer two taps away. */
+/* Phone, either way up. The search box has swallowed the item name and its wiki
+   link by here and the row is a single nowrap line of essentials — there is
+   nothing to squeeze into, and everything in here is in the drawer two taps
+   away.
+
+   The landscape half is not optional. A phone on its side is ~870px wide, which
+   is nowhere near the 640px portrait rule, so these rendered into a layout that
+   has the search box, the item name AND the six timeframe pills sharing one
+   42px row: the links took the width, the item name ended up behind them and
+   the search box was crushed to 90px. Same condition the layout itself is keyed
+   to, so the two cannot disagree about which one is running. */
 @media (max-width: 640px) { .hdr-links { display: none; } }
+/* Phone on its side, and the breadcrumb goes with them.
+   `pointer: coarse` is load-bearing, not decoration: it is the exact condition
+   the folded header layout itself is keyed to. A short desktop WINDOW matches
+   the height and orientation but keeps the ordinary two-row header, where both
+   of these fit fine — dropping them there would be a fix for a layout that is
+   not running.
+   The breadcrumb was wrapping to two lines inside a 42px row and taking the
+   space the item name needs, while saying nothing the search box does not:
+   in this layout the box already carries the item's name and its wiki link.
+   Portrait keeps it, deliberately. Google renders for mobile-first indexing in
+   a PORTRAIT viewport, so the trail its BreadcrumbList describes has to be
+   visible there, and this condition cannot match that. */
+@media (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
+  .hdr-links { display: none; }
+  .crumbs { display: none; }
+}
 @media (max-width: 560px) { .crumbs { font-size: 11px; } }
 
 /* The header dropdown. position:fixed and placed from JS — .hdr-links sits
