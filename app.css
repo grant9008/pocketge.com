@@ -367,6 +367,16 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
      exactly, and low enough that an ultrawide does not get a 1700px search
      box, which is what `flex: 1 1 auto` alone would do. */
   .search-group { flex: 1 1 auto; max-width: 724px; }
+  /* 8px on top of .panel-left's own 10px. The row's shared gap is the spacing
+     between the menu, the logo and the mode pill — a run of small controls
+     that belong together — and at that same 10px the links read as the next
+     item in that run rather than as a separate group sitting beside a text
+     field they have nothing to do with. 18px is the figure the .fc-head-ctrls
+     and .rg-toggle notes both landed on for the same "these two are not one
+     thing" problem.
+     Only in the one-row layout. Below 1024 the nav sits WITH the mode pill by
+     design, and there the shared 10px is exactly right. */
+  .hdr-links { margin-left: 8px; }
 }
 #itemIcon { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; image-rendering: pixelated; }
 /* Combined search+item+wiki overlay — off by default, enabled in landscape
