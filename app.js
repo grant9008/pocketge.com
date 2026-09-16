@@ -6465,10 +6465,26 @@ function renderFlipCard(rec){
           <button type="button" class="fc-price buy" data-side="buy" title="Show the buy target line on the chart"><span class="fc-plabel">Buy @</span><span class="fc-pval">${fmtGp(rec.buy)}</span></button>
           <button type="button" class="fc-price sell" data-side="sell" title="Show the sell target line on the chart"><span class="fc-plabel">Sell @</span><span class="fc-pval">${fmtGp(rec.sell)}</span></button>
         </div>
+        <!-- One figure, not three. "Profit +4" was the per-unit edge, which the
+             Buy @ / Sell @ buttons directly above already state as the two
+             numbers it is the difference between, and "Daily vol" repeated the
+             liquidity half of the line under the item's name ("30K/4h
+             fillable"). What is left is the one thing you actually want from a
+             recommendation: how much gold a full cycle of it makes.
+             Laid out label-left / figure-right like the Potential Profit block
+             two sections up, because with one stat left it is the same shape of
+             statement and should read the same way.
+             Next deliberately stays in the header rather than moving down here.
+             It has to exist while the card is COLLAPSED, and collapsing only
+             toggles a class — nothing re-renders — so a copy in this row, which
+             lives inside .fc-collapsible, would either vanish when collapsed or
+             need a second element sharing its id. The crowding it had is fixed
+             where it actually was: the gap to the chevron. -->
         <div class="fc-stats">
-          <div><span class="fc-slabel">Profit</span><span class="fc-sval pos">+${fmtGp(rec.edge)}</span></div>
-          <div><span class="fc-slabel">Per 4h</span><span class="fc-sval pos">+${abbreviateNumber(rec.realizable)}</span></div>
-          <div><span class="fc-slabel">Daily vol</span><span class="fc-sval">${abbreviateNumber(rec.vol)}</span></div>
+          <div class="fc-stat-main">
+            <span class="fc-slabel">Profit per 4h limit</span>
+            <span class="fc-sval pos">+${abbreviateNumber(rec.realizable)} gp</span>
+          </div>
         </div>
       </div>
     </div>`;

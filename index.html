@@ -1051,10 +1051,14 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
           <span class="fc-price buy"><span class="fc-plabel">Buy @</span><span class="fc-pval">151</span></span>
           <span class="fc-price sell"><span class="fc-plabel">Sell @</span><span class="fc-pval">160</span></span>
         </div>
+        <!-- Mirrors renderFlipCard. This example is a hand-written copy of the
+             live card, so it has to be changed alongside it or the page below
+             the app advertises a layout the app no longer has. -->
         <div class="fc-stats">
-          <div><span class="fc-slabel">Profit</span><span class="fc-sval pos">+6</span></div>
-          <div><span class="fc-slabel">Per 4h</span><span class="fc-sval pos">+108K</span></div>
-          <div><span class="fc-slabel">Daily vol</span><span class="fc-sval">1.64M</span></div>
+          <div class="fc-stat-main">
+            <span class="fc-slabel">Profit per 4h limit</span>
+            <span class="fc-sval pos">+108K gp</span>
+          </div>
         </div>
       </div>
     </div>
