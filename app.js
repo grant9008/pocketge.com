@@ -6961,14 +6961,23 @@ let rlBridgeTracked = false;
    is currently active — there's no single global "the" RuneLite list
    anymore. */
 let rlFavoriteListsByName = new Map();
-/* Last navRequest.seq we acted on. Starts null rather than 0 deliberately:
+/* Last navRequest.seq we were offered. Starts null rather than 0 deliberately:
    the plugin keeps the most recent request in its payload so a dropped poll
    or a reload can't lose the click, which means the FIRST payload after
-   connecting usually carries a stale one from earlier in the session.
-   Acting on that would yank the page to some item you looked at an hour ago
-   the moment you hit Connect. So the first payload only records the seq —
-   navigation starts from the next increment. */
+   connecting is often a stale one from earlier in the session, and acting on
+   it would yank the page to some item you looked at an hour ago. A first
+   request is taken on its AGE rather than banked unread — see
+   rlHandleNavRequest, and RL_NAV_FRESH_MS for why. */
 let rlLastNavSeq = null;
+/* ...and the `at` of that request. The seq alone cannot order two deliveries:
+   the same click reaches this tab by two routes (the /nav long poll and the
+   5s /flips payload) and their responses can land out of order, so a seq
+   LOWER than the last one is either a response that was overtaken in flight
+   or a plugin that has restarted and begun counting again from 1. The
+   timestamp tells those apart with no guessing — a restart's first click is
+   newer than anything we have seen, an overtaken response is older. Both
+   clocks are the same machine's, over loopback. */
+let rlLastNavAt = 0;
 /* The most recent poll payload, kept so the modal can re-render itself
    between ticks — turning a history page, or the ledger download landing,
    both need to redraw and neither should have to wait up to five seconds
@@ -7180,8 +7189,55 @@ function rlApply(data) {
    and the same request stays in the payload until a newer one replaces it. */
 function rlHandleNavRequest(nav) {
   if (!nav || typeof nav.seq !== 'number') return;
-  if (rlLastNavSeq === null) { rlLastNavSeq = nav.seq; return; } // see rlLastNavSeq
-  if (nav.seq <= rlLastNavSeq) return;
+
+  const at = Number(nav.at) || 0;
+
+  /* A seq LOWER than the last one we were offered is one of two things, and
+     they need opposite treatment:
+
+       - a plugin that has restarted. The counter is an AtomicLong that begins
+         again at 1 every time RuneLite launches, so without this the tab
+         keeps the old high-water mark and ignores every chart click for as
+         long as it stays open. (The long poll cannot deliver this — it asks
+         for > since and the rewound seq never is — so it arrives on the 5s
+         payload poll, which carries navRequest unconditionally.)
+
+       - a response that was overtaken in flight. The same click reaches this
+         tab by both routes and their responses are not ordered, so a payload
+         sent before the one we just acted on can land after it. Treating that
+         as a restart would send the page BACK to the previous item, turning
+         one chart click into two jumps.
+
+     The timestamp separates them with no heuristic: a restart's first click
+     is newer than anything seen, an overtaken response is older. A plugin too
+     old to send one is left on the pre-existing behaviour rather than
+     guessed at. */
+  if (rlLastNavSeq !== null && nav.seq < rlLastNavSeq) {
+    if (!(at > rlLastNavAt)) return;
+    rlLastNavSeq = null;
+  }
+
+  if (rlLastNavSeq === null) {
+    /* The first request this tab is offered — see rlLastNavSeq.
+       It is USUALLY a leftover from earlier in the plugin's session, kept in
+       the payload so a dropped poll can't lose a click, and acting on it
+       would yank the page to something you looked at an hour ago.
+
+       It is not always. Click the chart button when no tab has been offered a
+       request yet — the first click after launching RuneLite, or a click made
+       while this tab was still loading — and the first thing we are handed IS
+       the click you just made. Banking that silently is the "chart button
+       does nothing the first time, then works afterwards" report: one click
+       per plugin run went missing, which across a session of restarts is most
+       of them. Age decides it. */
+    rlLastNavSeq = nav.seq;
+    rlLastNavAt = at;
+    if (!(at > 0 && Date.now() - at < RL_NAV_FRESH_MS)) return;
+  } else if (nav.seq <= rlLastNavSeq) {
+    return;
+  } else {
+    rlLastNavAt = at;
+  }
   /* The mapping check comes BEFORE the seq is banked, and that ordering is
      the whole point. It used to be the other way round: the seq was recorded
      and THEN we bailed if the item list had not loaded yet, which consumed
@@ -7261,6 +7317,12 @@ const RL_NAV_CLAIM_KEY = 'ge_nav_claim';
 const RL_TAB_FOCUS_KEY = 'ge_tab_focus';
 const RL_TAB_ID = String(Math.random()).slice(2) + '-' + Date.now();
 const RL_NAV_YIELD_MS = 400;
+/* How recent a request has to be for a tab seeing its FIRST one to act on it
+   rather than just bank it. Wide enough to cover a cold page load started by
+   the click itself (the plugin opens the browser, which then has to boot the
+   page and fetch the item mapping), nowhere near wide enough to reach a click
+   from earlier in the session. */
+const RL_NAV_FRESH_MS = 20_000;
 const rlNavDeferred = new Set();
 
 /* How long a focus record stands before the tab that wrote it is presumed
