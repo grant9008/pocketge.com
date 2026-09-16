@@ -194,7 +194,7 @@ def build(snapshot=None):
 {chr(10).join(body)}
 
   <div class="footer">
-    Prices are a snapshot from when this page was built; the terminal shows live ones. PocketGE is a free, independent fan tool — not affiliated with Jagex Ltd. · <a href="/">Home</a> · <a href="/flipping-guide.html">Flipping Guide</a> · <a href="/glossary.html">Badge Glossary</a> · <a href="https://ko-fi.com/pocketge" rel="noopener" target="_blank">Support PocketGE</a>
+    Prices are a snapshot from when this page was built; the terminal shows live ones. PocketGE is a free, independent fan tool — not affiliated with Jagex Ltd. · <a href="/">Home</a> · <a href="/flipping-guide.html">Flipping Guide</a> · <a href="/glossary.html">Badge Glossary</a> · <a href="https://buy.stripe.com/aFafZg9ehaaxaVaf3e00000" rel="noopener" target="_blank">Support PocketGE</a>
   </div>
 </div>
 <script src="site-nav.js" defer></script>
