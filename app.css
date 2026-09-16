@@ -3095,10 +3095,24 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
    FILLED chip. A 12% tint with a 45% border is the same weight as .calc-caret,
    which is the site's existing answer to "a real control, quieter than the
    data": it sits under the two solid-bordered price buttons, not over them. */
-/* The pager. Three parts that act as one control, so unlike the Next button
-   it replaced they are grouped tight (4px) and the group as a whole keeps its
-   18px from the collapse chevron. */
+/* The pager. Three parts that act as one control, so they are grouped tight
+   (4px) and the group as a whole keeps its distance from anything else.
+
+   Rendered twice — once in the bottom bar, once in the header — because
+   collapsing this card only toggles a class and cannot move an element between
+   the two. Exactly one is ever displayed:
+     expanded   the bottom bar, where the plugin puts the same control
+     collapsed  the header, since the bar's row is gone with the body and a
+                collapsed card that cannot be cycled is worse than a tidy one */
 .fc-pager { display:flex; align-items:center; gap:4px; flex:0 0 auto; }
+.fc-pager-head { display:none; }
+.flip-card.collapsed .fc-pager-head { display:flex; }
+.flip-card.collapsed .fc-foot { display:none; }
+/* Its own bar rather than a row of the body: a rule above it says the controls
+   are not more of the data, which is the same job the divider on the chart's
+   control row does. */
+.fc-foot { display:flex; align-items:center; justify-content:center; gap:10px;
+  margin-top:11px; padding-top:9px; border-top:1px solid var(--border-hair); }
 .fc-page { width:26px; height:26px; display:flex; align-items:center; justify-content:center;
   padding:0; border-radius:6px; cursor:pointer; font:700 17px/1 inherit;
   color:var(--border-active); background:rgba(201,166,77,0.12);
