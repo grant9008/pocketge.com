@@ -1,0 +1,12 @@
+# Puts a "Sponsor" button at the top of the repository page and in the sidebar,
+# and adds a Sponsor entry to the repo's own menus. GitHub reads this file from
+# the default branch of a PUBLIC repo; nothing else is needed to switch it on.
+#
+# `custom` rather than one of the named platforms because the link is a Stripe
+# payment link — a hosted checkout, so there is no account for anyone to make on
+# either side. GitHub allows up to four custom URLs; one is the whole of it.
+#
+# Same URL as SUPPORT_URL in app.js and the footer links. If it ever changes,
+# it changes in both places or the repo and the site disagree about where the
+# money goes.
+custom: ["https://buy.stripe.com/aFafZg9ehaaxaVaf3e00000"]

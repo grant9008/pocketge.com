@@ -797,7 +797,11 @@ function saveColPrefs() { try { localStorage.setItem(colPrefsKey(), JSON.stringi
    watchlist, no modal, no interstitial. The dev note and the footer are both
    inside the block prerender_items.py cuts, so neither reaches the 1,840 item
    pages either. */
-const SUPPORT_URL = 'https://ko-fi.com/pocketge';
+/* Stripe rather than Ko-fi. A payment link is a hosted checkout: the tipper
+   needs no account on anything, which is one fewer reason to close the tab
+   than "sign in to Ko-fi to continue" was. One constant, read by the dev
+   note, the footer and the drawer entry alike, so the three cannot drift. */
+const SUPPORT_URL = 'https://buy.stripe.com/aFafZg9ehaaxaVaf3e00000';
 
 (function supportLinks() {
   const mount = () => {

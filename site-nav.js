@@ -39,7 +39,7 @@
        long enough to scroll past on a laptop. These pages are short, so
        here it is actually reachable. */
     { group: 'The dev' },
-    { href: 'https://ko-fi.com/pocketge', label: 'Support PocketGE', ext: true }
+    { href: 'https://buy.stripe.com/aFafZg9ehaaxaVaf3e00000', label: 'Support PocketGE', ext: true }
   ];
 
   var CSS = [
