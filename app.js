@@ -1248,13 +1248,18 @@ function openPalettePop(btn) {
   syncPalettePop();
   pop.hidden = false;
   btn.setAttribute('aria-expanded', 'true');
-  const r = btn.getBoundingClientRect(), w = pop.offsetWidth;
+  const r = btn.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
   /* Right-aligned to the button, then pulled back inside the viewport — the
      control sits near the right edge of a narrow column often enough that
      right-alignment alone runs it off screen. */
   const left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8));
+  /* Flips above when there is not room below. The header copy always has room;
+     the copy on the chart's control row sits two thirds of the way down a
+     phone, where opening downwards put the custom colour fields off screen. */
+  const below = window.innerHeight - r.bottom - 6;
+  const top = (below < h && r.top - 6 > below) ? Math.max(8, r.top - 6 - h) : r.bottom + 6;
   pop.style.left = Math.round(left) + 'px';
-  pop.style.top = Math.round(r.bottom + 6) + 'px';
+  pop.style.top = Math.round(top) + 'px';
 }
 
 (function headerPalette() {

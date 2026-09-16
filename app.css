@@ -3563,22 +3563,23 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
    there and always order:3. No width-keyed duplicate needed, and no
    :first-of-type either: both controls are <button>, and display:none does
    not take an element out of that selector's reckoning. */
-.qf-row .qf-refresh { position:relative; margin-right:6px; }
-.qf-row .qf-refresh::after {
+/* The palette is the last control on this row at every width, which is what
+   Refresh used to be and then, below 1024px, Share. Both of those needed a
+   width-conditional copy of this rule and a :has() to hand the boundary over;
+   this one never moves, so the mark lives on it and the hand-off goes away.
+   It also cannot vanish out from under the rule the way Share can — Share is
+   re-parented between three hosts by placeShareButton(). */
+.qf-row .qf-palette { position:relative; margin-right:6px; }
+.qf-row .qf-palette::after {
   content:''; position:absolute; right:-8px; top:3px; bottom:3px;
   width:1px; background:var(--border-main);
 }
-/* …except below 1024px, where Share joins this row and becomes the last
-   control instead. The rule marks the boundary, not the button, so it moves
-   with whatever is actually last — left on Refresh it would have fenced off
-   Share along with the figures it is not. */
-.qf-row:has(#btnShare) .qf-refresh { margin-right:0; }
-.qf-row:has(#btnShare) .qf-refresh::after { content:none; }
-.qf-row #btnShare { position:relative; margin-right:6px; }
-.qf-row #btnShare::after {
-  content:''; position:absolute; right:-8px; top:3px; bottom:3px;
-  width:1px; background:var(--border-main);
-}
+/* Square, 26px, same as .ct-btn and .qf-refresh either side of it. The base
+   .hdr-palette is a 20px-radius pill because in the header it sits among text
+   links; in a row of square chips that pill reads as a different kind of
+   control than it is. */
+.qf-row .qf-palette { order:3; height:26px; padding:0 8px; border-radius:6px; flex:0 0 auto; }
+.qf-row .qf-palette i { width:8px; height:8px; }
 .qf-refresh { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; gap:5px;
   width:26px; height:26px; padding:0; border:1px solid var(--border-main); border-radius:6px;
   background:transparent; color:var(--text-muted); cursor:pointer; transition:color .15s ease, border-color .15s ease, transform .12s ease; }
