@@ -6443,18 +6443,18 @@ function setFlipCollapsed(v){ try { localStorage.setItem(collapseKey('ge_flipCol
    past a pick you wanted meant scanning until it came round again, which with
    markRecSeen filtering repeats it never does. It is free — the buffer is
    already in memory and re-validating a rec costs no API call. */
-function flipPager(){
+function flipPager(where){
   const total = recBuffer.length;
   const pos = total ? Math.min(recIdx + 1, total) : 0;
   const atStart = recIdx <= 0;
   return `
-    <div class="fc-pager" role="group" aria-label="Cycle recommended flips">
-      <button type="button" class="fc-page" id="btnPrevFlip" ${atStart ? 'disabled' : ''}
+    <div class="fc-pager fc-pager-${where}" role="group" aria-label="Cycle recommended flips">
+      <button type="button" class="fc-page js-flip-prev" ${atStart ? 'disabled' : ''}
               title="Previous flip" aria-label="Previous recommended flip">‹</button>
       <span class="fc-pos" ${total ? '' : 'hidden'}
             title="Position in the current shortlist — a new scan starts a new one">
         <b>${pos}</b>/${total}</span>
-      <button type="button" class="fc-page" id="btnNextFlip"
+      <button type="button" class="fc-page js-flip-next"
               title="Next flip" aria-label="Next recommended flip">›</button>
     </div>`;
 }
@@ -6467,7 +6467,7 @@ function renderFlipCard(rec){
       <div class="fc-head">
         <span class="fc-kicker"><span class="fc-kicker-txt">Recommended flip</span></span>
         <div class="fc-head-ctrls">
-          ${flipPager()}
+          ${flipPager('head')}
           <button type="button" class="fc-collapse calc-caret${collapsed ? ' closed' : ''}" id="btnFlipCollapse" aria-label="Collapse recommended flip" aria-expanded="${collapsed ? 'false' : 'true'}" title="Collapse / expand">${uiIcon('chev')}</button>
         </div>
       </div>
@@ -6518,6 +6518,13 @@ function renderFlipCard(rec){
           </div>
         </div>
       </div>
+      <!-- Bottom bar, matching the plugin's. A sibling of .fc-collapsible, not
+           a child, so it does not disappear with the body — but the header
+           carries its own copy for the collapsed state, because collapsing
+           only toggles a class and cannot move an element between the two.
+           CSS shows exactly one; both are wired, which is why the buttons are
+           addressed by class rather than by id. -->
+      <div class="fc-foot">${flipPager('foot')}</div>
     </div>`;
   wireFlipButtons();
 }
@@ -6558,10 +6565,14 @@ function wireHeaderToggle(row, chevron, skipSel) {
 }
 function wireFlipButtons(){
   const h = flipHost(); if (!h) return;
-  const next = h.querySelector('#btnNextFlip');
-  if (next) { next.disabled = recBusy; next.onclick = e => { e.stopPropagation(); track('recommended_flip_next'); findFlip({ advance: true }); }; }
-  const prev = h.querySelector('#btnPrevFlip');
-  if (prev) { prev.onclick = e => { e.stopPropagation(); track('recommended_flip_prev'); findFlipBack(); }; }
+  /* Both pager copies, plus the single id'd button the error states render. */
+  h.querySelectorAll('.js-flip-next, #btnNextFlip').forEach(next => {
+    next.disabled = recBusy;
+    next.onclick = e => { e.stopPropagation(); track('recommended_flip_next'); findFlip({ advance: true }); };
+  });
+  h.querySelectorAll('.js-flip-prev').forEach(prev => {
+    prev.onclick = e => { e.stopPropagation(); track('recommended_flip_prev'); findFlipBack(); };
+  });
   const card = h.querySelector('.flip-card[data-id]');
   /* Collapse toggle: hides the card body, leaving a one-line summary (name ·
      score · edge). Persisted so it stays collapsed across re-renders (Next,
@@ -6576,7 +6587,7 @@ function wireFlipButtons(){
       setFlipCollapsed(isCollapsed);
       track('recommended_flip_toggle', { state: isCollapsed ? 'closed' : 'open' });
     };
-    wireHeaderToggle(h.querySelector('.fc-head'), col, '#btnNextFlip, .fc-collapse, button, a');
+    wireHeaderToggle(h.querySelector('.fc-head'), col, '.fc-pager, .fc-collapse, button, a');
   }
   /* Score explainer. Hover opens it on a mouse; click/tap toggles it, which is
      the only way in on touch. Every handler stops propagation because the whole
@@ -6752,7 +6763,10 @@ async function findFlip({ advance = false } = {}){
     recBuffer = buf; recIdx = 0; markRecSeen(buf[0].id); renderFlipCard(buf[0]);
     maybeLandOnFlip(buf[0]);
   } catch (e) { renderFlipState('offline'); }
-  finally { recBusy = false; const n = flipHost()?.querySelector('#btnNextFlip'); if (n) n.disabled = false; }
+  finally {
+    recBusy = false;
+    flipHost()?.querySelectorAll('.js-flip-next, #btnNextFlip').forEach(n => { n.disabled = false; });
+  }
 }
 /* 0-API re-validation of the SHOWN card on the 5-min poll against fresh latest.
    Keeps the look-ahead buffer intact — each tail rec is re-validated when the
