@@ -6530,7 +6530,15 @@ function renderFlipCard(rec){
              where it actually was: the gap to the chevron. -->
         <div class="fc-stats">
           <div class="fc-stat-main">
-            <span class="fc-slabel">${abbreviateNumber(rec.qtyEff)} / 4h limit</span>
+            <!-- "Fillable", not "buy limit": recQtyEff is min(the item's 4-hour
+                 buy limit, a share of its daily volume), so on a thin item the
+                 volume is what binds and calling it the limit would be wrong.
+                 Label + value on both sides now, so the two read as a pair —
+                 how many you can move, and what moving them is worth. -->
+            <span class="fc-stat-side">
+              <span class="fc-sword">Fillable</span>
+              <span class="fc-sval-sm">${abbreviateNumber(rec.qtyEff)} / 4h</span>
+            </span>
             <span class="fc-sval pos"><span class="fc-sword">Profit</span>+${abbreviateNumber(rec.realizable)} gp</span>
           </div>
         </div>
