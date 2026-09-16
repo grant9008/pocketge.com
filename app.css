@@ -344,18 +344,29 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
   .top-panel { flex-wrap: nowrap; }
   .panel-left { min-width: 0; flex-wrap: nowrap; }
   .search-group { min-width: 0; }
-  .sbar { min-width: 0; }   /* keeps its clamp width, but may shrink when tight */
+  /* The 640px clamp moves up to .search-group below, so the bar simply fills
+     whatever the group is given. Left here it capped the bar at 640 inside a
+     group that could be wider, which parked dead space between the search box
+     and the links instead of between the links and the column edge. */
+  .sbar { min-width: 0; max-width: none; }
   /* Menu leads the row, left of the logo — same place YouTube and
      TradingView put theirs, and consistent with mobile now that the button
      is a real DOM sibling of the logo rather than nested in .search-group.
      Its bare-glyph + hover-fill treatment lives in the base rules, so
      there's nothing breakpoint-specific left to say about it here. */
-  /* Capped rather than `flex: 1 1 auto`, which let search take the whole row
-     and pushed the quick links out to the far right edge — the dead space the
-     search box was sprawling into is exactly where they need to sit. 464 is
-     .sbar's 460 plus the group's 4px gap; below this breakpoint the group
-     takes a row of its own and the cap would only leave dead space. */
-  .search-group { flex: 0 1 464px; }
+  /* Grows into the row, up to a cap. `flex: 0 1 464px` was a fixed width, and
+     on a 1490px window that left ~240px of nothing between the links and the
+     column's right edge while the search box — the most-used control on the
+     page — sat at two thirds the size it could have been.
+     Growing rather than widening the fixed basis, because the right number
+     depends on the column: the links are a sibling with no auto margin, so
+     they stay hard against the search box however wide it gets, and the slack
+     ends up beyond them rather than inside the row.
+     724 is the cap the old 640 clamp was, plus the group's 4px gap, plus room
+     the quick links used to take from it — enough that a 1490px window fills
+     exactly, and low enough that an ultrawide does not get a 1700px search
+     box, which is what `flex: 1 1 auto` alone would do. */
+  .search-group { flex: 1 1 auto; max-width: 724px; }
 }
 #itemIcon { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; image-rendering: pixelated; }
 /* Combined search+item+wiki overlay — off by default, enabled in landscape
