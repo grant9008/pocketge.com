@@ -242,6 +242,12 @@ jobs:
                     + ", ".join(unpriced[:12]) + (" ..." if len(unpriced) > 12 else ""))
           PY
 
+      # After generating, not before: this run rewrites item-pages.js and every
+      # page under item/, so their hashes and the URLs pointing at them both
+      # move. Stamping first would commit pages carrying last week's hash.
+      - name: Stamp asset URLs
+        run: python3 stamp_assets.py
+
       - name: Commit
         run: |
           set -euo pipefail
@@ -251,7 +257,10 @@ jobs:
           # index.html / flipping-guide.html get their /?q= item links
           # rewritten to /item/<slug>/ as soon as a page exists. Both are
           # outputs of this run: staging only item/ silently threw them away.
-          git add item item-pages.js sitemap.xml glossary.html items.html index.html flipping-guide.html
+          # flip-history.html and runelite-plugin.html are not outputs of this
+          # run, but the stamping step above can still have rewritten their
+          # ?v= URLs if a script they load changed.
+          git add item item-pages.js sitemap.xml glossary.html items.html index.html flipping-guide.html flip-history.html runelite-plugin.html
           if git diff --cached --quiet; then
             echo "nothing changed"
             exit 0
