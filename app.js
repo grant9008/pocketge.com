@@ -879,13 +879,33 @@ const THEMES = [
 ];
 const THEME_KEY = 'ge_theme';
 
-function currentThemeId() {
-  try { return (JSON.parse(localStorage.getItem(THEME_KEY)) || {}).id || 'terminal'; }
-  catch (e) { return 'terminal'; }
+function storedPalette() {
+  try { const t = JSON.parse(localStorage.getItem(THEME_KEY)); return t && t.buy ? t : null; }
+  catch (e) { return null; }
 }
 
-function applyTheme(id, persist) {
-  const t = THEMES.find(x => x.id === id) || THEMES[0];
+function currentThemeId() {
+  const t = storedPalette();
+  return t && t.id ? t.id : 'terminal';
+}
+
+/* "255, 193, 7" from "#FFC107". Every tint on the page is rgba() of this, and
+   rgba() cannot take a hex custom property, so both forms get stored. */
+function hexTriplet(hex) {
+  const c = hexToRgb(hex);
+  return c ? c.join(', ') : '';
+}
+
+function hexToRgb(hex) {
+  let h = String(hex == null ? '' : hex).trim().replace(/^#/, '');
+  if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+  if (!/^[0-9a-fA-F]{6}$/.test(h)) return null;
+  return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16));
+}
+
+/* Takes a resolved palette rather than a preset id, because a custom pair has
+   no id to look up. applyTheme() is the preset door onto this. */
+function applyPalette(t, persist) {
   const r = document.documentElement.style;
   if (t.id === 'terminal') {
     /* Clear rather than restate: the stylesheet's :root already holds these,
@@ -908,9 +928,132 @@ function applyTheme(id, persist) {
      properties on every call, so it only needs asking — through queueDraw(),
      which no-ops safely before the first series has loaded. */
   queueDraw();
-  document.querySelectorAll('.theme-swatch').forEach(b =>
-    b.classList.toggle('is-on', b.dataset.theme === t.id));
+  document.querySelectorAll('.theme-swatch').forEach(b => {
+    const on = b.dataset.theme === t.id;
+    b.classList.toggle('is-on', on);
+    b.setAttribute('aria-pressed', String(on));
+  });
+  document.querySelectorAll('.hdr-palette').forEach(p => {
+    p.title = `Buy ${t.buy}, sell ${t.sell} — change`;
+  });
+  /* Picking a preset moves the custom fields to match, so "custom" always
+     starts from what is on rather than from whatever was last typed. */
+  if (typeof syncPalettePop === 'function') syncPalettePop();
   track('theme_change', { mode: t.id });
+}
+
+function applyTheme(id, persist) {
+  applyPalette(THEMES.find(x => x.id === id) || THEMES[0], persist);
+}
+
+/* A pair the visitor picked themselves. Stored resolved like every preset, so
+   the pre-paint script in index.html restores it with no idea it was custom. */
+function applyCustom(buy, sell, persist) {
+  if (!hexToRgb(buy) || !hexToRgb(sell)) return;
+  applyPalette({ id: 'custom', name: 'Custom', buy, buyRgb: hexTriplet(buy),
+    sell, sellRgb: hexTriplet(sell) }, persist);
+}
+
+/* ── Is this pair actually readable? ──────────────────────────────────────
+   The presets were not chosen by eye: each was simulated under normal vision,
+   deuteranopia and protanopia and then measured in CIELAB against the four
+   other colours on the page it must not be confused with. A free colour picker
+   hands that decision to someone who cannot run the numbers, and the two most
+   inviting choices — green for buy, red for sell — are exactly the pair the
+   presets refuse, because --positive and --negative already mean "price up"
+   and "price down" a few pixels away.
+
+   So the picker runs the same check live and SAYS what it found. It never
+   blocks: it is the visitor's screen, and plenty of people want a pair for
+   reasons the numbers know nothing about. It just refuses to let a bad one
+   through silently. */
+const _RGB2LMS = [[17.8824, 43.5161, 4.11935], [3.45565, 27.1554, 3.86714],
+  [0.0299566, 0.184309, 1.46709]];
+const _LMS2RGB = [[0.080944, -0.130504, 0.116721], [-0.0102485, 0.0540194, -0.113615],
+  [-0.000365294, -0.00412163, 0.693513]];
+/* Viénot, Brettel & Mollon (1999). The middle row of each is the cone that is
+   missing, rebuilt from the two that are left. */
+const _CVD = {
+  deut: [[1, 0, 0], [0.494207, 0, 1.24827], [0, 0, 1]],
+  prot: [[0, 2.02344, -2.52581], [0, 1, 0], [0, 0, 1]],
+};
+
+function _lin(c) { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+function _gam(c) { c = Math.min(1, Math.max(0, c)); return 255 * (c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055); }
+function _mul(m, v) { return m.map(r => r[0] * v[0] + r[1] * v[1] + r[2] * v[2]); }
+
+function _simulate(rgb, kind) {
+  const v = rgb.map(_lin);
+  if (!_CVD[kind]) return v.map(_gam);
+  return _mul(_LMS2RGB, _mul(_CVD[kind], _mul(_RGB2LMS, v))).map(_gam);
+}
+
+function _lab(rgb) {
+  const [r, g, b] = rgb.map(_lin);
+  const f = t => t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116;
+  const fx = f((0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047);
+  const fy = f(0.2126 * r + 0.7152 * g + 0.0722 * b);
+  const fz = f((0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883);
+  return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+}
+
+function _deltaE(a, b, kind) {
+  const p = _lab(_simulate(a, kind)), q = _lab(_simulate(b, kind));
+  return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
+}
+
+function _relLum(rgb) {
+  const [r, g, b] = rgb.map(_lin);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function _contrast(a, b) {
+  const x = _relLum(a), y = _relLum(b);
+  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+}
+
+/* Read from the stylesheet rather than repeated here, so a future change to
+   the up/down colours or the page background is picked up by this check
+   instead of quietly invalidating it. */
+function _pageColour(name, fallback) {
+  const v = cssVar(name);
+  return hexToRgb(v) || hexToRgb(fallback);
+}
+
+/* Worst case across normal vision and both kinds of red-green colour
+   blindness, because "fine unless you are one of the ~8% of men who aren't"
+   is not fine. 20 is several times a just-noticeable difference; the eight
+   presets floor at 24. */
+function _worstDe(a, b) {
+  return Math.min(_deltaE(a, b, 'normal'), _deltaE(a, b, 'deut'), _deltaE(a, b, 'prot'));
+}
+
+function paletteNotes(buyHex, sellHex) {
+  const buy = hexToRgb(buyHex), sell = hexToRgb(sellHex);
+  if (!buy || !sell) return [{ bad: true, text: 'Not a colour.' }];
+  const pos = _pageColour('--positive', '#10B981');
+  const neg = _pageColour('--negative', '#EF5350');
+  const bg = _pageColour('--bg-panel', '#1B1815');
+  const ink = [4, 18, 15];   // the near-black .hl-badge writes on a solid swatch
+  const out = [];
+
+  if (_worstDe(buy, sell) < 20) {
+    out.push({ bad: true, text: 'Buy and sell are hard to tell apart — to red-green colour blindness they read as nearly the same colour.' });
+  }
+  const clash = [];
+  if (_worstDe(buy, pos) < 20) clash.push('Buy vs the “price up” green');
+  if (_worstDe(buy, neg) < 20) clash.push('Buy vs the “price down” red');
+  if (_worstDe(sell, pos) < 20) clash.push('Sell vs the “price up” green');
+  if (_worstDe(sell, neg) < 20) clash.push('Sell vs the “price down” red');
+  if (clash.length) {
+    out.push({ bad: true, text: clash.join('; ') + ' — those sit a few pixels apart and mean different things.' });
+  }
+  [['Buy', buy], ['Sell', sell]].forEach(([label, c]) => {
+    if (_contrast(c, bg) < 3) out.push({ bad: true, text: `${label} is too dark to read against the page.` });
+    else if (_contrast(c, ink) < 4.5) out.push({ bad: false, text: `${label} is dark for the solid 5D badge, which writes near-black on it.` });
+  });
+  if (!out.length) out.push({ bad: false, ok: true, text: 'Clears every check the built-in palettes had to pass.' });
+  return out;
 }
 
 /* Canvas cannot read a CSS variable, so anything PAINTED in the buy or sell
@@ -983,45 +1126,165 @@ function paletteRgb(side) {
    without repeating them in two files. The colours are already applied by the
    pre-paint script in index.html; this only draws the control and marks which
    one is on. */
-/* The header's palette control opens the drawer rather than duplicating the
-   swatches: the drawer's colour section sits directly under its icon row, so
-   one tap lands on it. Wired here rather than in setItem's block so it works
-   before the first item loads, and it drives #btnMore so the backdrop and
-   aria-expanded stay in step instead of being toggled from two places. */
+function paletteSwatches(host) {
+  if (!host) return;
+  const on = currentThemeId();
+  host.innerHTML = THEMES.map(t => `
+    <button type="button" class="theme-swatch${t.id === on ? ' is-on' : ''}"
+            data-theme="${t.id}" aria-pressed="${t.id === on}"
+            title="Buy ${t.buy}, sell ${t.sell}">
+      <span class="sw" aria-hidden="true"><i style="background:${t.buy}"></i><i style="background:${t.sell}"></i></span>
+      ${escapeHtml(t.name)}
+    </button>`).join('');
+  host.querySelectorAll('.theme-swatch').forEach(b => {
+    b.onclick = () => applyTheme(b.dataset.theme, true);
+  });
+}
+
+/* ── The header dropdown ──────────────────────────────────────────────────
+   The control used to open the drawer, which meant three taps and a full-page
+   dimmer to change two colours. This is the same eight presets plus a custom
+   pair, under the swatch that shows what is on.
+
+   position:fixed, placed from the button's rect on open, rather than absolute
+   inside .hdr-links: that nav lives inside .top-row-wrapper, which is a
+   container-type:inline-size element, and anything there is one ancestor's
+   overflow rule away from being clipped. Fixed answers to the viewport and
+   nothing else. It closes on scroll and resize instead of tracking them.
+
+   <input type="color"> is the OS colour wheel — eyedropper, HSL sliders, recent
+   swatches, whatever that platform gives you — for no code and no dependency.
+   The hex field beside it is there because a wheel cannot be told "#22E0FF". */
+const PALETTE_POP_ID = 'palettePop';
+
+function paletteCustomPair() {
+  const t = storedPalette();
+  if (t && t.id === 'custom') return [t.buy, t.sell];
+  return [cssVar('--buy-color') || '#E5B842', cssVar('--sell-color') || '#26A9AB'];
+}
+
+function buildPalettePop() {
+  let pop = document.getElementById(PALETTE_POP_ID);
+  if (pop) return pop;
+  const [b0, s0] = paletteCustomPair();
+  pop = document.createElement('div');
+  pop.id = PALETTE_POP_ID;
+  pop.className = 'palette-pop';
+  pop.hidden = true;
+  pop.setAttribute('role', 'dialog');
+  pop.setAttribute('aria-label', 'Buy and sell colours');
+  pop.innerHTML = `
+    <div class="pp-head">Buy / sell colours</div>
+    <div class="theme-row pp-row" id="ppSwatches" role="group" aria-label="Preset palettes"></div>
+    <div class="pp-head pp-head-2">Custom</div>
+    <div class="pp-custom">
+      <label class="pp-field">
+        <span class="pp-lbl">Buy</span>
+        <input type="color" id="ppBuy" value="${b0}" aria-label="Buy colour">
+        <input type="text" id="ppBuyHex" class="pp-hex" value="${b0}" spellcheck="false"
+               autocomplete="off" maxlength="7" aria-label="Buy colour hex">
+      </label>
+      <label class="pp-field">
+        <span class="pp-lbl">Sell</span>
+        <input type="color" id="ppSell" value="${s0}" aria-label="Sell colour">
+        <input type="text" id="ppSellHex" class="pp-hex" value="${s0}" spellcheck="false"
+               autocomplete="off" maxlength="7" aria-label="Sell colour hex">
+      </label>
+    </div>
+    <div class="pp-notes" id="ppNotes" role="status"></div>`;
+  document.body.appendChild(pop);
+
+  const buy = pop.querySelector('#ppBuy'), sell = pop.querySelector('#ppSell');
+  const buyHex = pop.querySelector('#ppBuyHex'), sellHex = pop.querySelector('#ppSellHex');
+
+  const notes = () => {
+    const host = pop.querySelector('#ppNotes');
+    host.innerHTML = paletteNotes(buy.value, sell.value).map(n =>
+      `<p class="pp-note${n.bad ? ' is-bad' : n.ok ? ' is-ok' : ' is-warn'}">${escapeHtml(n.text)}</p>`
+    ).join('');
+  };
+  /* Applied as you drag, saved as you drag. The page behind the dropdown IS
+     the preview — a swatch of two rectangles cannot tell you whether the chart
+     is still readable, and that is the only question worth asking here. */
+  const push = () => { applyCustom(buy.value, sell.value, true); notes(); };
+  ['input', 'change'].forEach(ev => { buy.addEventListener(ev, push); sell.addEventListener(ev, push); });
+  [[buyHex, buy], [sellHex, sell]].forEach(([txt, picker]) => {
+    txt.addEventListener('input', () => {
+      const rgb = hexToRgb(txt.value);
+      txt.classList.toggle('is-bad', !rgb && txt.value.trim() !== '');
+      if (!rgb) return;
+      picker.value = '#' + rgb.map(c => c.toString(16).padStart(2, '0')).join('');
+      push();
+    });
+  });
+  paletteSwatches(pop.querySelector('#ppSwatches'));
+  notes();
+  return pop;
+}
+
+/* Preset clicks change the two custom fields underneath, so the custom pair
+   always starts from whatever is currently on rather than from whatever was
+   last typed. */
+function syncPalettePop() {
+  const pop = document.getElementById(PALETTE_POP_ID);
+  if (!pop) return;
+  const [b, s] = paletteCustomPair();
+  const set = (id, v) => { const el = pop.querySelector(id); if (el && el.value !== v) el.value = v; };
+  set('#ppBuy', b); set('#ppBuyHex', b); set('#ppSell', s); set('#ppSellHex', s);
+  const host = pop.querySelector('#ppNotes');
+  if (host) host.innerHTML = paletteNotes(b, s).map(n =>
+    `<p class="pp-note${n.bad ? ' is-bad' : n.ok ? ' is-ok' : ' is-warn'}">${escapeHtml(n.text)}</p>`).join('');
+}
+
+function closePalettePop() {
+  const pop = document.getElementById(PALETTE_POP_ID);
+  if (!pop || pop.hidden) return;
+  pop.hidden = true;
+  document.querySelectorAll('.hdr-palette').forEach(b => b.setAttribute('aria-expanded', 'false'));
+}
+
+function openPalettePop(btn) {
+  const pop = buildPalettePop();
+  syncPalettePop();
+  pop.hidden = false;
+  btn.setAttribute('aria-expanded', 'true');
+  const r = btn.getBoundingClientRect(), w = pop.offsetWidth;
+  /* Right-aligned to the button, then pulled back inside the viewport — the
+     control sits near the right edge of a narrow column often enough that
+     right-alignment alone runs it off screen. */
+  const left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8));
+  pop.style.left = Math.round(left) + 'px';
+  pop.style.top = Math.round(r.bottom + 6) + 'px';
+}
+
 (function headerPalette() {
   const mount = () => {
-    const btn = document.getElementById('hdrPalette');
-    if (!btn) return;
-    btn.onclick = () => {
-      const more = document.getElementById('btnMore');
-      if (more) more.click();
-      track('theme_open', { via: 'header' });
-    };
+    document.querySelectorAll('.hdr-palette').forEach(btn => {
+      btn.setAttribute('aria-haspopup', 'dialog');
+      btn.setAttribute('aria-expanded', 'false');
+      btn.onclick = (ev) => {
+        ev.stopPropagation();
+        const pop = document.getElementById(PALETTE_POP_ID);
+        if (pop && !pop.hidden) { closePalettePop(); return; }
+        openPalettePop(btn);
+        track('theme_open', { via: 'header' });
+      };
+    });
+    document.addEventListener('click', (ev) => {
+      const pop = document.getElementById(PALETTE_POP_ID);
+      if (!pop || pop.hidden) return;
+      if (!pop.contains(ev.target) && !ev.target.closest('.hdr-palette')) closePalettePop();
+    });
+    document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') closePalettePop(); });
+    window.addEventListener('resize', closePalettePop);
+    window.addEventListener('scroll', closePalettePop, true);
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
   else mount();
 })();
 
 (function themePicker() {
-  const mount = () => {
-    const row = document.getElementById('themeRow');
-    if (!row) return;
-    const on = currentThemeId();
-    row.innerHTML = THEMES.map(t => `
-      <button type="button" class="theme-swatch${t.id === on ? ' is-on' : ''}"
-              data-theme="${t.id}" aria-pressed="${t.id === on}"
-              title="Buy ${t.buy}, sell ${t.sell}">
-        <span class="sw" aria-hidden="true"><i style="background:${t.buy}"></i><i style="background:${t.sell}"></i></span>
-        ${escapeHtml(t.name)}
-      </button>`).join('');
-    row.querySelectorAll('.theme-swatch').forEach(b => {
-      b.onclick = () => {
-        applyTheme(b.dataset.theme, true);
-        row.querySelectorAll('.theme-swatch').forEach(x =>
-          x.setAttribute('aria-pressed', String(x.dataset.theme === b.dataset.theme)));
-      };
-    });
-  };
+  const mount = () => paletteSwatches(document.getElementById('themeRow'));
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
   else mount();
 })();
