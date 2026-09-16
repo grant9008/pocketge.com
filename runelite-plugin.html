@@ -115,6 +115,30 @@
   .big-cta { display:block; text-align:center; background:linear-gradient(90deg,rgba(201,166,77,0.2),rgba(201,166,77,0.06)); border:1px solid rgba(201,166,77,0.5); border-radius:8px; padding:16px; margin:28px 0; color:var(--head); font-weight:700; font-size:16px; text-decoration:none; }
   .big-cta:hover { background:linear-gradient(90deg,rgba(201,166,77,0.3),rgba(201,166,77,0.1)); text-decoration:none; }
   code { background:var(--panel); border:1px solid var(--border); border-radius:4px; padding:1px 6px; font-size:13px; }
+
+  /* The setup that people actually get stuck on, given room to be read rather
+     than buried in a paragraph. Each step leads with what to do in bold and
+     explains itself underneath, so it can be skimmed by anyone who only needs
+     the sequence. */
+  .connect-steps { list-style:none; counter-reset:step; padding:0; margin:18px 0 0; }
+  .connect-steps li { counter-increment:step; position:relative;
+    padding:0 0 0 42px; margin:0 0 16px; }
+  .connect-steps li::before { content:counter(step); position:absolute; left:0; top:1px;
+    width:26px; height:26px; border-radius:50%; background:rgba(201,166,77,0.14);
+    border:1px solid rgba(201,166,77,0.45); color:var(--accent);
+    font-size:13px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+  .connect-steps li b { color:var(--head); }
+  /* Only the lead-in gets its own line. Scoped to the first child rather than
+     to every <b>, which would have turned "Bridge port" and "Connect" inside
+     the explanations into block elements too. */
+  .connect-steps li > b:first-child { display:block; margin-bottom:2px; }
+  .cog { font-size:15px; }
+  /* Specific enough to beat `.connect-steps li b`, which sets --head and is
+     declared first — the green is the point of quoting this label at all. */
+  .connect-steps li b.link-on { color:var(--pos); }
+  .nowrap { white-space:nowrap; }
+  .connect-note { border-left:3px solid rgba(201,166,77,0.5); background:var(--panel);
+    border-radius:0 6px 6px 0; padding:11px 14px; margin:18px 0 0; font-size:14px; }
   /* A definition list rather than more feature cards: these are the parts of
      ONE panel in order down the screen, and a grid of equal tiles would say
      they are four separate things. */
@@ -166,6 +190,34 @@
   <p>The plugin's panel appears in your RuneLite sidebar straight away, and updates arrive through the Plugin Hub like any other plugin. Everything is off by default except the flip tracking itself — the advisor, the overlay and the website bridge are each opt-in from the plugin's settings.</p>
   <p>If you would rather build it yourself, or just read exactly what it does before installing, the full source is at <a href="https://github.com/grant9008/pocketge-flip-tracker" rel="noopener" target="_blank">github.com/grant9008/pocketge-flip-tracker</a>.</p>
 
+  <h2 id="connect">Linking it to pocketge.com</h2>
+  <p>The bridge is <b>off by default</b> — it is the one thing you have to switch on yourself, and it is the reason the website shows nothing for most people who have just installed the plugin. It takes about twenty seconds.</p>
+
+  <ol class="connect-steps">
+    <li>
+      <b>Open the plugin's settings.</b>
+      In the PocketGE panel in your RuneLite sidebar, click the <b class="cog">⚙</b> cog in the top corner. (RuneLite's own wrench → <b>PocketGE Flip Tracker</b> gets you to the same settings.)
+    </li>
+    <li>
+      <b>Scroll to “Website link” and tick <span class="nowrap">“Local website bridge”.</span></b>
+      This starts a tiny server on your own machine, bound to <code>127.0.0.1</code>, which only a browser on this same computer can reach. Nothing is uploaded and no account exists on either side.
+    </li>
+    <li>
+      <b>Read the <span class="nowrap">“Bridge port”</span> number underneath it.</b>
+      It is <code>8477</code> unless you have changed it. If something else on your machine already uses that port, or you run two clients, set it to anything from 1024 to 65535 — just remember the number.
+    </li>
+    <li>
+      <b>Open <a href="/flip-history.html">Flip history</a> on this computer.</b>
+      If the port is still <code>8477</code>, it connects on its own and your ledger appears. If you changed it, the page will say it found nothing and offer a <b>Bridge port</b> box — type the same number in and press <b>Connect</b>.
+    </li>
+    <li>
+      <b>Check it took.</b>
+      Back in the plugin panel, the Website link section reads <b class="link-on">● Website tab linked</b> while a PocketGE tab is open on this machine. In the terminal, open <a href="/">Bank of Gielinor</a> and your portfolio, session profit and Favorites are live.
+    </li>
+  </ol>
+
+  <p class="connect-note">Both numbers have to match — the one in the plugin and the one the browser is knocking on. That is the whole of the setup; there is no key to paste, no login, and nothing to register.</p>
+
   <h2>What the panel shows you</h2>
   <p>One tab in the RuneLite sidebar, not four. Top to bottom:</p>
   <dl class="panel-spec">
@@ -183,8 +235,6 @@
   <p>The website is where you decide: five years of history, volume profile, scanners, the levels worth placing an offer at. The plugin is where you find out whether you were right — it watches the offers actually fill and books the result with the same tax math, so the profit it reports is the profit you keep.</p>
   <p>They work fine apart. Neither needs an account, and neither has one to give. Turn on the bridge and the pair line up: your in-game flips show up in <a href="/">the terminal's Bank of Gielinor panel</a>, and any favourites list whose name matches one in game is live-linked in the sidebar.</p>
 
-  <h2>Connecting it to pocketge.com</h2>
-  <p>The website bridge is opt-in and off by default. Turn it on from the plugin's settings, then toggle "Connect" in PocketGE's <a href="/">Bank of Gielinor</a> modal — the sidebar Favorites list and your session's flips will start mirroring live, all without any account or login on either side.</p>
 
   <a class="big-cta" href="https://github.com/grant9008/pocketge-flip-tracker" rel="noopener" target="_blank">▶ Read the source on GitHub</a>
 

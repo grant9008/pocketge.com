@@ -6846,7 +6846,14 @@ window.addEventListener('hashchange', openBankFromHash);
    rather than useful. Browsers exempt loopback from mixed-content blocking
    (Safari being the holdout), and the plugin answers the CORS +
    Private-Network-Access preflight. */
-const RL_BRIDGE_URL = 'http://127.0.0.1:8477';
+/* A function, not a constant. The plugin's Bridge port is a setting with a
+   1024-65535 range and this was hardcoded to the default, so anyone who moved
+   it — because something else already had 8477, or because they run two
+   clients — had no way to point the site at their own. bridge-port.js holds
+   the browser's copy; /flip-history.html is where it can be changed. */
+function rlBridge(path) {
+  return window.PGEBridge ? window.PGEBridge.url(path) : 'http://127.0.0.1:8477' + (path || '');
+}
 /* 5s, not 15s. The poll used to only carry background state (profit,
    portfolio, favorites) where a quarter-minute of lag was invisible. It now
    also carries navRequest — the plugin asking THIS tab to open an item
@@ -6903,7 +6910,10 @@ function rlRenderModal(data) {
   }
   if (!data) {
     dot.classList.remove('on');
-    body.innerHTML = `<div class="rl-hint">Waiting for RuneLite on this computer… Make sure the PocketGE Flip Tracker plugin is on and its <strong>Local website bridge</strong> setting is enabled (port 8477).</div>`;
+    /* Names the port actually being tried rather than the default. Someone who
+       moved the plugin's Bridge port was reading "port 8477" here while the
+       site knocked on a door they had already walked away from. */
+    body.innerHTML = `<div class="rl-hint">Waiting for RuneLite on this computer… Make sure the PocketGE Flip Tracker plugin is on and its <strong>Local website bridge</strong> setting is enabled, with <strong>Bridge port</strong> set to ${window.PGEBridge ? window.PGEBridge.get() : 8477}. <a href="/runelite-plugin.html">Setup steps →</a></div>`;
     return;
   }
   dot.classList.add('on');
@@ -7254,7 +7264,7 @@ async function rlNavLoop() {
   while (rlWanted) {
     try {
       const since = rlLastNavSeq === null ? 0 : rlLastNavSeq;
-      const res = await fetch(RL_BRIDGE_URL + '/nav?since=' + since, { cache: 'no-store', mode: 'cors' });
+      const res = await fetch(rlBridge('/nav?since=' + since), { cache: 'no-store', mode: 'cors' });
       if (!res.ok) throw new Error('bridge ' + res.status);
       const data = await res.json();
       if (!rlWanted) break;
@@ -7286,7 +7296,7 @@ function rlPostOrder() {
   const body = { action: 'reorder', itemIds: (favorites || []).map(Number).filter(n => n > 0) };
   if (!body.itemIds.length) return;
   if (matched) body.listId = matched.id;
-  fetch(RL_BRIDGE_URL + '/favoriteLists', {
+  fetch(rlBridge('/favoriteLists'), {
     method: 'POST',
     mode: 'cors',
     headers: { 'Content-Type': 'application/json' },
@@ -7312,7 +7322,7 @@ function rlReconcileFavorites() {
     (l.items || []).forEach(idStr => {
       if (have.has(idStr)) return;
       const item = mapping.find(x => String(x.id) === idStr);
-      fetch(RL_BRIDGE_URL + '/favorites', {
+      fetch(rlBridge('/favorites'), {
         method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: Number(idStr), name: item ? item.name : '', remove: false, listId: matched.id })
       }).catch(() => {});
@@ -7359,7 +7369,7 @@ function rlPostFavorite(id, name, remove) {
   const matched = rlFavoriteListsByName.get(activeFavList().name.trim().toLowerCase());
   const body = { id: Number(id), name: name || '', remove: !!remove };
   if (matched) body.listId = matched.id;
-  fetch(RL_BRIDGE_URL + '/favorites', {
+  fetch(rlBridge('/favorites'), {
     method: 'POST',
     mode: 'cors',
     headers: { 'Content-Type': 'application/json' },
@@ -7368,7 +7378,7 @@ function rlPostFavorite(id, name, remove) {
 }
 async function rlPoll() {
   try {
-    const res = await fetch(RL_BRIDGE_URL + '/flips', { cache: 'no-store', mode: 'cors' });
+    const res = await fetch(rlBridge('/flips'), { cache: 'no-store', mode: 'cors' });
     if (!res.ok) throw new Error('bridge ' + res.status);
     rlApply(await res.json());
   } catch (e) {
@@ -7402,7 +7412,7 @@ async function rlFetchHistory() {
   if (rlHistoryLoading) return;
   rlHistoryLoading = true;
   try {
-    const res = await fetch(RL_BRIDGE_URL + '/history', { cache: 'no-store', mode: 'cors' });
+    const res = await fetch(rlBridge('/history'), { cache: 'no-store', mode: 'cors' });
     if (!res.ok) throw new Error('bridge ' + res.status);
     const data = await res.json();
     const flips = Array.isArray(data.flips) ? data.flips : [];
