@@ -1955,8 +1955,31 @@ async function buildShareCardCanvas() {
   /* HIGH is the sell colour, LOW the buy colour -- same rule as the badges in
      the watchlist, and read from the palette so a shared card shows the colours
      the sharer is actually looking at. */
-  const hlColor = isHigh5d ? (cssVar('--sell-color') || '#26A9AB')
-                : isLow5d  ? (cssVar('--buy-color')  || '#E5B842') : null;
+  const hl5Color = isHigh5d ? (cssVar('--sell-color') || '#26A9AB')
+                 : isLow5d  ? (cssVar('--buy-color')  || '#E5B842') : null;
+  /* The two can disagree, and legitimately: a price can sit at the bottom of
+     the last five days and still be high in the thirty-day range the Analyst
+     Rating scores against. Both facts are true. The problem is that the card
+     was painting the frame AND the headline price in the 5-day colour, so a
+     ▼ 5-DAY LOW item that rates Strong Sell came out with a gold frame, a gold
+     badge and a gold price — three votes for "buy" — wrapped around a teal
+     "Strong Sell". Reported as the card's colours being inconsistent, which is
+     exactly what it was.
+
+     When they disagree the card drops the accent: neutral frame, cream price,
+     and the badge left as the only coloured thing, which is the right weight
+     for it because it is stating a fact rather than making a call. When they
+     agree — ▲ 5-DAY HIGH on an item that rates Sell — nothing changes and the
+     whole card reinforces one idea, which is what the accent was always for. */
+  const rateDir = (() => {
+    const l = document.querySelector('#ratingGauge .rg-label');
+    const t = l ? l.textContent.trim() : '';
+    if (/\bBuy\b/.test(t)) return 1;
+    if (/\bSell\b/.test(t)) return -1;
+    return 0;                       // no call, or a muted state: nothing to contradict
+  })();
+  const hl5Dir = isHigh5d ? -1 : isLow5d ? 1 : 0;
+  const hlColor = (hl5Dir && rateDir && hl5Dir !== rateDir) ? null : hl5Color;
 
   // Background — the site's own obsidian/gold palette, not a generic dark card.
   const bgGrad = g.createLinearGradient(0, 0, W, H);
@@ -1999,22 +2022,27 @@ async function buildShareCardCanvas() {
   g.font = '400 15px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
   g.fillText('The OSRS trading terminal', brandTextX, 88);
 
-  if (hlColor) {
+  /* hl5Color, not hlColor: the badge is the FACT and always prints in the
+     5-day signal's own colour, even when the accent has been dropped because
+     the Analyst Rating disagrees with it. That is the whole point of dropping
+     the accent — the badge keeps saying "five-day low", the card stops
+     shouting "buy" around it. */
+  if (hl5Color) {
     const badgeText = isHigh5d ? '▲ 5-DAY HIGH' : '▼ 5-DAY LOW';
     g.font = '800 22px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
     const bw = g.measureText(badgeText).width + 32;
     const bx = W - 48 - bw, by = 38;
     roundRectPath(g, bx, by, bw, 40, 8);
     g.save();
-    g.shadowColor = hlColor;
+    g.shadowColor = hl5Color;
     g.shadowBlur = 16;
-    g.fillStyle = hlColor;
+    g.fillStyle = hl5Color;
     g.fill();
     g.restore();
     /* Dark text on a fill the stylesheet picked: derive it from the fill rather
        than hardcoding a green-black and a gold-black that only suited the two
        colours this used to have. */
-    g.fillStyle = darken(hlColor, 0.16);
+    g.fillStyle = darken(hl5Color, 0.16);
     g.textAlign = 'center';
     g.fillText(badgeText, bx + bw / 2, by + 27);
     g.textAlign = 'left';
@@ -2031,13 +2059,24 @@ async function buildShareCardCanvas() {
   g.font = '700 44px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
   g.fillText(selected.name, 168, 172);
 
-  // F2P/P2P eligibility badge — a reader unfamiliar with the item shouldn't
-  // have to already know whether it needs membership. Same green=F2P,
-  // gold=P2P language as the site's own mode pill.
+  /* F2P/P2P eligibility badge — a reader unfamiliar with the item shouldn't
+     have to already know whether it needs membership.
+
+     Gold for BOTH sides, which is what the page's own .mode-pill settled on
+     and what the comment here used to claim while doing something else. F2P
+     was painted #10B981 — not merely like --positive, it IS --positive — so
+     on a card that prints "+153,861 gp/ea after tax" in that exact colour two
+     inches below, a membership flag was wearing the profit colour. The pill's
+     note records the same fix on the page: green "read for a beat like price
+     action rather than a filter".
+     Which side is which is carried by the word, not the hue, exactly as it is
+     up there. Brand gold rather than --buy-color on purpose: this is not a
+     buy signal, it is a fact about the item, and it belongs with the wordmark
+     and the footer rather than with the palette layer. */
   {
     const nameW = g.measureText(selected.name).width;
     const badgeText = selected.members ? 'P2P' : 'F2P';
-    const badgeColor = selected.members ? '#FFB300' : '#10B981';
+    const badgeColor = cssVar('--fav-gold') || '#FFB300';
     g.font = '800 14px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
     const bw = g.measureText(badgeText).width + 16;
     const bx = 168 + nameW + 12, by = 150;
@@ -2065,6 +2104,9 @@ async function buildShareCardCanvas() {
   // compare against and brand gold sat close enough to the 5D-low gold to
   // imply a buy call that isn't being made. Cream reads as plain data, and
   // keeps the hierarchy the pure-white item name above establishes.
+  // That cream is also what a CONTRADICTED 5-day signal falls back to — see
+  // hlColor above. If the badge says one thing and the Analyst Rating says
+  // the other, the price stops taking a side and goes back to being a price.
   g.fillStyle = hlColor || '#D9D3C7';
   g.font = '700 64px -apple-system, BlinkMacSystemFont, Roboto, sans-serif';
   g.fillText(fmtGp(liveSellRaw) + ' gp', 168, 240);
