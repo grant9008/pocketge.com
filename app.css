@@ -3108,11 +3108,14 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 .fc-pager-head { display:none; }
 .flip-card.collapsed .fc-pager-head { display:flex; }
 .flip-card.collapsed .fc-foot { display:none; }
-/* Its own bar rather than a row of the body: a rule above it says the controls
-   are not more of the data, which is the same job the divider on the chart's
-   control row does. */
+/* No rule above it, and the same 10px every other band in this card is
+   separated by. The divider plus its 9px of padding made a 20px trough under
+   the stats where the three gaps above it are 11, 10 and 11 — the controls
+   read as bolted on rather than as the last row of the card, which is the
+   opposite of what a bar is for. The buttons are already fenced by their own
+   borders; a second fence around them was one too many. */
 .fc-foot { display:flex; align-items:center; justify-content:center; gap:10px;
-  margin-top:11px; padding-top:9px; border-top:1px solid var(--border-hair); }
+  margin-top:10px; }
 .fc-page { width:26px; height:26px; display:flex; align-items:center; justify-content:center;
   padding:0; border-radius:6px; cursor:pointer; font:700 17px/1 inherit;
   color:var(--border-active); background:rgba(201,166,77,0.12);

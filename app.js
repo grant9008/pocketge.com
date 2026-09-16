@@ -6280,11 +6280,24 @@ function recScoreParts(edgePct, vol, lowConf){
            edgeMaxed: edgePct >= REC_EDGE_FULL, liqMaxed: vol >= 1e7 };
 }
 function recFlipScore(edgePct, vol, lowConf){ return recScoreParts(edgePct, vol, lowConf).total; }
+/* Warm the whole way up, and green nowhere on it.
+   Strong was #10B981 — which is not merely LIKE --positive, it IS --positive,
+   measured 0.0 apart in CIELAB — sitting directly above a profit figure
+   painted in that exact colour. Two different claims in one colour a
+   centimetre apart: "this is a good pick" and "this is money you make".
+
+   The replacement keeps the two low bands and continues the ramp the way it
+   was already going, orange to yellow to white-hot, so better still reads as
+   brighter. Measured against --positive and --negative under normal vision
+   and both kinds of red-green colour blindness, the closest any band now comes
+   to either is 23.5, against 0.0 before. Four greyer ramps were tried first
+   and all scored worse, between 2.9 and 11.1: a desaturated warm tone sits
+   BETWEEN green and red in Lab rather than away from both. */
 const REC_BANDS = [
   { min: 0,  word: 'Thin Flip',   color: '#FF9F43' },
   { min: 55, word: 'Solid Flip',  color: '#FFD24D' },
-  { min: 70, word: 'Strong Flip', color: '#10B981' },
-  { min: 85, word: 'Prime Flip',  color: '#4FFF8E' }
+  { min: 70, word: 'Strong Flip', color: '#FFEFC2' },
+  { min: 85, word: 'Prime Flip',  color: '#FFFFFF' }
 ];
 function recVerdict(s){
   for (let i = REC_BANDS.length - 1; i >= 0; i--) if (s >= REC_BANDS[i].min) return REC_BANDS[i];
@@ -6312,7 +6325,7 @@ function flipScoreTip(rec){
     ${p.lowConf ? row('Thin tape', '−' + r(p.penalty), 'One side hasn\'t traded recently.') : ''}
     <div class="fc-tip-row tot"><span>Score</span><b style="color:${rec.color}">${rec.flipScore}</b></div>
     <div class="fc-tip-bands">${bands}</div>
-    <div class="fc-tip-foot">Tap ↻ Next to walk down the ranking — scores fall as the picks get thinner.</div>
+    <div class="fc-tip-foot">Use &#8249; &#8250; at the foot of the card to walk the shortlist — scores fall as the picks get thinner.</div>
   </div>`;
 }
 /* The third clause used to be a two-way toggle whose false branch — "both
@@ -6961,23 +6974,14 @@ let rlBridgeTracked = false;
    is currently active — there's no single global "the" RuneLite list
    anymore. */
 let rlFavoriteListsByName = new Map();
-/* Last navRequest.seq we were offered. Starts null rather than 0 deliberately:
+/* Last navRequest.seq we acted on. Starts null rather than 0 deliberately:
    the plugin keeps the most recent request in its payload so a dropped poll
    or a reload can't lose the click, which means the FIRST payload after
-   connecting is often a stale one from earlier in the session, and acting on
-   it would yank the page to some item you looked at an hour ago. A first
-   request is taken on its AGE rather than banked unread — see
-   rlHandleNavRequest, and RL_NAV_FRESH_MS for why. */
+   connecting usually carries a stale one from earlier in the session.
+   Acting on that would yank the page to some item you looked at an hour ago
+   the moment you hit Connect. So the first payload only records the seq —
+   navigation starts from the next increment. */
 let rlLastNavSeq = null;
-/* ...and the `at` of that request. The seq alone cannot order two deliveries:
-   the same click reaches this tab by two routes (the /nav long poll and the
-   5s /flips payload) and their responses can land out of order, so a seq
-   LOWER than the last one is either a response that was overtaken in flight
-   or a plugin that has restarted and begun counting again from 1. The
-   timestamp tells those apart with no guessing — a restart's first click is
-   newer than anything we have seen, an overtaken response is older. Both
-   clocks are the same machine's, over loopback. */
-let rlLastNavAt = 0;
 /* The most recent poll payload, kept so the modal can re-render itself
    between ticks — turning a history page, or the ledger download landing,
    both need to redraw and neither should have to wait up to five seconds
@@ -7189,55 +7193,8 @@ function rlApply(data) {
    and the same request stays in the payload until a newer one replaces it. */
 function rlHandleNavRequest(nav) {
   if (!nav || typeof nav.seq !== 'number') return;
-
-  const at = Number(nav.at) || 0;
-
-  /* A seq LOWER than the last one we were offered is one of two things, and
-     they need opposite treatment:
-
-       - a plugin that has restarted. The counter is an AtomicLong that begins
-         again at 1 every time RuneLite launches, so without this the tab
-         keeps the old high-water mark and ignores every chart click for as
-         long as it stays open. (The long poll cannot deliver this — it asks
-         for > since and the rewound seq never is — so it arrives on the 5s
-         payload poll, which carries navRequest unconditionally.)
-
-       - a response that was overtaken in flight. The same click reaches this
-         tab by both routes and their responses are not ordered, so a payload
-         sent before the one we just acted on can land after it. Treating that
-         as a restart would send the page BACK to the previous item, turning
-         one chart click into two jumps.
-
-     The timestamp separates them with no heuristic: a restart's first click
-     is newer than anything seen, an overtaken response is older. A plugin too
-     old to send one is left on the pre-existing behaviour rather than
-     guessed at. */
-  if (rlLastNavSeq !== null && nav.seq < rlLastNavSeq) {
-    if (!(at > rlLastNavAt)) return;
-    rlLastNavSeq = null;
-  }
-
-  if (rlLastNavSeq === null) {
-    /* The first request this tab is offered — see rlLastNavSeq.
-       It is USUALLY a leftover from earlier in the plugin's session, kept in
-       the payload so a dropped poll can't lose a click, and acting on it
-       would yank the page to something you looked at an hour ago.
-
-       It is not always. Click the chart button when no tab has been offered a
-       request yet — the first click after launching RuneLite, or a click made
-       while this tab was still loading — and the first thing we are handed IS
-       the click you just made. Banking that silently is the "chart button
-       does nothing the first time, then works afterwards" report: one click
-       per plugin run went missing, which across a session of restarts is most
-       of them. Age decides it. */
-    rlLastNavSeq = nav.seq;
-    rlLastNavAt = at;
-    if (!(at > 0 && Date.now() - at < RL_NAV_FRESH_MS)) return;
-  } else if (nav.seq <= rlLastNavSeq) {
-    return;
-  } else {
-    rlLastNavAt = at;
-  }
+  if (rlLastNavSeq === null) { rlLastNavSeq = nav.seq; return; } // see rlLastNavSeq
+  if (nav.seq <= rlLastNavSeq) return;
   /* The mapping check comes BEFORE the seq is banked, and that ordering is
      the whole point. It used to be the other way round: the seq was recorded
      and THEN we bailed if the item list had not loaded yet, which consumed
@@ -7317,12 +7274,6 @@ const RL_NAV_CLAIM_KEY = 'ge_nav_claim';
 const RL_TAB_FOCUS_KEY = 'ge_tab_focus';
 const RL_TAB_ID = String(Math.random()).slice(2) + '-' + Date.now();
 const RL_NAV_YIELD_MS = 400;
-/* How recent a request has to be for a tab seeing its FIRST one to act on it
-   rather than just bank it. Wide enough to cover a cold page load started by
-   the click itself (the plugin opens the browser, which then has to boot the
-   page and fetch the item mapping), nowhere near wide enough to reach a click
-   from earlier in the session. */
-const RL_NAV_FRESH_MS = 20_000;
 const rlNavDeferred = new Set();
 
 /* How long a focus record stands before the tab that wrote it is presumed
