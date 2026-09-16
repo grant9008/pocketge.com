@@ -3883,6 +3883,23 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
     .ticker-header { flex-wrap: wrap; }
   }
 }
+/* The same exclusion, for the phone held sideways. That layout is the portrait
+   one's twin — name hidden, star and the six pills pinned to one row beside
+   the search box — and it has exactly the failure the note above describes.
+   It was never excluded because it is not narrow: a phone on its side is 740px
+   and up, so `min-width: 641px` lets the rule straight through, and only the
+   CONTAINER is small enough to trip the 500px test.
+   Measured at 740x360 before this: the header went 42px to 76px with the star
+   alone on the first line and the pills dropped below it — 34px off a chart
+   that only had 196.
+   Restated rather than excluded from the query above, because expressing
+   "min-width 641 AND NOT this" needs Media Queries 4 `not (...)`, which Safari
+   only parses from 16.4. On anything older the whole block would be dropped
+   and desktop-narrow would lose its wrap. A later override degrades instead:
+   worst case an old browser keeps today's behaviour. */
+@media screen and (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
+  .ticker-header { flex-wrap: nowrap; }
+}
 @container tickerhdr (max-width: 500px) {
   .ticker-header .toolbar {
     flex: 1 1 100%; margin-top: 6px; gap: 4px;
