@@ -534,8 +534,15 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
    control, and it sits directly above the one thing on the page people came
    for. Matching JSON-LD is emitted alongside it, which is the half Google
    needs to see reflected in something a reader can actually read. */
+/* 10px, not 11.5. It was set to exactly the size of .hdr-link — "Flip history"
+   and "Link RuneLite" a couple of rows up — so a trail that is pure
+   orientation carried the same weight as the page's navigation, and the eye
+   had no reason to skip it on the way to the item name directly below.
+   10px is the bottom of the size ladder this page already uses (11.5 / 11 /
+   10.5 / 10, and 10 appears twenty-odd times), so it reads as a notch quieter
+   rather than as a new size nothing else shares. */
 .crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 5px;
-  min-width: 0; padding: 0 0 5px 2px; font-size: 11.5px; line-height: 1.4; }
+  min-width: 0; padding: 0 0 5px 2px; font-size: 10px; line-height: 1.4; }
 /* `display:flex` outranks the UA sheet's [hidden] { display:none }, so the
    homepage was keeping a 5px ghost row of this nav's own padding. */
 .crumbs[hidden] { display: none; }
@@ -643,7 +650,10 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
   .hdr-links { display: none; }
   .crumbs { display: none; }
 }
-@media (max-width: 560px) { .crumbs { font-size: 11px; } }
+/* The narrow-screen override went with it. It shrank 11.5 to 11 to help the
+   trail fit; the base is 10 now, so the rule was the only thing on the page
+   making breadcrumbs BIGGER on a phone than on a desktop. Fitting is handled
+   by flex-wrap and .crumb-now's ellipsis, which is what it should have been. */
 
 /* The header dropdown. position:fixed and placed from JS — .hdr-links sits
    inside a container-type:inline-size wrapper, where an absolutely positioned
