@@ -1143,13 +1143,21 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 }
 .price-box.low  { border-left-color: var(--buy-color);  background: linear-gradient(90deg, rgba(var(--buy-rgb),0.10), rgba(32,28,22,0.85) 35%); }
 .price-box.high { border-left-color: var(--sell-color); background: linear-gradient(90deg, rgba(var(--sell-rgb),0.12), rgba(32,28,22,0.85) 35%); }
-/* Same white the favorites row uses for ITS selection — rgba(255,255,255,0.42)
-   rather than solid #fff. Two controls that both mean "this is the one you
-   picked" were shouting at different volumes, and the louder of the two sat
-   directly above the chart where it competed with the data. The coloured left
-   edge and the glow below still carry the buy/sell identity; only the white
-   outline calms down. */
-.price-box.selected { border-color: rgba(255,255,255,0.42); border-left-width: 3px; }
+/* Solid #fff, matching .fc-price.selected — the BUY @ / SELL @ buttons in the
+   Recommended Flip card, whose own note says they "carry the same selected
+   treatment (white rim + tinted glow) as those boxes". They did not: this was
+   rgba(255,255,255,0.42) and that is #fff, so the two controls that set the
+   same target line on the same chart wore different rims, and the smaller one
+   in the sidebar was the brighter of the pair.
+
+   It was calmed to 0.42 to match .wl-item.active in the favourites list, on
+   the reasoning that a solid rim above the chart competed with the data.
+   Reversed deliberately: the favourites row marks WHICH ROW YOU ARE LOOKING
+   AT, while these mark WHICH TARGET IS ON THE CHART — a live state the eye
+   needs to find, not a reading position. Matching the control that does the
+   same job beats matching the one that merely sits nearby, and the glow and
+   coloured left edge still carry the buy/sell identity either way. */
+.price-box.selected { border-color: #fff; border-left-width: 3px; }
 .price-box.low.selected  { border-left-color: var(--buy-color);  box-shadow: 0 0 0 1px rgba(var(--buy-rgb),0.25), 0 4px 12px rgba(var(--buy-rgb),0.10); }
 .price-box.high.selected { border-left-color: var(--sell-color); box-shadow: 0 0 0 1px rgba(var(--sell-rgb),0.30), 0 4px 12px rgba(var(--sell-rgb),0.12); }
 .price-label { font-size: 10px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; gap: 8px; letter-spacing: 0.4px; }
