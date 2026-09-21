@@ -3135,15 +3135,17 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 .flip-card.collapsed .fc-pager-head { display:flex; }
 /* The expanded copy needs no collapsed rule: it lives inside .fc-collapsible,
    which collapsing hides outright. */
-/* 24px, down from 26. The stats row it moved onto has two figures and the card
-   edge to share 300px with, and the collapsed header has to fit it next to the
-   section name and the chevron in a 220px landscape sidebar — where the name
-   was ellipsizing by 7px. Same size in both copies: they are the same control
-   and are never on screen together to be compared, but a second figure here
-   would be one more number to keep in step for no gain. Still the 24px target
-   the timeframe pills use. */
-.fc-page { width:24px; height:24px; display:flex; align-items:center; justify-content:center;
-  padding:0; border-radius:6px; cursor:pointer; font:700 16px/1 inherit;
+/* 30px, up from 24, matching the plugin's own back/next pair. These get tapped
+   on a phone more than anything else on the card — cycling suggestions is the
+   whole point of the control — and 24px was sitting exactly on the WCAG 2.2
+   minimum target size with nothing to spare, while the landscape override
+   below was under it. The row can afford the width: even at the widest figures
+   this card prints it had 100px of the 300 going spare.
+   Same size in both copies. They are the same control in two states and never
+   on screen together, and a second figure would be one more number to keep in
+   step for no gain. */
+.fc-page { width:30px; height:30px; display:flex; align-items:center; justify-content:center;
+  padding:0; border-radius:6px; cursor:pointer; font:700 19px/1 inherit;
   color:var(--border-active); background:rgba(201,166,77,0.12);
   border:1px solid rgba(201,166,77,0.45);
   transition:color .15s ease, background .15s ease, border-color .15s ease, transform .12s ease; }
@@ -3359,12 +3361,16 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
    space they give back is where the pager now lives, which is what let the
    whole bottom bar go.
 
-   14px between the two units against 7px inside each, rather than the 18px
-   this page usually spends on "these are two things, not one". Measured, the
-   three slots need 260px of the 300 available before any gap at all, and 18px
-   leaves 4px of slack for a device whose glyphs run wider than Chromium's —
-   which is the sort of margin the .fc-kicker note further up records not
-   trusting. 14 doubles the binding gap and keeps 12px in hand. */
+   8px between the two units against 5px inside each. This was 14/7, and the
+   gaps are what paid for 30px pager buttons: probed across button size against
+   gap on this 300px card with the widest figures it can print, 30px holds one
+   line at 8/5 and wraps at 10/6, and 32px wraps even at 8/5. So 8/5 is not a
+   taste call, it is the setting that buys the target size with one notch of
+   headroom left.
+   8 against 5 is thinner separation than the 18px this page usually spends on
+   "these are two things, not one", and it survives on colour instead: the two
+   groups are muted grey and --positive green, under 9px uppercase micro-caps,
+   so they do not merge into one phrase the way two same-coloured runs would. */
 .fc-stats { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; }
 .fc-stats > div { display:flex; flex-direction:column; flex:1 1 auto; }
 /* flex-wrap is the floor, not the plan. Nothing a real pick prints overflows
@@ -3374,7 +3380,7 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
    degrade into and much better than three slots overlapping. It is also what
    the 220px landscape sidebar gets, where three across is impossible. */
 .fc-stat-main { flex-direction:row !important; align-items:baseline;
-  justify-content:flex-start; flex-wrap:wrap; gap:8px 14px; width:100%; }
+  justify-content:flex-start; flex-wrap:wrap; gap:8px 8px; width:100%; }
 /* margin-left:auto, not justify-content:space-between — the two figures stay
    packed together on the left however much room is going spare, and only the
    pager takes the slack.
@@ -3382,14 +3388,14 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
    baseline worth sharing with 13px and 17px text, and left in the baseline
    group it hangs below the line by the height of its own bottom border. */
 .fc-stat-main .fc-pager { margin-left:auto; align-self:center; }
-.fc-stat-main .fc-sval { font-size:17px; letter-spacing:-0.3px; display:flex; align-items:baseline; gap:7px; }
+.fc-stat-main .fc-sval { font-size:17px; letter-spacing:-0.3px; display:flex; align-items:baseline; gap:5px; }
 /* The left half, built the same way as the right so the row reads as a pair.
    It was the whole fact crammed into one 9px uppercase label — "25K / 4H
    LIMIT" — which is the treatment a caption gets, not a figure, and the number
    inside it was the least legible thing on the card. The value now gets the
    same weight and case as any other number here; it stays smaller than the
    profit figure, which is still the one the eye should land on. */
-.fc-stat-side { display:flex; align-items:baseline; gap:7px; min-width:0; }
+.fc-stat-side { display:flex; align-items:baseline; gap:5px; min-width:0; }
 .fc-sval-sm { font-size:13px; font-weight:700; color:var(--text-main);
   font-variant-numeric:tabular-nums; letter-spacing:-0.1px; white-space:nowrap; }
 /* "Profit" rides with the number rather than labelling it from across the row,
@@ -3486,26 +3492,27 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
      crammed edge to edge, where 3px was all there was; the row is now two
      left-packed figures plus the pager, and measured at this width they need
      274px of the 220 available — so the pager took a second line, and two
-     26px buttons on a row of their own is the worst thing to spend height on
-     in the one layout that has none to spare.
+     buttons on a row of their own is the worst thing to spend height on in the
+     one layout that has none to spare.
      Dropping the FILLABLE label (see below) pays for most of it: 53px back,
      which is what the pager plus a gap costs. The rest comes from the gaps —
-     8px between the two figures rather than the 14 the wide card uses, and 5px
-     inside each rather than 7.
+     6px between the two figures against the 8 the wide card uses, and 4px
+     inside each against 5.
      Those last few px are not decoration. Swept across every figure this card
-     prints, the widest content is 203px of the 220 available, so at 10/7 the
-     row needed 223 and an M-scale profit — "+4.28M gp", which a 13K/4h fill at
-     a few hundred gp an item reaches easily — pushed the pager back onto its
-     own line. At 8/5, with 22px buttons below, the same worst case lands at
-     213 and every case in the sweep holds one line. */
-  .flip-card .fc-stats > div { flex-direction: row; align-items: baseline; flex-wrap: wrap; gap: 6px 8px; min-width: 0; flex: 0 1 auto; }
-  .flip-card .fc-stat-main .fc-sval, .flip-card .fc-stat-side { gap: 5px; }
-  /* 22px, against 24 everywhere else. Smaller than a touch target wants to be
-     in the abstract, and still bigger than the 18px collapse chevron this same
-     block already ships two rules down for the same reason: this is the layout
-     with no height to spare, and 4px of button chrome is what keeps the pager
-     out of a row of its own. */
-  .flip-card .fc-stat-main .fc-page { width: 22px; height: 22px; font-size: 15px; }
+     prints, the widest content is 204px of the 220 available, so every px of
+     gap is one the pager does not get: at 10/7 the row needed 223 and an
+     M-scale profit — "+4.28M gp", which a 13K/4h fill at a few hundred gp an
+     item reaches easily — pushed the pager back onto its own line. 6/4 is what
+     pays for the 26px buttons below and still holds every case in the sweep on
+     one line, worst case 216 of 220. */
+  .flip-card .fc-stats > div { flex-direction: row; align-items: baseline; flex-wrap: wrap; gap: 6px 6px; min-width: 0; flex: 0 1 auto; }
+  .flip-card .fc-stat-main .fc-sval, .flip-card .fc-stat-side { gap: 4px; }
+  /* 26px, against 30 everywhere else. This was 22 — under the WCAG 2.2
+     minimum, on the layout most likely to be tapped with a thumb, which is
+     backwards. 26 clears the minimum and is the biggest this row can carry
+     without the pager falling onto a second line again.
+     The 6px it costs comes from the gaps above, not from the figures. */
+  .flip-card .fc-stat-main .fc-page { width: 26px; height: 26px; font-size: 17px; }
   /* The word goes, the figure stays. "13K / 4h" carries its own unit — it is
      a rate, and reads as one without a caption over it — whereas "+26K gp"
      next to it would be an unlabelled number if PROFIT went instead. So this
