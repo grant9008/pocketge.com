@@ -218,7 +218,18 @@
   }
 
   function renderSummary() {
-    var s = summarise(state.flips);
+    /* Over GROUPED flips, like the highlights below and the table above.
+       This was the last thing on the page still counting raw fills, and it
+       was the headline: a sale of 18,000 that the Exchange settled in
+       eighteen chunks read "Flips 18" beside a highlight saying "6 of 6
+       flips in the green". Reported as "website is tracking every sell, some
+       sold in batches of like 1000 of 18000 and it counted that 18 times".
+
+       Money is unaffected — profit, tax and spend are sums either way. What
+       changes is every figure with a COUNT under it: the flip count itself,
+       and per-slot-hour, whose denominator was summing each fragment's hold
+       as if the fragments had occupied a slot each. */
+    var s = summarise(groupFills(state.flips));
     var tile = function (label, val, cls, note) {
       return '<div class="fh-stat' + (cls ? ' ' + cls : '') + '">' +
              '<div class="fh-stat-label">' + label + '</div>' +
