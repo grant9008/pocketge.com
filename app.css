@@ -634,6 +634,7 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
    the search box was crushed to 90px. Same condition the layout itself is keyed
    to, so the two cannot disagree about which one is running. */
 @media (max-width: 640px) { .hdr-links { display: none; } }
+}
 /* The breadcrumb goes on a phone in portrait too, by request: it sits in the
    thumb's path between the search box and the Save star / timeframe pills, and
    a mis-tap on a trading page is not a small annoyance — it navigates away from
@@ -3890,6 +3891,30 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 .ct-btn:hover, .ct-btn:focus-visible { color: #fff; }
 .ct-btn[aria-pressed="true"] { color: var(--buy-color); }
 .ct-btn[aria-pressed="true"]:hover { color: #FFD98A; }
+/* Spread and Vol belong on the control row, not under it. fitQuickFactsRow
+   gives them a line of their own when the row genuinely cannot hold them, and
+   on a 600M item with the 30-Day Range inline that is still the right answer —
+   but on a phone, where the range meter is NOT in this row, the strip was
+   wrapping over about twenty pixels. A whole band of page height for twenty
+   pixels is a bad trade, and the row has that much slack in its spacing.
+
+   Measured at 360px: the children are 343px against 352 available, and the
+   four 8px gaps are what put it over. Everything here is spacing, nothing is
+   content — gaps 8 to 4, the Fill/VP/Max chips 6px of side padding to 4, the
+   figures' own 8px separators to 5, and the palette's divider pulled in tight
+   rather than dropped, because "controls | data" is a distinction this row
+   still wants to draw.
+
+   Lives here, after the .qf-row and .ct-btn rules it overrides, rather than up
+   with the other phone rules: a media query adds no specificity, so from up
+   there the 8px gap simply won on source order and only half of this applied. */
+@media (max-width: 640px) {
+  .qf-row { gap: 2px 4px; }
+  .qf-row .ct-btn { padding: 0 4px; }
+  .qf-row .quick-facts { gap: 5px; }
+  .qf-row .qf-palette { margin-right: 4px; }
+  .qf-row .qf-palette::after { right: -4px; }
+}
 /* The .qf-refresh.is-float rule lived here: on a phone the button was
    absolutely positioned inside the chart, and the comment that went with it
    was three sentences of arithmetic about which band of the canvas it could
