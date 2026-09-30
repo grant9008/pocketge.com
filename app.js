@@ -1286,6 +1286,21 @@ const tip = document.getElementById("tip");
 let chartData = {};
 let isDrawing = false;
 
+/* Hand-kept player-market estimates for the handful of items that were worth
+   more than max cash, so the Grand Exchange could not carry them and there was
+   no live price to show. renderOverMax turns these into a synthetic series.
+
+   These are a FALLBACK now, not a verdict. Jagex's "Beyond Max Cash" update
+   (live 30 Sep 2026) lifted the GE's gold cap, so these items can be bought
+   and sold on the exchange like anything else and the wiki API will start
+   publishing real prices for them. See overMaxFallback below: the moment a
+   real quote exists for one of these ids, it wins and none of this is used.
+
+   Kept rather than deleted because a price only exists once someone actually
+   trades — on a 14B pickaxe that can be days, and the ids are hardcoded here,
+   so deleting the table would have left those pages blank in the gap instead
+   of falling back to the estimate they showed yesterday. They can go once the
+   API has carried all six for a while. */
 const overMaxData = {
   "20014": { name: "3rd age pickaxe", wtb: 14200000000, wts: 14800000000 },
   "12424": { name: "3rd age bow", wtb: 2800000000, wts: 3100000000 },
@@ -1294,6 +1309,25 @@ const overMaxData = {
   "23345": { name: "3rd age druidic cloak", wtb: 2800000000, wts: 3100000000 },
   "20011": { name: "3rd age axe", wtb: 2300000000, wts: 2600000000 }
 };
+/* "Is this item still off the live market?" — which is what every guard that
+   used to read overMaxData[id] directly actually meant. Membership in the
+   table was standing in for it, and that stopped being true the day the cap
+   lifted: the ids are hardcoded, so without this the six would have gone on
+   showing a Math.random() series while real quotes sat in `latest` unused.
+
+   A quote counts only with both sides above zero, the same test buildSeries
+   and revalidateRec apply — the API publishes a node before it has prints in
+   it, and a half-filled one is not a price.
+
+   Fails to the estimate while `latest` is still loading, which is the same
+   answer this returned before the update and re-renders once prices land. */
+function overMaxFallback(id) {
+  const key = String(id);
+  if (!overMaxData[key]) return null;
+  const node = latest?.data?.[key];
+  if (node && node.low > 0 && node.high > 0) return null;   // live now — trade it like anything else
+  return overMaxData[key];
+}
 
 function queueDraw() {
   if (!isDrawing && currentSeries) {
@@ -2878,7 +2912,7 @@ if (window.ResizeObserver) {
    so we per-item fetch a bounded pool (top vol + top price), throttled & cached. */
 function getScanCandidates() {
   const active = membersOn ? mapping : mapping.filter(m => !m.members);
-  const noOver = active.filter(m => !overMaxData[String(m.id)]);
+  const noOver = active.filter(m => !overMaxFallback(String(m.id)));
   const byVol = [...noOver].sort((a, b) => (volumes?.data?.[String(b.id)] || 0) - (volumes?.data?.[String(a.id)] || 0)).slice(0, SCAN_VOL_POOL);
   const byPrice = [...noOver].sort((a, b) => (latest?.data?.[String(b.id)]?.high || 0) - (latest?.data?.[String(a.id)]?.high || 0)).slice(0, SCAN_PRICE_POOL);
   const map = {};
@@ -2897,7 +2931,7 @@ async function throttleMap(items, fn, concurrency) {
    whole point of the "wow, take action" highlight on your favorites. Cached and
    throttled; re-renders once a batch completes so the glow lights up. */
 async function scanDayExtremes(ids) {
-  const todo = [...new Set(ids.map(String))].filter(id => id && !(id in dayHiLoCache) && !overMaxData[id]);
+  const todo = [...new Set(ids.map(String))].filter(id => id && !(id in dayHiLoCache) && !overMaxFallback(id));
   if (!todo.length) return;
   todo.forEach(id => { dayHiLoCache[id] = null; }); // reserve so we don't refetch mid-flight
   await throttleMap(todo, async (id) => {
@@ -3162,7 +3196,7 @@ function countFavoriteBreakouts() {
   let count = 0;
   for (const idStr of favorites) {
     const id = String(idStr);
-    if (overMaxData[id]) continue;
+    if (overMaxFallback(id)) continue;
     const node = latest?.data?.[id];
     const p24 = past24h?.data?.[id];
     const st = dayState(node, p24, id);
@@ -3956,7 +3990,7 @@ function renderWatchlist() {
 
   activeItems.forEach(item => {
     const id = String(item.id);
-    if (overMaxData[id]) return;
+    if (overMaxFallback(id)) return;
     const node = latest?.data?.[id];
     const p24 = past24h?.data?.[id];
 
@@ -4253,7 +4287,7 @@ function renderWatchlist() {
         const node = latest?.data?.[id];
         const p24 = past24h?.data?.[id];
         let hlClass = "";
-        if (!overMaxData[id]) {
+        if (!overMaxFallback(id)) {
           const st = dayState(node, p24, id);
           if (st === "high5d") hlClass = "at-high5d";
           else if (st === "low5d") hlClass = "at-low5d";
@@ -5596,7 +5630,7 @@ function wireTargetPriceSteppers() {
      - 20 pts: liquidity (log-scale 24h GP volume — can you actually trade it)
      - 25 pts (weighted): margin health over the same window */
 function computeGrade(item, side) {
-  if (!item || overMaxData[String(item.id)]) return null;
+  if (!item || overMaxFallback(String(item.id))) return null;
   const gs = currentSeries;
   if (!gs || !gs.labels || !gs.labels.length) return null;
   const id = String(item.id);
@@ -6013,7 +6047,7 @@ function renderRatingGauge(item, mountEl, opts = {}) {
   const tf = (opts.timeframe || view || '').toUpperCase();
   let label, hue = 'var(--text-muted)', sub = '', signed = 0, liveIdx = -1, muted = false, strong = false, whyHtml = '';
 
-  if (item && overMaxData[String(item.id)]) { muted = true; label = 'No live gauge'; sub = 'Rare item — off the live market'; }
+  if (item && overMaxFallback(String(item.id))) { muted = true; label = 'No live gauge'; sub = 'Rare item — off the live market'; }
   else if (!gBuy || !gSell) { muted = true; label = 'Analyzing…'; sub = 'Waiting for price history'; }
   else {
     const vB = gBuy.verdict, vS = gSell.verdict;
@@ -6198,7 +6232,7 @@ if ('ResizeObserver' in window) {
 function rangeStatsForView(m, v) {
   let src = null;
   if (currentItemSrc) src = seriesForView(v, currentItemSrc, currentItemLowVol);
-  else if (overMaxData[String(m.id)] && overMaxFull) src = overMaxFull;
+  else if (overMaxFallback(String(m.id)) && overMaxFull) src = overMaxFull;
   if (!src || !src.labels || !src.labels.length) return null;
   const win = filterSeries(src, getPeriod(v));
   let lo = Infinity, hi = -Infinity, first = null, last = null;
@@ -6217,7 +6251,7 @@ function thirtyDayStats(m) { return rangeStatsForView(m, '1m'); }
 function renderItemInsight(m, node) {
   const box = document.getElementById('itemInsight');
   if (!box) return;
-  if (!m || !node || overMaxData[String(m.id)]) { box.style.display = 'none'; return; }
+  if (!m || !node || overMaxFallback(String(m.id))) { box.style.display = 'none'; return; }
   const high = node.high ?? node.avgHighPrice ?? 0;   // insta-buy (headline price)
   const low = node.low ?? node.avgLowPrice ?? 0;      // insta-sell
   const stats = thirtyDayStats(m);
@@ -6995,7 +7029,7 @@ function renderPortfolio() {
 }
 
 function openPortfolio() {
-  if (selected && !overMaxData[String(selected.id)]) {
+  if (selected && !overMaxFallback(String(selected.id))) {
     $('#pfItemIcon').src = itemIconUrl(selected.id);
     $('#pfItemIcon').alt = `${selected.name} icon`;
     $('#pfItemName').textContent = selected.name;
@@ -9243,7 +9277,7 @@ function syncChartReset() {
    the CURRENT latest snapshot so the boxes correct the instant you click,
    rather than after the network round trip. */
 function restoreEngineTargets() {
-  if (!selected || overMaxData[String(selected.id)]) return;
+  if (!selected || overMaxFallback(String(selected.id))) return;
   buyOverridden = false; sellOverridden = false;
   const node = latest?.data?.[String(selected.id)];
   if (!node) return;
@@ -9459,7 +9493,12 @@ function updateToolbarFades() {
 }
 
 function renderOverMax(m) {
-  const o = overMaxData[String(m.id)];
+  const o = overMaxFallback(String(m.id));
+  /* Null means a live quote landed for this id, so there is nothing to
+     estimate. The caller checks first and would not normally reach here, but
+     the two reads are separate and a price tick lands between them sooner or
+     later — and the next line would dereference o.wtb. */
+  if (!o) return false;
   document.querySelectorAll(".view-btn").forEach(b => {
     b.innerHTML = `${b.dataset.view.toUpperCase()}<br/><span class="pct-chg neutral">+0.00%</span>`;
   });
@@ -9511,7 +9550,7 @@ function refreshChart() {
   if (!selected) return;
   /* over-max rares: re-filter the cached synthetic series so 1Y/5Y cycle without
      regenerating (and without an API source). */
-  if (overMaxData[String(selected.id)]) {
+  if (overMaxFallback(String(selected.id))) {
     if (!overMaxFull) return;
     currentSeries = filterSeries(overMaxFull, getPeriod(view));
     selectedAbsIdx = null;
@@ -9667,7 +9706,7 @@ async function setItem(m, opts = {}) {
   renderWatchlist();
 
   if (stale()) return;
-  if (overMaxData[String(m.id)]) { currentItemSrc = null; renderOverMax(m); return; }
+  if (overMaxFallback(String(m.id))) { currentItemSrc = null; renderOverMax(m); return; }
 
   const _src = await buildSeriesForItem(m.id);
   if (stale()) return;   // a newer setItem owns the page now
@@ -9973,7 +10012,7 @@ setItem._userPicked = false;
       ev.preventDefault();
       const hint = $('#pfHint');
       hint.classList.remove('error');
-      if (!selected || overMaxData[String(selected.id)]) {
+      if (!selected || overMaxFallback(String(selected.id))) {
         hint.textContent = 'Select a regular GE item first.'; hint.classList.add('error'); return;
       }
       const qty = parseOSRSNumber($('#pfQty').value);
@@ -10013,7 +10052,7 @@ setItem._userPicked = false;
       firePortfolioAlerts();
       if ($('#portfolioModal').style.display === 'flex') renderPortfolio();
       if ($('#notifCenterModal').style.display === 'flex') renderNotifCenter();
-      if (selected && !overMaxData[String(selected.id)]) {
+      if (selected && !overMaxFallback(String(selected.id))) {
         const node = latest.data[String(selected.id)];
         liveBuyRaw = node?.low ?? node?.avgLowPrice ?? 0;
         liveSellRaw = node?.high ?? node?.avgHighPrice ?? 0;
