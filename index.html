@@ -505,14 +505,11 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
           </div>
         </div>
 
-        <!-- Breadcrumb. Built from the A-Z index rather than a category, because
-             categories.json covers 438 of 1,852 items (24%) and puts 162 of
-             those in more than one — Diamond necklace and Twisted bow have none
-             at all, so a category trail would be blank on most pages and
-             ambiguous on the rest. The letter is the site's actual structure and
-             every step of it is a page that exists. Hidden until an item is
-             selected; the homepage is not below anything. -->
-        <nav class="crumbs" id="crumbs" aria-label="Breadcrumb" hidden></nav>
+        <!-- The breadcrumb nav that used to sit here is gone by request: it
+             was a row of links nobody wanted, directly above the item name and
+             in the thumb's path on a phone. renderCrumbs/crumbTrail went with
+             it, as did the BreadcrumbList JSON-LD that described it — see
+             setItemJsonLd, which is where the reason for that pairing is. -->
 
         <div class="ticker-header" id="tickerHeader">
           <div class="ticker-title-group">

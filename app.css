@@ -530,27 +530,19 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 /* Buy/sell palette picker in the drawer. Each swatch previews its own two
    colours rather than naming them, because 'gold' and 'teal' mean less at a
    glance than the colours themselves. */
-/* Breadcrumb above the item name. Quiet by design — it is orientation, not a
-   control, and it sits directly above the one thing on the page people came
-   for. Matching JSON-LD is emitted alongside it, which is the half Google
-   needs to see reflected in something a reader can actually read. */
-/* 10px, not 11.5. It was set to exactly the size of .hdr-link — "Flip history"
-   and "Link RuneLite" a couple of rows up — so a trail that is pure
-   orientation carried the same weight as the page's navigation, and the eye
-   had no reason to skip it on the way to the item name directly below.
-   10px is the bottom of the size ladder this page already uses (11.5 / 11 /
-   10.5 / 10, and 10 appears twenty-odd times), so it reads as a notch quieter
-   rather than as a new size nothing else shares. */
-.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 5px;
-  min-width: 0; padding: 0 0 5px 2px; font-size: 10px; line-height: 1.4; }
-/* `display:flex` outranks the UA sheet's [hidden] { display:none }, so the
-   homepage was keeping a 5px ghost row of this nav's own padding. */
-.crumbs[hidden] { display: none; }
-.crumbs a { color: var(--text-muted); text-decoration: none; white-space: nowrap; }
-.crumbs a:hover { color: var(--text-main); text-decoration: underline; }
-.crumbs .crumb-sep { color: var(--border-main); user-select: none; }
-.crumbs .crumb-now { color: var(--text-muted); white-space: nowrap; overflow: hidden;
-  text-overflow: ellipsis; max-width: 46ch; }
+/* Breadcrumbs are gone: the nav, renderCrumbs/crumbTrail, and the
+   BreadcrumbList JSON-LD that described them. Removed by request — a row of
+   links nobody wanted, directly above the item name and in the thumb's path
+   on a phone.
+
+   This one rule stays, and it is load-bearing rather than tidy-up left behind.
+   The item pages under /item/ are prerendered and already published with the
+   old markup inside them, and the generator only rebuilds the top N by volume
+   (800 by default, against ~1,865 pages that exist), so the long tail keeps
+   its stale <nav class="crumbs"> for as long as those files sit there. Without
+   this they would render as a row of unstyled links on exactly the pages that
+   get the search traffic. It can go once every item page has been rebuilt. */
+.crumbs { display: none; }
 
 /* Quick links. Three placements, and which one applies is decided by the LEFT
    COLUMN's width rather than the window's — the sidebar splitter changes this
@@ -635,44 +627,15 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
    to, so the two cannot disagree about which one is running. */
 @media (max-width: 640px) { .hdr-links { display: none; } }
 }
-/* The breadcrumb goes on a phone in portrait too, by request: it sits in the
-   thumb's path between the search box and the Save star / timeframe pills, and
-   a mis-tap on a trading page is not a small annoyance — it navigates away from
-   the item you were pricing.
-
-   This is a deliberate reversal of the note below, which kept portrait
-   BECAUSE Google renders for mobile-first indexing in a portrait viewport, so
-   the trail its BreadcrumbList describes has to be visible there. That trade is
-   real and it is owned: ~1,860 prerendered item pages still emit the
-   BreadcrumbList JSON-LD, but on the viewport Google actually renders, the
-   visible trail those pages' own generator calls "the copy that has to exist
-   for the BreadcrumbList to describe something the reader can actually see"
-   is now display:none. Desktop still shows it, which is where the trail is
-   useful for navigation anyway.
-   If the rich result turns out to matter more than the mis-taps, the middle
-   option is to put this back and give `.crumbs a` pointer-events:none on
-   phones — visible to the crawler, untappable by a thumb. */
-@media (max-width: 640px) and (orientation: portrait) { .crumbs { display: none; } }
-/* Phone on its side, and the breadcrumb goes with them.
+/* Phone on its side: the quick links go.
    `pointer: coarse` is load-bearing, not decoration: it is the exact condition
    the folded header layout itself is keyed to. A short desktop WINDOW matches
-   the height and orientation but keeps the ordinary two-row header, where both
-   of these fit fine — dropping them there would be a fix for a layout that is
-   not running.
-   The breadcrumb was wrapping to two lines inside a 42px row and taking the
-   space the item name needs, while saying nothing the search box does not:
-   in this layout the box already carries the item's name and its wiki link.
-   Portrait keeps it, deliberately. Google renders for mobile-first indexing in
-   a PORTRAIT viewport, so the trail its BreadcrumbList describes has to be
-   visible there, and this condition cannot match that. */
+   the height and orientation but keeps the ordinary two-row header, where
+   these fit fine — dropping them there would be a fix for a layout that is
+   not running. */
 @media (max-height: 600px) and (orientation: landscape) and (pointer: coarse) {
   .hdr-links { display: none; }
-  .crumbs { display: none; }
 }
-/* The narrow-screen override went with it. It shrank 11.5 to 11 to help the
-   trail fit; the base is 10 now, so the rule was the only thing on the page
-   making breadcrumbs BIGGER on a phone than on a desktop. Fitting is handled
-   by flex-wrap and .crumb-now's ellipsis, which is what it should have been. */
 
 /* The header dropdown. position:fixed and placed from JS — .hdr-links sits
    inside a container-type:inline-size wrapper, where an absolutely positioned
