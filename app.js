@@ -7821,6 +7821,24 @@ function rlSync() {
   } else if (rlTimer) {
     clearInterval(rlTimer); rlTimer = null;
     rlApply(null); // clears favorites merge + shows the "install the plugin" hint
+  } else {
+    /* Opted out with nothing running — the FIRST-LOAD case, and the one this
+       function used to have no branch for.
+
+       rlWanted false and rlTimer null meant neither arm above fired, so
+       rlRenderModal was never called and #rlBody kept the empty div it ships
+       as (index.html). Opening Bank of Gielinor showed a grey dot, the words
+       "Live from RuneLite", a bare Connect button and blank space — while the
+       copy that explains what Connect is for sat unreachable in
+       rlRenderModal's own !rlWanted branch.
+
+       That is every first-time visitor, and everyone who clears site data:
+       the opt-in lives in localStorage (ge_rl_bridge, read at load), so
+       clearing it silently un-links the terminal with nothing on screen
+       saying which control puts it back. Reported as "cleared my cache and
+       realzied link to runelite doesnt work ... clicking link and it wont
+       link". */
+    rlRenderModal(null);
   }
 }
 $('#rlToggle').onclick = () => {
