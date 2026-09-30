@@ -109,6 +109,11 @@ PAGE_WEIGHTS = {
     "flipping-guide.html": ("monthly", "0.8"),
     "cannonball-profit-calculator.html": ("daily", "0.7"),
     "reliable-14d-margins.html": ("weekly", "0.7"),
+    # Carries a live price list, so it changes as often as the margin pages
+    # do -- and it is the landing page for "3rd age <piece> price", which the
+    # Beyond Max Cash update turned from a question with no answer into one
+    # the Grand Exchange answers directly.
+    "third-age-prices.html": ("daily", "0.8"),
     "at-5d-highs.html": ("weekly", "0.7"),
     "at-5d-lows.html": ("weekly", "0.7"),
     # Bumped on the Plugin Hub launch: it is a live product page now rather
