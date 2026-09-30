@@ -32,6 +32,10 @@ a:hover { text-decoration:underline; }
 .lr-icon { width:24px; height:24px; object-fit:contain; flex-shrink:0; }
 .lr-name { color:var(--head); font-weight:600; font-size:14px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .lr-margin { color:var(--pos); font-weight:700; font-size:13.5px; white-space:nowrap; }
+/* The same slot when there is no figure to put in it — "No trades yet" on a
+   freshly uncapped item. Green is this column's profit colour, and a status
+   message wearing it reads as a number that went well. */
+.lr-margin.none { color:var(--muted); font-weight:600; }
 .lr-pct { font-weight:700; font-size:13.5px; white-space:nowrap; }
 .lr-pct.neg { color:var(--neg); }
 .lr-vol { color:var(--muted); font-size:12px; width:64px; text-align:right; flex-shrink:0; }

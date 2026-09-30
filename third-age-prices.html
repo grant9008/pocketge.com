@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OSRS 3rd Age Prices — Live GE Prices Beyond Max Cash | PocketGE</title>
+<meta name="description" content="Live Grand Exchange prices for every OSRS 3rd age item, including the pieces that trade above max cash. Jagex's Beyond Max Cash update lifted the GE gold cap on 30 September 2026 — here is what each piece is worth now.">
+<meta name="keywords" content="osrs 3rd age price, 3rd age pickaxe price, beyond max cash, osrs max cash ge limit, 3rd age bow price, osrs third age prices">
+<link rel="canonical" href="https://pocketge.com/third-age-prices.html">
+<!-- Same icon set index.html uses, minus its ids: those exist so the app can
+     swap the tab icon to the selected item, which this page has no concept of.
+     Local 32x32 first so the tab is right even if the wiki is slow. -->
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link rel="shortcut icon" href="/favicon.png">
+<meta property="og:title" content="OSRS 3rd Age Prices — Live GE Prices Beyond Max Cash">
+<meta property="og:description" content="Live Grand Exchange prices for every OSRS 3rd age item, including the pieces that now trade above max cash.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pocketge.com/third-age-prices.html">
+<meta property="og:image" content="https://pocketge.com/og-image-v2.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="PocketGE">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="OSRS 3rd Age Prices — Live GE Prices Beyond Max Cash">
+<meta name="twitter:description" content="Live Grand Exchange prices for every OSRS 3rd age item, including the pieces that now trade above max cash.">
+<meta name="twitter:image" content="https://pocketge.com/og-image-v2.png">
+<link rel="stylesheet" href="finder-page.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="brand" href="/"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo">PocketGE</a>
+    <a class="cta" href="/">Open the trading terminal →</a>
+  </div>
+
+  <h1>OSRS 3rd Age Prices</h1>
+  <p class="sub">Live Grand Exchange prices for every 3rd age piece — including the ones that trade for more than max cash. Pulled from the OSRS Wiki price API and updated as offers clear.</p>
+
+  <h2>What changed</h2>
+  <p>A Grand Exchange offer used to be capped at 2,147,483,647 gp — max cash. Anything worth more than that simply could not be bought or sold through the exchange, so the most expensive 3rd age pieces traded hand-to-hand and had no official price at all. The <strong>GE Improvements: Beyond Max Cash</strong> update raised that ceiling on <strong>30 September 2026</strong>, and those items are now ordinary tradeable goods with real Grand Exchange prices behind them.</p>
+
+  <div class="callout">A freshly uncapped item only gets a price once somebody actually trades one. On a piece worth billions that can take days, and the very first prints tend to be wide — one motivated buyer is not a market. Treat early numbers on the rarest pieces as a starting point rather than a valuation.</div>
+
+  <h2>Every 3rd age item, live</h2>
+  <p class="note">Sorted by price, highest first. Prices are the live Grand Exchange insta-buy, exactly as the exchange reports them — no estimates and no rounding into "B" on the item's own page.</p>
+
+  <div id="liveList" class="live-list">
+    <div class="live-loading">Loading live 3rd age prices…</div>
+  </div>
+
+  <h2>Why some pieces are worth so much more than others</h2>
+  <p>3rd age is a single cosmetic set on paper, but the market treats it as several. The druidic pieces and the pickaxe come from the hardest sources and are held in the smallest numbers, so they carry the biggest prices. The commoner armour pieces turn over far more often and price accordingly. Rarity does the work here, not stats — 3rd age gear is collected and worn, not optimised into a setup.</p>
+
+  <h2>Flipping 3rd age</h2>
+  <p>These are the thinnest items on the exchange. A single trade can move a quoted price by a noticeable percentage, and days can pass between prints, so the spread you see is not the spread you will get. The 2% GE tax applies to the sell side like anything else, and on a multi-billion item that tax is itself a large number worth doing the arithmetic on. PocketGE's target prices and after-tax margins account for it on every item page.</p>
+
+  <a class="big-cta" href="/">▶ Track any 3rd age item live on PocketGE</a>
+
+  <div class="footer">
+    Prices update live from the OSRS Wiki Grand Exchange API. Update details: <a href="https://oldschool.runescape.wiki/w/Update:GE_Improvements:_Beyond_Max_Cash" rel="nofollow noopener" target="_blank">GE Improvements: Beyond Max Cash</a> on the OSRS Wiki. PocketGE is a free, independent fan tool — not affiliated with Jagex Ltd. · <a href="/">Home</a> · <a href="/items.html">All items</a> · <a href="/low-vol-margins.html">Low Volume Flips</a> · <a href="/flipping-guide.html">Flipping Guide</a>
+  </div>
+</div>
+<script src="/item-pages.js"></script>
+<script src="finder-common.js"></script>
+<script>
+/* The set is derived from the live mapping by name, not from a hardcoded list
+   of ids. Jagex has added 3rd age pieces before and the wiki's naming is
+   consistent, so a name test keeps this page correct without anyone
+   remembering to come back and edit it.
+   Anchored with ^ so an item that merely mentions 3rd age in passing cannot
+   drift in. */
+const THIRD_AGE_RE = /^3rd age\b/i;
+(async function () {
+  const host = document.getElementById('liveList');
+  try {
+    const data = await loadFinderData();
+    const rows = data.mapping
+      .filter(m => THIRD_AGE_RE.test(m.name || ''))
+      .map(m => {
+        const node = data.latest.data[String(m.id)] || {};
+        /* high is the insta-buy. Falling back to low rather than showing
+           nothing: a piece that has only ever been sold into still has a real
+           number attached to it, and hiding the item entirely would make the
+           list look incomplete for the exact items people came to see. */
+        const price = node.high > 0 ? node.high : (node.low > 0 ? node.low : 0);
+        return { item: m, price, vol: dailyVolume(m.id, data) };
+      })
+      .sort((a, b) => b.price - a.price);
+    if (!rows.length) { host.innerHTML = '<div class="live-loading">Live prices are unavailable right now — <a href="/">open the tracker</a> instead.</div>'; return; }
+    host.innerHTML = rows.map((r, i) => `
+      <a class="live-row" href="${itemHref(r.item.name)}">
+        <span class="lr-rank">${i + 1}</span>
+        <img class="lr-icon" src="${itemIconUrl(r.item.id)}" alt="${r.item.name}" loading="lazy">
+        <span class="lr-name">${r.item.name}</span>
+        <span class="lr-margin${r.price ? '' : ' none'}">${r.price ? fmtGp(r.price) + ' gp' : 'No trades yet'}</span>
+        <span class="lr-vol">${r.vol ? abbreviateNumber(r.vol) + '/day' : '—'}</span>
+      </a>`).join('');
+  } catch (e) {
+    host.innerHTML = '<div class="live-loading">Live prices are unavailable right now — <a href="/">open the tracker</a> instead.</div>';
+  }
+})();
+</script>
+<script src="site-nav.js" defer></script>
+</body>
+</html>

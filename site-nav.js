@@ -28,6 +28,7 @@
     { href: '/flipping-guide.html', label: 'Flipping Guide' },
     { href: '/glossary.html', label: 'Badge & Signal Glossary' },
     { href: '/items.html', label: 'All Item Prices A-Z' },
+    { href: '/third-age-prices.html', label: '3rd Age Prices' },
     { href: '/burnt-food-collectors.html', label: 'Burnt Food & Collectors' },
     /* The drawer in index.html gained these; this one -- the drawer every
        STANDALONE page uses -- had never heard of the plugin at all, so
