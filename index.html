@@ -496,8 +496,21 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
               <!-- "Link RuneLite", not "RuneLite". The old label named a thing;
                    this names the thing you came here to do, and linking the
                    plugin is the highest-value action on the site for someone
-                   who already flips. -->
-              <a class="hdr-link" href="/runelite-plugin.html">Link RuneLite</a>
+                   who already flips.
+
+                   It points at the ACT of linking, not at the page describing
+                   it. It used to open /runelite-plugin.html — prose, with no
+                   button on it — while the only control that links anything
+                   sat unlabelled-for-the-job inside the Bank of Gielinor
+                   modal. Someone who had been un-linked by clearing their site
+                   data clicked the thing called "Link RuneLite", read an
+                   article, and was no more linked than before.
+
+                   /#link opens that modal and connects. The hash works from
+                   any page and survives a cold load (see openBankFromHash),
+                   so the drawer's "RuneLite Plugin" entry is left pointing at
+                   the write-up, which is what IT is named for. -->
+              <a class="hdr-link" href="/#link">Link RuneLite</a>
               <button type="button" class="hdr-palette" id="hdrPalette"
                       title="Buy / sell colours" aria-label="Change buy and sell colours">
                 <i class="hp-buy"></i><i class="hp-sell"></i>
@@ -887,7 +900,7 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
      of the body, so it blocked parsing here and ran before the prose
      below it. `defer` would move it after parsing and change that
      ordering; a bare src keeps it byte-for-byte the same contract. -->
-<script src="/app.js?v=fc8e3621"></script>
+<script src="/app.js?v=e7cbe8f9"></script>
 <!-- Per-item indexable copy. Every ?q= page shipped byte-identical body text
      before this, so the only thing distinguishing /?q=Emerald from
      /?q=Mahogany%20logs to a crawler was the numbers inside the terminal UI.

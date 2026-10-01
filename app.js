@@ -7057,10 +7057,34 @@ function closePortfolio() { $('#portfolioModal').style.display = 'none'; rlSync(
    back button returns to the page rather than re-opening the modal, and a
    later #bank still fires because hashchange only ignores a repeat of the
    SAME hash. */
+/* #bank opens the Bank of Gielinor; #link opens it and links RuneLite.
+   Both strip the hash afterwards so a reload does not repeat the action. */
 function openBankFromHash() {
-  if (location.hash !== '#bank') return;
+  const want = location.hash;
+  if (want !== '#bank' && want !== '#link') return;
   history.replaceState(null, '', location.pathname + location.search);
-  try { openPortfolio(); } catch (e) {}
+  try {
+    openPortfolio();
+    if (want === '#link') rlLinkNow();
+  } catch (e) {}
+}
+
+/* Do what the header's "Link RuneLite" says, idempotently.
+   Connects if not already connected, and NEVER disconnects — the label is an
+   imperative, not a toggle, so someone who clicks it while already linked
+   means "show me", not "turn it off".
+
+   Deliberately no focus ring or pulse on #rlToggle afterwards. Once this has
+   run, that button reads "Disconnect" (rlSync sets its text), so drawing the
+   eye to it and parking the keyboard on it invites exactly the keypress that
+   undoes what was just asked for. The feedback is the panel itself: it fills
+   with "Waiting for RuneLite…" and then with live figures, or it says the
+   plugin is not answering and links the setup steps. */
+function rlLinkNow() {
+  if (rlWanted) return;
+  rlWanted = true;
+  try { localStorage.setItem('ge_rl_bridge', '1'); } catch (e) {}
+  rlSync();
 }
 window.addEventListener('hashchange', openBankFromHash);
 
