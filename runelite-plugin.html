@@ -133,6 +133,23 @@
      the explanations into block elements too. */
   .connect-steps li > b:first-child { display:block; margin-bottom:2px; }
   .cog { font-size:15px; }
+  /* The three steps that get you linked, at the top of the page instead of
+     below ten feature cards and an install section.
+     "Link RuneLite" in the site header points here, and it used to land on the
+     product pitch: a reader who has already decided to link had to scroll past
+     everything arguing they should. This answers the question the link asks,
+     in the 95% case, before anything else on the page speaks. The full
+     walkthrough below still covers changed ports and the parts people get
+     stuck on — this is the happy path, not a replacement for it. */
+  .quickstart { background:var(--panel); border:1px solid rgba(201,166,77,0.45);
+    border-radius:8px; padding:16px 18px 18px; margin:22px 0 8px; }
+  .quickstart h2 { margin:0; font-size:17px; }
+  .qs-sub { color:var(--muted); font-size:13px; margin:2px 0 14px; }
+  .quickstart .connect-steps { margin:0; }
+  .quickstart .connect-steps li { margin-bottom:12px; font-size:14px; }
+  .quickstart .connect-steps li:last-child { margin-bottom:0; }
+  .qs-more { font-size:13px; color:var(--muted); margin:14px 0 0;
+    padding-top:12px; border-top:1px solid var(--border); }
   /* Specific enough to beat `.connect-steps li b`, which sets --head and is
      declared first — the green is the point of quoting this label at all. */
   .connect-steps li b.link-on { color:var(--pos); }
@@ -156,7 +173,27 @@
   </div>
 
   <h1><img class="plugin-mark" src="/favicon.png" alt="PocketGE Flip Tracker plugin icon" width="26" height="23">PocketGE Flip Tracker — RuneLite Plugin</h1>
-  <p class="sub"><b>Now on the RuneLite Plugin Hub</b> — search "PocketGE" in RuneLite and hit install. A free, open-source plugin that tracks your Grand Exchange flips as they actually fill, works out profit after the 2% tax automatically, and puts PocketGE's live price charts one right-click away from any item mentioned in your chat.</p>
+  <div class="quickstart">
+    <h2>Link it to this site in 3 steps</h2>
+    <p class="qs-sub">About twenty seconds. No login, no key to paste, nothing to register.</p>
+    <ol class="connect-steps">
+      <li>
+        <b>Install the plugin.</b>
+        In RuneLite, click the <b>wrench</b> → <b>Plugin Hub</b> → search <b>PocketGE</b> → <b>Install</b>.
+      </li>
+      <li>
+        <b>Switch the bridge on.</b>
+        In the PocketGE panel that appears in your sidebar, click the <b class="cog">⚙</b> cog, then tick <b>Local website bridge</b>. Leave the port on <code>8477</code>.
+      </li>
+      <li>
+        <b>Open it on this computer.</b>
+        <a href="/flip-history.html">Flip history</a> links itself. For the <a href="/">terminal</a>, click the <b>Bank of Gielinor</b> icon in the header and press <b>Connect</b> — once per browser.
+      </li>
+    </ol>
+    <p class="qs-more">Changed the port, running two clients, or nothing showed up? <a href="#connect">The full walkthrough</a> covers it.</p>
+  </div>
+
+  <p class="sub"><b>Now on the RuneLite Plugin Hub.</b> A free, open-source plugin that tracks your Grand Exchange flips as they actually fill, works out profit after the 2% tax automatically, and puts PocketGE's live price charts one right-click away from any item mentioned in your chat.</p>
 
   <h2>What it does</h2>
   <div class="feature-grid">
