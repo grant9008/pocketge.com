@@ -230,7 +230,7 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
 }catch(e){}})();
 </script>
 <script>window.__PGE_ITEM__={"id":31918,"name":"Bronze chainshot cannonball","slug":"bronze-chainshot-cannonball"};</script>
-<script type="application/ld+json" id="itemJsonLd">[{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"PocketGE","item":"https://pocketge.com/"},{"@type":"ListItem","position":2,"name":"All items","item":"https://pocketge.com/items.html"},{"@type":"ListItem","position":3,"name":"B","item":"https://pocketge.com/items.html#gB"},{"@type":"ListItem","position":4,"name":"Bronze chainshot cannonball","item":"https://pocketge.com/item/bronze-chainshot-cannonball/"}]},{"@context":"https://schema.org","@type":"ItemPage","name":"Bronze chainshot cannonball Price OSRS \u2014 20 gp \u00b7 Live GE Chart & Flip Margin | PocketGE","description":"Bronze chainshot cannonball is 20 gp on the OSRS Grand Exchange (insta-buy 20, insta-sell 55). Live chart & flip margin after 2% tax.","url":"https://pocketge.com/item/bronze-chainshot-cannonball/","dateModified":"2026-09-27"}]</script>
+<script type="application/ld+json" id="itemJsonLd">[{"@context":"https://schema.org","@type":"ItemPage","name":"Bronze chainshot cannonball Price OSRS \u2014 20 gp \u00b7 Live GE Chart & Flip Margin | PocketGE","description":"Bronze chainshot cannonball is 20 gp on the OSRS Grand Exchange (insta-buy 20, insta-sell 55). Live chart & flip margin after 2% tax.","url":"https://pocketge.com/item/bronze-chainshot-cannonball/","dateModified":"2026-10-04"}]</script>
 </head>
 <body>
 
@@ -310,6 +310,7 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
                      page, so it can be linked and found. -->
                 <a class="drawer-link" href="/glossary.html">Badge &amp; Signal Glossary</a>
                 <a class="drawer-link" href="/items.html">All Item Prices A-Z</a>
+                <a class="drawer-link" href="/third-age-prices.html">3rd Age Prices</a>
                 <a class="drawer-link" href="/burnt-food-collectors.html">Burnt Food &amp; Collectors</a>
 
                 <!-- The plugin page existed for months with ZERO inbound links
@@ -377,8 +378,21 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
               <!-- "Link RuneLite", not "RuneLite". The old label named a thing;
                    this names the thing you came here to do, and linking the
                    plugin is the highest-value action on the site for someone
-                   who already flips. -->
-              <a class="hdr-link" href="/runelite-plugin.html">Link RuneLite</a>
+                   who already flips.
+
+                   It points at the ACT of linking, not at the page describing
+                   it. It used to open /runelite-plugin.html — prose, with no
+                   button on it — while the only control that links anything
+                   sat unlabelled-for-the-job inside the Bank of Gielinor
+                   modal. Someone who had been un-linked by clearing their site
+                   data clicked the thing called "Link RuneLite", read an
+                   article, and was no more linked than before.
+
+                   /#link opens that modal and connects. The hash works from
+                   any page and survives a cold load (see openBankFromHash),
+                   so the drawer's "RuneLite Plugin" entry is left pointing at
+                   the write-up, which is what IT is named for. -->
+              <a class="hdr-link" href="/#link">Link RuneLite</a>
               <button type="button" class="hdr-palette" id="hdrPalette"
                       title="Buy / sell colours" aria-label="Change buy and sell colours">
                 <i class="hp-buy"></i><i class="hp-sell"></i>
@@ -387,14 +401,11 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
           </div>
         </div>
 
-        <!-- Breadcrumb. Built from the A-Z index rather than a category, because
-             categories.json covers 438 of 1,852 items (24%) and puts 162 of
-             those in more than one — Diamond necklace and Twisted bow have none
-             at all, so a category trail would be blank on most pages and
-             ambiguous on the rest. The letter is the site's actual structure and
-             every step of it is a page that exists. Hidden until an item is
-             selected; the homepage is not below anything. -->
-        <nav class="crumbs" id="crumbs" aria-label="Breadcrumb"><a href="/">PocketGE</a><span class="crumb-sep" aria-hidden="true">/</span><a href="/items.html">All items</a><span class="crumb-sep" aria-hidden="true">/</span><a href="/items.html#gB">B</a><span class="crumb-sep" aria-hidden="true">/</span><span class="crumb-now" aria-current="page">Bronze chainshot cannonball</span></nav>
+        <!-- The breadcrumb nav that used to sit here is gone by request: it
+             was a row of links nobody wanted, directly above the item name and
+             in the thumb's path on a phone. renderCrumbs/crumbTrail went with
+             it, as did the BreadcrumbList JSON-LD that described it — see
+             setItemJsonLd, which is where the reason for that pairing is. -->
 
         <div class="ticker-header" id="tickerHeader">
           <div class="ticker-title-group">
@@ -720,7 +731,7 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
      app on its pre-existing ?q= behaviour. Must load before app.js. -->
 <script src="/flip-group.js?v=87b26f4d"></script>
 <script src="/bridge-port.js?v=7f972723"></script>
-<script src="/item-pages.js?v=b3342a01"></script>
+<script src="/item-pages.js?v=be4d3499"></script>
 <!-- Extracted to /app.js. Plain src, no defer/async on purpose: the
      inline block this replaces was a synchronous script in the middle
      of the body, so it blocked parsing here and ran before the prose
@@ -736,7 +747,7 @@ r.setProperty('--sell-color',t.sell);r.setProperty('--sell-rgb',t.sellRgb);
 <section class="item-seo" id="itemSeo">
   <p class="is-sum" id="isSummary"><b>Bronze chainshot cannonball</b> is <b>20 gp</b> on the OSRS GE. Both sides last traded at different times — no live spread to quote. members.</p>
   <div class="is-qa" id="isQa"><p><b>Buy limit:</b> none on this item.</p><p><b>High alch:</b> 2 gp.</p></div>
-  <div class="is-detail" id="isDetail" data-item-id="31918"><h2>About Bronze chainshot cannonball</h2><p>In game it is examined as &ldquo;Ammo suited for a boat's cannon.&rdquo; Bronze chainshot cannonball is members-only, so a membership is needed to trade or use it. The base game value is 4 gp, which is what shops price from rather than what players pay.</p><h2>Bronze chainshot cannonball buy limit</h2><p>Bronze chainshot cannonball has no Grand Exchange buy limit, so the only cap on a position is the gold behind it.</p><h2>GE tax on Bronze chainshot cannonball</h2><p>The 2% sale tax is rounded down, and at 20 gp it rounds to nothing — sales under 50 gp are untaxed, so a flip here keeps its whole margin.</p><h2>High alching Bronze chainshot cannonball</h2><p>High alchemy turns one Bronze chainshot cannonball into <b>2 gp</b>. That is less than the 140 gp nature rune the cast costs, so alching Bronze chainshot cannonball always loses money.</p><h3>Bronze chainshot cannonball FAQ</h3><p><b>How much is Bronze chainshot cannonball in OSRS?</b> Bronze chainshot cannonball is 20 gp on the Grand Exchange as of 27 September 2026. The chart above is live.</p><p><b>What is the buy limit for Bronze chainshot cannonball?</b> Bronze chainshot cannonball has no buy limit.</p><p><b>Can you high alch Bronze chainshot cannonball for profit?</b> No — the alch value is 2 gp and the nature rune alone costs 140 gp.</p><p><b>Do you need members for Bronze chainshot cannonball?</b> Yes, Bronze chainshot cannonball is members-only.</p></div>
+  <div class="is-detail" id="isDetail" data-item-id="31918"><h2>About Bronze chainshot cannonball</h2><p>In game it is examined as &ldquo;Ammo suited for a boat's cannon.&rdquo; Bronze chainshot cannonball is members-only, so a membership is needed to trade or use it. The base game value is 4 gp, which is what shops price from rather than what players pay.</p><h2>Bronze chainshot cannonball buy limit</h2><p>Bronze chainshot cannonball has no Grand Exchange buy limit, so the only cap on a position is the gold behind it.</p><h2>GE tax on Bronze chainshot cannonball</h2><p>The 2% sale tax is rounded down, and at 20 gp it rounds to nothing — sales under 50 gp are untaxed, so a flip here keeps its whole margin.</p><h2>High alching Bronze chainshot cannonball</h2><p>High alchemy turns one Bronze chainshot cannonball into <b>2 gp</b>. That is less than the 135 gp nature rune the cast costs, so alching Bronze chainshot cannonball always loses money.</p><h3>Bronze chainshot cannonball FAQ</h3><p><b>How much is Bronze chainshot cannonball in OSRS?</b> Bronze chainshot cannonball is 20 gp on the Grand Exchange as of 4 October 2026. The chart above is live.</p><p><b>What is the buy limit for Bronze chainshot cannonball?</b> Bronze chainshot cannonball has no buy limit.</p><p><b>Can you high alch Bronze chainshot cannonball for profit?</b> No — the alch value is 2 gp and the nature rune alone costs 135 gp.</p><p><b>Do you need members for Bronze chainshot cannonball?</b> Yes, Bronze chainshot cannonball is members-only.</p></div>
   <p class="is-rel" id="isRelated">Related: <a href="/item/steel-cannonball/">Steel cannonball</a><span class="is-sep">·</span><a href="/item/adamant-cannonball/">Adamant cannonball</a><span class="is-sep">·</span><a href="/item/rune-cannonball/">Rune cannonball</a><span class="is-sep">·</span><a href="/item/iron-cannonball/">Iron cannonball</a></p>
   <p class="is-guide">New to flipping? <a href="/#how-it-works">How PocketGE works</a> — a flip from start to finish, plus the FAQ.</p>
 </section>
