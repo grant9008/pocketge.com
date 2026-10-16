@@ -7803,7 +7803,9 @@ function adoptRuneLiteList() {
   favorites = ids.slice();
   persistFavoriteLists();
   renderWatchlist();
-  track('rl_adopt_favorites', { count: ids.length, removed: losing });
+  /* No counts: nothing read from the RuneLite bridge goes into analytics,
+     only that the action happened. */
+  track('rl_adopt_favorites');
 }
 
 /* Push a favorite change TO the plugin so the link works both directions —
