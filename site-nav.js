@@ -117,7 +117,7 @@
     var html = '<div class="sn-head">'
       + '<button type="button" class="sn-close" aria-label="Close menu">' + BURGER + '</button>'
       + '<a class="sn-brand" href="/">'
-      + '<img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="">PocketGE</a></div>';
+      + '<img src="/favicon.png" alt="">PocketGE</a></div>';
     LINKS.forEach(function (l) {
       if (l.group) { html += '<div class="sn-label">' + l.group + '</div>'; return; }
       if (l.ext) {

@@ -10,7 +10,7 @@
   "theme_color": "#0B0E14",
   "icons": [
     {
-      "src": "https://oldschool.runescape.wiki/images/Gilded_scimitar.png",
+      "src": "/favicon.png",
       "sizes": "192x192 512x512",
       "type": "image/png",
       "purpose": "any"

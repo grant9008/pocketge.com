@@ -1,11 +1,22 @@
 #!/usr/bin/env python3
 import json
 import os
+import io
 import requests
 import time
 from pathlib import Path
 import pandas as pd
 from urllib.parse import quote
+
+# The OSRS Wiki asks every automated client for exactly one thing: "Please set
+# a descriptive User-Agent! This is the only thing we ask!" (their API page),
+# and generic ones such as python-requests' own default are what gets blocked.
+# A bare requests call sends python-requests/x.y and pandas.read_html on a URL
+# sends Python-urllib/x.y, so every wiki request goes through this session.
+WIKI = requests.Session()
+WIKI.headers["User-Agent"] = (
+    "pocketge.com item tools - contact via github.com/grant9008/pocketge-flip-tracker"
+)
 
 # Directories (run this script from your repo root)
 ITEMS_JSON_DIR = Path('./items-json')
@@ -16,7 +27,7 @@ IMAGES_DIR.mkdir(exist_ok=True)
 # Fetch latest GEIDs {name: id}
 print("Step 1: Fetching latest GE IDs from wiki...")
 geids_url = "https://oldschool.runescape.wiki/?title=Module:GEIDs/data.json&action=raw&ctype=application/json"
-geids_resp = requests.get(geids_url)
+geids_resp = WIKI.get(geids_url)
 geids = geids_resp.json()
 if '%LAST_UPDATE%' in geids:
     del geids['%LAST_UPDATE%']  # Cleanup
@@ -27,7 +38,9 @@ print(f"Loaded {len(geids)} items from GEIDs.")
 # Fetch buy limits table
 print("Step 2: Fetching latest buy limits from wiki...")
 limits_url = "https://oldschool.runescape.wiki/w/Grand_Exchange/Buying_limits"
-tables = pd.read_html(limits_url)
+limits_resp = WIKI.get(limits_url, timeout=30)
+limits_resp.raise_for_status()
+tables = pd.read_html(io.StringIO(limits_resp.text))
 df = None
 for table in tables:
     if len(table.columns) >= 2 and 'Item' in table.columns[0] and 'Limit' in table.columns[1]:
@@ -109,7 +122,7 @@ for idx, (name, ge_id) in enumerate(geids.items(), 1):
     icon_url = f"https://oldschool.runescape.wiki/images/{wiki_name}.png"
 
     try:
-        resp = requests.get(icon_url, timeout=10)
+        resp = WIKI.get(icon_url, timeout=10)
         if resp.status_code == 200 and len(resp.content) > 100:  # Valid image check
             with open(img_path, 'wb') as f:
                 f.write(resp.content)
@@ -118,7 +131,7 @@ for idx, (name, ge_id) in enumerate(geids.items(), 1):
         else:
             # Fallback thumb (32px)
             thumb_url = f"https://oldschool.runescape.wiki/images/thumb/{wiki_name}/32px-{wiki_name}.png"
-            resp = requests.get(thumb_url, timeout=10)
+            resp = WIKI.get(thumb_url, timeout=10)
             if resp.status_code == 200 and len(resp.content) > 100:
                 with open(img_path, 'wb') as f:
                     f.write(resp.content)

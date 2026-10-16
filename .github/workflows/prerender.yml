@@ -57,22 +57,22 @@ jobs:
         run: |
           set -euo pipefail
           curl -sS --fail --retry 3 --retry-delay 5 --max-time 60 \
-            -A "pocketge.com prerender (github actions)" \
+            -A "pocketge.com prerender (github actions) - contact via github.com/grant9008/pocketge-flip-tracker" \
             https://prices.runescape.wiki/api/v1/osrs/latest  -o /tmp/latest.json
           curl -sS --fail --retry 3 --retry-delay 5 --max-time 60 \
-            -A "pocketge.com prerender (github actions)" \
+            -A "pocketge.com prerender (github actions) - contact via github.com/grant9008/pocketge-flip-tracker" \
             https://prices.runescape.wiki/api/v1/osrs/volumes -o /tmp/volumes.json
           # The item universe. items-json is a 2021 osrsbox archive whose newer
           # entries are name-only skeletons, so anything released since could
           # never be prerendered; this is the same list app.js searches.
           curl -sS --fail --retry 3 --retry-delay 5 --max-time 60 \
-            -A "pocketge.com prerender (github actions)" \
+            -A "pocketge.com prerender (github actions) - contact via github.com/grant9008/pocketge-flip-tracker" \
             https://prices.runescape.wiki/api/v1/osrs/mapping -o /tmp/mapping.json
           # One bulk call for every item, NOT /timeseries per item: that would
           # be ~1,700 requests a run against a volunteer-run API for a range
           # the app already fetches on demand for real visitors.
           curl -sS --fail --retry 3 --retry-delay 5 --max-time 60 \
-            -A "pocketge.com prerender (github actions)" \
+            -A "pocketge.com prerender (github actions) - contact via github.com/grant9008/pocketge-flip-tracker" \
             https://prices.runescape.wiki/api/v1/osrs/24h -o /tmp/24h.json
           python3 - <<'PY'
           import json, datetime

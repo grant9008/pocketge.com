@@ -695,6 +695,11 @@ let currentItemLowVol = false;
 let overMaxFull = null;
 let dayHiLoCache = {};
 let steadyFlipsCache = []; // [{ id, item, meanMargin, days, vol }]
+/* When each dayHiLoCache entry was fetched, ms. A reservation for a fetch
+   still in flight has no entry here, which is what keeps expiry off it. */
+let dayHiLoAt = {};
+/* When steadyFlipsCache was computed, ms; 0 for never. */
+let steadyAt = 0;
 let scanStatus = { fived: 'idle', steady: 'idle' };
 
 let notifEnabled = localStorage.getItem('ge_notif') === '1';
@@ -2011,7 +2016,7 @@ async function buildShareCardCanvas() {
   // site (favicon, header logo), not just the wordmark on its own.
   let brandTextX = 48;
   try {
-    const logo = await loadImageCORS('https://oldschool.runescape.wiki/images/Gilded_scimitar.png');
+    const logo = await loadImageCORS('/favicon.png');
     g.imageSmoothingEnabled = false;
     g.drawImage(logo, 48, 40, 34, 34);
     brandTextX = 48 + 34 + 10;
@@ -2926,6 +2931,107 @@ async function throttleMap(items, fn, concurrency) {
   await Promise.all(Array.from({ length: concurrency }, worker));
 }
 
+/* ── Scan results outlive the page ────────────────────────────────────────
+   Both background scans fetch one /timeseries per item across a ~100-item
+   pool. They lived in memory only, so every page load paid for both again —
+   and the site is ~1,900 item pages, each a full load — and the 5-minute
+   price tick wiped the 5D cache and paid for it once more, in every open
+   tab, background tabs included. Against the OSRS Wiki that came to ~200
+   per-item requests a page view plus ~100 every five minutes per tab, for
+   data that cannot change faster than its candles do.
+
+   So each entry is kept for as long as its candle is current, in memory and
+   in localStorage, and only what has gone stale is fetched again — and only
+   while someone is looking. Opening an item is not affected:
+   buildSeriesForItem always fetches that item fresh. */
+const HILO_TTL_MS = 60 * 60 * 1000;          // the 5D scan reads 1h candles
+const HILO_FAIL_RETRY_MS = 10 * 60 * 1000;   // a failed item waits this long, not a full hour
+const STEADY_TTL_MS = 6 * 60 * 60 * 1000;    // 24h candles; the newest is partial, so not a whole day
+const HILO_STORE = 'ge_scan_hilo_v1';
+const STEADY_STORE = 'ge_scan_steady_v1_';
+
+function loadHiLoStore() {
+  try {
+    const s = JSON.parse(localStorage.getItem(HILO_STORE) || 'null');
+    if (!s || !s.data || !s.at) return;
+    const now = Date.now();
+    for (const id of Object.keys(s.data)) {
+      const t = s.at[id];
+      if (typeof t === 'number' && now - t < HILO_TTL_MS && !(id in dayHiLoCache)) {
+        dayHiLoCache[id] = s.data[id];
+        dayHiLoAt[id] = t;
+      }
+    }
+  } catch (e) { /* private mode or blocked storage: scan as before */ }
+}
+
+/* Merged into what is already stored, not written over it, so two open tabs
+   with different favorites do not keep erasing each other's work. Stale
+   entries are pruned on the way through, which also bounds the store. */
+function saveHiLoStore() {
+  try {
+    const prev = JSON.parse(localStorage.getItem(HILO_STORE) || 'null') || {};
+    const data = Object.assign({}, prev.data), at = Object.assign({}, prev.at);
+    const now = Date.now();
+    for (const id of Object.keys(at)) if (!(now - at[id] < HILO_TTL_MS)) { delete at[id]; delete data[id]; }
+    for (const id of Object.keys(dayHiLoAt)) {
+      if (dayHiLoCache[id] && !(at[id] > dayHiLoAt[id])) { data[id] = dayHiLoCache[id]; at[id] = dayHiLoAt[id]; }
+    }
+    localStorage.setItem(HILO_STORE, JSON.stringify({ data, at }));
+  } catch (e) {}
+}
+
+/* Drops entries older than their candle; whatever asks for them next — the
+   5D scan, or renderWatchlist for a favorite — fetches just those. Returns
+   how many went. */
+function expireHiLo() {
+  const now = Date.now();
+  let n = 0;
+  for (const id of Object.keys(dayHiLoAt)) {
+    if (now - dayHiLoAt[id] >= HILO_TTL_MS) { delete dayHiLoCache[id]; delete dayHiLoAt[id]; n++; }
+  }
+  return n;
+}
+
+function steadyMode() { return membersOn ? 'p2p' : 'f2p'; }
+
+/* Results are stored without their mapping objects and re-attached on load,
+   so a restored row is the same object the rest of the page holds. */
+function loadSteadyStore(mode) {
+  try {
+    const s = JSON.parse(localStorage.getItem(STEADY_STORE + mode) || 'null');
+    if (!s || !Array.isArray(s.list) || !(Date.now() - s.t < STEADY_TTL_MS)) return null;
+    const byId = new Map(mapping.map(m => [String(m.id), m]));
+    return { t: s.t, list: s.list.filter(r => byId.has(r.id)).map(r => ({ ...r, item: byId.get(r.id) })) };
+  } catch (e) { return null; }
+}
+
+function saveSteadyStore(mode, list) {
+  try {
+    localStorage.setItem(STEADY_STORE + mode, JSON.stringify({
+      t: Date.now(), list: list.map(({ item, ...rest }) => rest)
+    }));
+  } catch (e) {}
+}
+
+/* What the 5-minute tick, the Refresh button and coming back to the tab all
+   call. Nothing at all while the tab is hidden: nobody is looking at a glow
+   in a background tab, and that is where most of the old traffic came from. */
+function refreshStaleScans() {
+  if (document.hidden) return;
+  /* Nothing expires mid-scan: the running scan picked its list before the
+     entries went, so it would never fetch them, and later passes would not
+     count them as expired either. */
+  if (scanStatus.fived !== 'loading' && expireHiLo() > 0) {
+    scanStatus.fived = 'idle';
+    runFiveDayScan();
+  }
+  if (steadyAt && Date.now() - steadyAt >= STEADY_TTL_MS && scanStatus.steady === 'done') {
+    scanStatus.steady = 'idle';
+    runSteadyFlipsScan();
+  }
+}
+
 /* Fetch the true intraday high/low (from 5m candles, last 24h) for specific
    items so the day-high/low glow reflects the actual recent peak/trough — the
    whole point of the "wow, take action" highlight on your favorites. Cached and
@@ -2960,8 +3066,16 @@ async function scanDayExtremes(ids) {
         hi5d: hi5d > 0 ? hi5d : 0,
         lo5d: lo5d < Infinity ? lo5d : 0
       };
-    } catch (e) { dayHiLoCache[id] = { hi: 0, lo: 0, hi5d: 0, lo5d: 0 }; }
+      dayHiLoAt[id] = Date.now();
+    } catch (e) {
+      dayHiLoCache[id] = { hi: 0, lo: 0, hi5d: 0, lo5d: 0 };
+      /* Back-dated so it expires in HILO_FAIL_RETRY_MS rather than an hour:
+         a failure is retried, but not on the next render, and not by every
+         page load during an outage. */
+      dayHiLoAt[id] = Date.now() - HILO_TTL_MS + HILO_FAIL_RETRY_MS;
+    }
   }, SCAN_CONCURRENCY);
+  saveHiLoStore();
   renderWatchlist();
   fireFavoriteAlerts();
 }
@@ -3070,6 +3184,13 @@ async function runFiveDayScan() {
    pattern as the 5D scan; cache lives in steadyFlipsCache. */
 async function runSteadyFlipsScan() {
   if (scanStatus.steady === 'loading' || scanStatus.steady === 'done') return;
+  const mode = steadyMode();
+  const stored = loadSteadyStore(mode);
+  if (stored) {
+    steadyFlipsCache = stored.list; steadyAt = stored.t;
+    scanStatus.steady = 'done'; renderWatchlist();
+    return;
+  }
   scanStatus.steady = 'loading'; renderWatchlist();
   const cands = getScanCandidates();
   const results = [];
@@ -3114,7 +3235,15 @@ async function runSteadyFlipsScan() {
   }, SCAN_CONCURRENCY);
   /* Rank by mean margin (after tax), highest first. */
   results.sort((a, b) => b.meanMargin - a.meanMargin);
+  /* Only a non-empty result is kept. An empty one is far more likely a
+     failed scan than a market with no steady flips in it, and storing it
+     would hide the group for six hours. */
+  if (results.length) saveSteadyStore(mode, results);
+  /* Switched F2P/P2P while this ran: the result is stored under the mode it
+     was for, but it is not the list for the mode now on screen. */
+  if (steadyMode() !== mode) return;
   steadyFlipsCache = results;
+  steadyAt = Date.now();
   scanStatus.steady = 'done'; renderWatchlist();
 }
 
@@ -7334,10 +7463,12 @@ function rlApply(data) {
      event per tick would be a metric about the timer, not about anybody. */
   if (rlConnected && !wasConnected && !rlBridgeTracked) {
     rlBridgeTracked = true;
-    track('rl_bridge_connected', {
-      lists: newLists.size,
-      flips: data && Array.isArray(data.flips) ? data.flips.length : 0,
-    });
+    /* No parameters. It used to carry how many watchlists and flips the
+       plugin had — figures read off the bridge — which made the plugin's own
+       setting text untrue: it promises the bridge's data stays on this
+       machine, and those counts went to Google Analytics. Whether the link
+       is used at all is the site's own business; what is IN it is not. */
+    track('rl_bridge_connected');
   }
   rlHandleNavRequest(data && data.navRequest);
   rlLast = data;
@@ -9795,10 +9926,14 @@ async function setItem(m, opts = {}) {
   currentSeries = filterSeries(seriesForView(view, currentItemSrc, currentItemLowVol), getPeriod(view));
   selectedAbsIdx = null;
 
-  const _latest = await loadLatest();
+  /* Every item open reads fresh prices — except straight after another read.
+     Boot fetches /latest and then opens the linked item, which fetched it
+     again within the same second; a read under 15s old is that same tape. */
+  const _fresh = latest && lastLiveFetchAt && Date.now() / 1000 - lastLiveFetchAt < 15;
+  const _latest = _fresh ? latest : await loadLatest();
   if (stale()) return;   // second checkpoint — this await is the longer one
   latest = _latest;
-  lastLiveFetchAt = Math.floor(Date.now() / 1000);
+  if (!_fresh) lastLiveFetchAt = Math.floor(Date.now() / 1000);
   const node = latest.data[String(m.id)];
   liveBuyRaw = node?.low ?? node?.avgLowPrice ?? 0;
   liveSellRaw = node?.high ?? node?.avgHighPrice ?? 0;
@@ -9841,6 +9976,10 @@ setItem._userPicked = false;
     lastLiveFetchAt = Math.floor(Date.now() / 1000);
     try { past24h = await load24h(); } catch (e) {}
     try { volumes = await loadVolumes(); } catch (e) {}
+    /* Before the first render: renderWatchlist asks for any favorite's
+       high/low it does not have, so restoring after it re-downloaded every
+       favorite on every page load. */
+    loadHiLoStore();
 
     renderColToggles();
     renderWatchlist();
@@ -9852,6 +9991,9 @@ setItem._userPicked = false;
        pool (top vol + top price), never the full 4500-item mapping. */
     runFiveDayScan();
     runSteadyFlipsScan();
+    /* A tab coming back into view catches up on whatever went stale while it
+       was hidden — the one time a background tab's scan is worth running. */
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshStaleScans(); });
 
     const sb = $("#suggestBox"), qInput = $("#query");
     /* Empty-input focus → show recently-viewed items so you can hop back
@@ -9932,7 +10074,14 @@ setItem._userPicked = false;
          has no callers but the two onclick handlers below, so it cannot fire
          on boot or on a restored preference. */
       track('members_mode', { mode: on ? 'p2p' : 'f2p' });
-      dayHiLoCache = {}; steadyFlipsCache = []; scanStatus = { fived: 'idle', steady: 'idle' };
+      /* dayHiLoCache survives the switch: an item's own high and low do not
+         depend on which items are on offer, so only the candidate list (and
+         the Steady Flips result built from it) needs redoing. */
+      steadyFlipsCache = []; steadyAt = 0; scanStatus = { fived: 'idle', steady: 'idle' };
+      /* The new mode's candidates, fetching only the ones not already held —
+         otherwise the 5D groups show whichever rows the old mode's scan
+         happened to cover, with nothing saying the list is partial. */
+      runFiveDayScan();
       renderWatchlist();
       resetFlipFinder();
       if (!on && selected?.members) {
@@ -10087,11 +10236,20 @@ setItem._userPicked = false;
       latest = await loadLatest();
       lastLiveFetchAt = Math.floor(Date.now() / 1000);
       updateFootFresh();
-      dayHiLoCache = {}; // refresh recent-peak data so the glow stays current
-      scanStatus.fived = 'idle'; // let runFiveDayScan re-populate against fresh extremes
-      runFiveDayScan();
+      /* Was: dayHiLoCache = {}; scanStatus.fived = 'idle'; runFiveDayScan() —
+         a full ~100-item re-download on every 5-minute tick, in every tab,
+         hidden or not, for hourly candles that had not changed. Now only
+         entries past their candle go, and only while the tab is visible.
+         The live price this tick fetched above is what keeps the glow
+         current between candles. */
+      refreshStaleScans();
       renderWatchlist();
       firePortfolioAlerts();
+      /* Every tick, hidden tab or not. These used to ride along on the scan
+         this tick no longer runs, and a background tab is where a desktop
+         notification matters most. No requests: it compares the price just
+         fetched against the high/low already held. */
+      fireFavoriteAlerts();
       if ($('#portfolioModal').style.display === 'flex') renderPortfolio();
       if ($('#notifCenterModal').style.display === 'flex') renderNotifCenter();
       if (selected && !overMaxFallback(String(selected.id))) {

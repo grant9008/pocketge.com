@@ -156,8 +156,8 @@ def build(snapshot=None):
 <meta name="description" content="{DESC}">
 <link rel="canonical" href="{SITE}/items.html">
 <link rel="icon" type="image/png" href="/favicon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
-<link rel="apple-touch-icon" sizes="180x180" href="https://oldschool.runescape.wiki/images/Gilded_scimitar.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/favicon.png">
 <link rel="shortcut icon" href="/favicon.png">
 <meta property="og:title" content="{TITLE}">
 <meta property="og:description" content="{DESC}">
@@ -182,7 +182,7 @@ def build(snapshot=None):
 <body>
 <div class="wrap" id="top">
   <div class="topbar">
-    <a class="brand" href="/"><img src="https://oldschool.runescape.wiki/images/Gilded_scimitar.png" alt="PocketGE logo">PocketGE</a>
+    <a class="brand" href="/"><img src="/favicon.png" alt="PocketGE logo">PocketGE</a>
     <a class="cta" href="/">Open the trading terminal →</a>
   </div>
 
