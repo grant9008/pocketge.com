@@ -7567,7 +7567,7 @@ function rlHandleNavRequest(nav) {
      settle it between themselves through localStorage, which is shared across
      same-origin tabs and synchronous, so the first writer wins and the others
      stand down. */
-  if (rlTakeNav(nav.seq))
+  if (rlTakeNav(nav.seq, at))
   {
     rlLastNavSeq = nav.seq;
     closePortfolio();
@@ -7592,10 +7592,10 @@ function rlHandleNavRequest(nav) {
        retries it too (see rlNavRetry), on the network task source, which is
        not throttled. Whichever gets there first, rlClaimNav makes sure only
        one of them acts. */
-    rlNavRetry = { seq: nav.seq, item };
+    rlNavRetry = { seq: nav.seq, item, at };
     setTimeout(() => {
       rlNavDeferred.delete(nav.seq);
-      rlTakeDeferredNav(nav.seq, item);
+      rlTakeDeferredNav(nav.seq, item, at);
     }, RL_NAV_YIELD_MS);
   }
 }
@@ -7604,10 +7604,10 @@ function rlHandleNavRequest(nav) {
    Cleared the moment anyone claims it. */
 let rlNavRetry = null;
 
-function rlTakeDeferredNav(seq, item) {
+function rlTakeDeferredNav(seq, item, at) {
   if (!rlNavRetry || rlNavRetry.seq !== seq) { return; }
   rlNavRetry = null;
-  if (rlClaimNav(seq)) { closePortfolio(); setItem(item); }
+  if (rlClaimNav(seq, at)) { closePortfolio(); setItem(item); }
 }
 
 /* Which tab was looked at most recently. Recorded on focus, because at the
@@ -7653,13 +7653,35 @@ window.addEventListener('focus', rlMarkFocused);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { rlMarkFocused(); } });
 if (!document.hidden) { rlMarkFocused(); }
 
-/* Write the claim if nobody has taken this seq yet. localStorage is
+/* Write the claim if nobody has taken this click yet. localStorage is
    same-origin and synchronous, so two tabs racing here is a window of
-   microseconds — and the loser's own claim check catches it. */
-function rlClaimNav(seq) {
+   microseconds — and the loser's own claim check catches it.
+
+   A click is identified by WHEN it was made, not by its seq alone. The claim
+   used to be the highest seq any tab had taken, kept in localStorage — which
+   outlives page loads and plugin runs alike, while the plugin's counter
+   started again at 1 every time RuneLite launched. After a restart every
+   click carried a seq below the stored one, so no tab would ever claim it:
+   the plugin said "sent to your open tab" and nothing moved, reload or not,
+   until the new run had out-counted the old one. The click's own timestamp
+   orders runs correctly; the seq still breaks a tie between deliveries of
+   the same click. A claim written in the old bare-number form, or a plugin
+   that sends no timestamp, falls back to the seq rule. */
+function rlClaimNav(seq, at) {
   try {
-    if ((Number(localStorage.getItem(RL_NAV_CLAIM_KEY)) || 0) >= seq) return false;
-    localStorage.setItem(RL_NAV_CLAIM_KEY, String(seq));
+    let last = null;
+    try { last = JSON.parse(localStorage.getItem(RL_NAV_CLAIM_KEY) || 'null'); } catch (e) {}
+    if (typeof last === 'number') last = { seq: last, at: 0 };
+    if (last && typeof last === 'object') {
+      const lastAt = Number(last.at) || 0, lastSeq = Number(last.seq) || 0;
+      if (lastSeq === seq && lastAt === (at || 0)) return false;   // this very click, already taken
+      if (at > 0 && lastAt > 0) {
+        if (at < lastAt || (at === lastAt && seq <= lastSeq)) return false;   // an older click
+      } else if (!(at > 0) && lastSeq >= seq) {
+        return false;   // no timestamp to go on: the old seq rule
+      }
+    }
+    localStorage.setItem(RL_NAV_CLAIM_KEY, JSON.stringify({ seq, at: at || 0 }));
     return true;
   } catch (e) {
     /* No localStorage (private mode, storage blocked). Fall back to acting:
@@ -7672,7 +7694,7 @@ function rlClaimNav(seq) {
 /* True if this tab should act on `seq` right now. The most-recently-focused
    tab acts immediately; any other records a deferral and lets the caller
    retry after RL_NAV_YIELD_MS. */
-function rlTakeNav(seq) {
+function rlTakeNav(seq, at) {
   let lastFocused = null;
   try { lastFocused = JSON.parse(localStorage.getItem(RL_TAB_FOCUS_KEY) || 'null'); } catch (e) {}
   /* A record nobody has refreshed inside the TTL belonged to a tab that is
@@ -7691,7 +7713,7 @@ function rlTakeNav(seq) {
     rlNavDeferred.add(seq);
     return false;
   }
-  return rlClaimNav(seq);
+  return rlClaimNav(seq, at);
 }
 
 /* Long-poll for chart clicks, alongside (not instead of) the 5s payload poll.
@@ -7721,7 +7743,7 @@ async function rlNavLoop() {
          so this loop is where anything that must keep happening behind the
          game belongs. */
       rlKeepFocusAlive();
-      if (rlNavRetry) { rlTakeDeferredNav(rlNavRetry.seq, rlNavRetry.item); }
+      if (rlNavRetry) { rlTakeDeferredNav(rlNavRetry.seq, rlNavRetry.item, rlNavRetry.at); }
       rlHandleNavRequest(data && data.navRequest);
     } catch (e) {
       /* Plugin off, bridge disabled, or an older plugin with no /nav
