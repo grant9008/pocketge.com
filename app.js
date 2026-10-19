@@ -7540,6 +7540,14 @@ function rlHandleNavRequest(nav) {
   } else {
     rlLastNavAt = at;
   }
+  /* A plugin waiting on this tab's word (nav.ack) opens the item in a new tab
+     itself when the word does not come in time. Acting after that would put
+     it up twice, once here and once in the new tab — so past the window this
+     tab stands down, and banks the seq so it is not offered it again. */
+  if (nav.ack === true && rlNavTooLate(at)) {
+    rlLastNavSeq = nav.seq;
+    return;
+  }
   /* The mapping check comes BEFORE the seq is banked, and that ordering is
      the whole point. It used to be the other way round: the seq was recorded
      and THEN we bailed if the item list had not loaded yet, which consumed
@@ -7570,6 +7578,7 @@ function rlHandleNavRequest(nav) {
   if (rlTakeNav(nav.seq, at))
   {
     rlLastNavSeq = nav.seq;
+    rlAckNav(nav.seq, nav.ack === true);
     closePortfolio();
     setItem(item);
     return;
@@ -7592,10 +7601,11 @@ function rlHandleNavRequest(nav) {
        retries it too (see rlNavRetry), on the network task source, which is
        not throttled. Whichever gets there first, rlClaimNav makes sure only
        one of them acts. */
-    rlNavRetry = { seq: nav.seq, item, at };
+    const ack = nav.ack === true;
+    rlNavRetry = { seq: nav.seq, item, at, ack };
     setTimeout(() => {
       rlNavDeferred.delete(nav.seq);
-      rlTakeDeferredNav(nav.seq, item, at);
+      rlTakeDeferredNav(nav.seq, item, at, ack);
     }, RL_NAV_YIELD_MS);
   }
 }
@@ -7604,10 +7614,34 @@ function rlHandleNavRequest(nav) {
    Cleared the moment anyone claims it. */
 let rlNavRetry = null;
 
-function rlTakeDeferredNav(seq, item, at) {
+function rlTakeDeferredNav(seq, item, at, ack) {
   if (!rlNavRetry || rlNavRetry.seq !== seq) { return; }
   rlNavRetry = null;
-  if (rlClaimNav(seq, at)) { closePortfolio(); setItem(item); }
+  /* Too late to take: the plugin has opened it in a new tab by now. */
+  if (ack && rlNavTooLate(at)) { return; }
+  if (rlClaimNav(seq, at)) { rlAckNav(seq, ack); closePortfolio(); setItem(item); }
+}
+
+/* How long after the click a tab may still act on a request the plugin is
+   waiting to hear back about. The plugin waits 2.5s (HANDOFF_ACK_MS) before
+   opening a new tab; stopping a full second short of that leaves the "I took
+   it" time to arrive, so a slow tab and the new one cannot both show it. A
+   tab that is there gets the request in milliseconds, over a connection it
+   already has open, so this only ever turns away one that was asleep. */
+const RL_NAV_ACK_WINDOW_MS = 1500;
+function rlNavTooLate(at) {
+  return !(at > 0) || Date.now() - at > RL_NAV_ACK_WINDOW_MS;
+}
+
+/* Tell the plugin this tab took the click, so it does not open a new one.
+   Sent before the page starts drawing the item: the plugin is on a timer.
+   A plain GET — no preflight round trip — and fire-and-forget: if it is lost
+   the cost is a spare tab, which is the same as having no tab at all. */
+function rlAckNav(seq, ack) {
+  if (!ack) return;
+  try {
+    fetch(rlBridge('/tab/ack?seq=' + seq), { cache: 'no-store', mode: 'cors' }).catch(() => {});
+  } catch (e) {}
 }
 
 /* Which tab was looked at most recently. Recorded on focus, because at the
@@ -7652,6 +7686,27 @@ function rlKeepFocusAlive() {
 window.addEventListener('focus', rlMarkFocused);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { rlMarkFocused(); } });
 if (!document.hidden) { rlMarkFocused(); }
+
+/* On the way out, two goodbyes.
+   - To the other tabs: drop our focus record if it is ours, so they stop
+     yielding chart clicks to a tab that no longer exists. Left in place it
+     outranked them for its full TTL.
+   - To the plugin: our parked /nav request does not end when the browser
+     hangs up — the plugin cannot see that — so it went on counting this tab
+     as open for up to 25 seconds and handed the next chart clicks to nobody.
+     keepalive lets the request outlive the page. Best effort: a browser that
+     is killed sends nothing, and the plugin's wait for an ack covers that. */
+window.addEventListener('pagehide', () => {
+  try {
+    const r = JSON.parse(localStorage.getItem(RL_TAB_FOCUS_KEY) || 'null');
+    if (r && r.id === RL_TAB_ID) { localStorage.removeItem(RL_TAB_FOCUS_KEY); }
+  } catch (e) {}
+  if (!rlWanted) return;
+  try {
+    fetch(rlBridge('/tab/closed?tab=' + encodeURIComponent(RL_TAB_ID)),
+      { keepalive: true, cache: 'no-store', mode: 'cors' }).catch(() => {});
+  } catch (e) {}
+});
 
 /* Write the claim if nobody has taken this click yet. localStorage is
    same-origin and synchronous, so two tabs racing here is a window of
@@ -7735,7 +7790,12 @@ async function rlNavLoop() {
   while (rlWanted) {
     try {
       const since = rlLastNavSeq === null ? 0 : rlLastNavSeq;
-      const res = await fetch(rlBridge('/nav?since=' + since), { cache: 'no-store', mode: 'cors' });
+      const asked = Date.now();
+      /* tab: which page this is, so its goodbye can clear its own request.
+         ack=1: this page confirms what it takes (see rlAckNav). An older
+         plugin reads neither. */
+      const res = await fetch(rlBridge('/nav?since=' + since + '&tab=' + encodeURIComponent(RL_TAB_ID) + '&ack=1'),
+        { cache: 'no-store', mode: 'cors' });
       if (!res.ok) throw new Error('bridge ' + res.status);
       const data = await res.json();
       if (!rlWanted) break;
@@ -7743,8 +7803,20 @@ async function rlNavLoop() {
          so this loop is where anything that must keep happening behind the
          game belongs. */
       rlKeepFocusAlive();
-      if (rlNavRetry) { rlTakeDeferredNav(rlNavRetry.seq, rlNavRetry.item, rlNavRetry.at); }
+      if (rlNavRetry) { rlTakeDeferredNav(rlNavRetry.seq, rlNavRetry.item, rlNavRetry.at, rlNavRetry.ack); }
       rlHandleNavRequest(data && data.navRequest);
+      /* Answered at once and nothing moved on: asking again straight away
+         gets the same answer, as fast as the loopback allows, forever. Two
+         ways in — the plugin parks at most four of these and a fifth tab is
+         told "nothing" without waiting; or the request is one this tab cannot
+         show (an item the site has no page for, like an untradeable — it is
+         left unbanked so a later mapping could still take it), so `since`
+         never passes it. Both burned a core in the browser and the client
+         until the next click. A pause is enough: the 5s payload poll keeps
+         carrying clicks meanwhile. */
+      if (Date.now() - asked < 1000 && (rlLastNavSeq === null ? 0 : rlLastNavSeq) === since) {
+        await new Promise(r => setTimeout(r, RL_POLL_MS));
+      }
     } catch (e) {
       /* Plugin off, bridge disabled, or an older plugin with no /nav
          endpoint. The payload poll still carries navRequest, so charts keep
