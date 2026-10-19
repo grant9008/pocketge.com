@@ -10360,9 +10360,22 @@ setItem._userPicked = false;
            (every price tick) would stomp the "we're a few gp off" tweak
            right back to the raw recommendation before the user even
            acts on it. */
+        const prevBuy = recommendedBuy, prevSell = recommendedSell;
         if (!buyOverridden) recommendedBuy = targets.buy;
         if (!sellOverridden) recommendedSell = targets.sell;
         renderTargetBoxes();
+        /* Potential Profit reads the same two numbers, but only the item
+           opening or a timeframe click ever wrote them into it — so after a
+           refresh moved the boxes, the calculator went on pricing capital and
+           profit off the bid from when you opened the page, and the plugin,
+           with the fresher price, disagreed with it. Follow the boxes, but
+           only in a field still showing the old recommendation: a value
+           someone typed in is theirs. */
+        const bEl = $('#calcBuy'), sEl = $('#calcSell');
+        let calcMoved = false;
+        if (bEl && recommendedBuy !== prevBuy && parseOSRSNumber(bEl.value) === prevBuy) { bEl.value = recommendedBuy; calcMoved = true; }
+        if (sEl && recommendedSell !== prevSell && parseOSRSNumber(sEl.value) === prevSell) { sEl.value = recommendedSell; calcMoved = true; }
+        if (calcMoved) updateCalculator();
 
         refreshItemInsights(selected, node);
         queueDraw();
