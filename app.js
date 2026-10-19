@@ -7513,8 +7513,15 @@ function rlHandleNavRequest(nav) {
      The timestamp separates them with no heuristic: a restart's first click
      is newer than anything seen, an overtaken response is older. A plugin too
      old to send one is left on the pre-existing behaviour rather than
-     guessed at. */
-  if (rlLastNavSeq !== null && nav.seq < rlLastNavSeq) {
+     guessed at.
+
+     An EQUAL seq with a newer click time is a restart too: a plugin that
+     counts from 1 again lands on the very number this tab stored, and that
+     first click of the new run was being dropped as already handled. (The
+     current plugin seeds its counter from the clock, so this is for the
+     version still on the hub.) */
+  if (rlLastNavSeq !== null
+      && (nav.seq < rlLastNavSeq || (nav.seq === rlLastNavSeq && at > rlLastNavAt))) {
     if (!(at > rlLastNavAt)) return;
     rlLastNavSeq = null;
   }
@@ -7531,21 +7538,23 @@ function rlHandleNavRequest(nav) {
        the click you just made. Banking that silently is the "chart button
        does nothing the first time, then works afterwards" report: one click
        per plugin run went missing, which across a session of restarts is most
-       of them. Age decides it. */
-    rlLastNavSeq = nav.seq;
-    rlLastNavAt = at;
-    if (!(at > 0 && Date.now() - at < RL_NAV_FRESH_MS)) return;
+       of them. Age decides it.
+
+       A fresh one is left unbanked while the item list is still loading, for
+       the same reason as the mapping check below: banked, no later delivery
+       could bring it back, and a tab that was nearly ready dropped the click
+       it was opened for. */
+    if (!(at > 0 && Date.now() - at < RL_NAV_FRESH_MS)) { rlBankNav(nav.seq, at); return; }
+    if (!mapping.length) return;
   } else if (nav.seq <= rlLastNavSeq) {
     return;
-  } else {
-    rlLastNavAt = at;
   }
   /* A plugin waiting on this tab's word (nav.ack) opens the item in a new tab
      itself when the word does not come in time. Acting after that would put
      it up twice, once here and once in the new tab — so past the window this
      tab stands down, and banks the seq so it is not offered it again. */
   if (nav.ack === true && rlNavTooLate(at)) {
-    rlLastNavSeq = nav.seq;
+    rlBankNav(nav.seq, at);
     return;
   }
   /* The mapping check comes BEFORE the seq is banked, and that ordering is
@@ -7563,10 +7572,12 @@ function rlHandleNavRequest(nav) {
     const q = String(nav.query).trim().toLowerCase();
     item = mapping.find(x => x.name && x.name.toLowerCase() === q);
   }
-  /* Same reasoning for an unknown item: banking the seq here would mean a
-     mapping that later gains the item can never act on this click. An item
-     the mapping genuinely never learns just gets re-checked cheaply. */
-  if (!item) return;
+  /* An item the loaded mapping does not have — an untradeable, say, since
+     "PocketGE graph" is on every item in the bank — is banked and dropped.
+     It used to be left unbanked "in case a later mapping gains it", but the
+     mapping is loaded once and never changes, so all that did was hand the
+     same request back on every /nav, instantly, forever. */
+  if (!item) { rlBankNav(nav.seq, at); return; }
 
   /* ONE tab takes it, not every tab.
      Every open pocketge.com tab polls the bridge independently, so a single
@@ -7575,18 +7586,17 @@ function rlHandleNavRequest(nav) {
      settle it between themselves through localStorage, which is shared across
      same-origin tabs and synchronous, so the first writer wins and the others
      stand down. */
+  const ack = nav.ack === true;
   if (rlTakeNav(nav.seq, at))
   {
-    rlLastNavSeq = nav.seq;
-    rlAckNav(nav.seq, nav.ack === true);
-    closePortfolio();
-    setItem(item);
+    rlBankNav(nav.seq, at);
+    rlActOnNav(nav.seq, at, ack, item);
     return;
   }
   /* Not ours to act on. Bank the seq either way: whoever won has it, or the
      deferred timer below owns it now, and in both cases this tab must stop
      being offered it on every poll. */
-  rlLastNavSeq = nav.seq;
+  rlBankNav(nav.seq, at);
   if (rlNavDeferred.has(nav.seq))
   {
     /* We yielded to the tab you were last looking at. Give it a moment, then
@@ -7601,8 +7611,7 @@ function rlHandleNavRequest(nav) {
        retries it too (see rlNavRetry), on the network task source, which is
        not throttled. Whichever gets there first, rlClaimNav makes sure only
        one of them acts. */
-    const ack = nav.ack === true;
-    rlNavRetry = { seq: nav.seq, item, at, ack };
+    rlNavRetry = { seq: nav.seq, item, at, ack, deferredAt: Date.now() };
     setTimeout(() => {
       rlNavDeferred.delete(nav.seq);
       rlTakeDeferredNav(nav.seq, item, at, ack);
@@ -7619,7 +7628,49 @@ function rlTakeDeferredNav(seq, item, at, ack) {
   rlNavRetry = null;
   /* Too late to take: the plugin has opened it in a new tab by now. */
   if (ack && rlNavTooLate(at)) { return; }
-  if (rlClaimNav(seq, at)) { rlAckNav(seq, ack); closePortfolio(); setItem(item); }
+  rlActOnNav(seq, at, ack, item);
+}
+
+/* Record that this tab has dealt with request `seq`, made at `at`. Always
+   both: the restart check compares a new request's time against the time of
+   the one banked, so a seq banked without its time would make a second
+   delivery of the same click look like a plugin restart. */
+function rlBankNav(seq, at) {
+  rlLastNavSeq = seq;
+  rlLastNavAt = at;
+}
+
+/* Set once this tab has shown an item because a chart was clicked in game —
+   so boot does not then draw its own landing item over it. See boot(). */
+let rlNavShown = false;
+
+/* Show the item for this click in exactly one tab.
+   rlClaimNav alone could not promise that: it reads localStorage, compares
+   and writes, and Chrome syncs localStorage between tabs in different
+   processes asynchronously, so two tabs claiming in the same instant could
+   both see no claim — every tab is woken by the same click at the same
+   moment, so that instant is common. Measured: the item opening in two tabs.
+   A Web Lock named for the click is atomic across tabs; whoever gets it
+   acts, and it is held a while so a late copy of the same click in another
+   tab finds it taken. localStorage still orders one click against another,
+   and is the whole rule where Web Locks are missing. */
+function rlActOnNav(seq, at, ack, item) {
+  const act = () => {
+    if (!rlClaimNav(seq, at)) return;
+    rlAckNav(seq, ack);
+    rlNavShown = true;
+    closePortfolio();
+    setItem(item);
+  };
+  if (navigator.locks && typeof navigator.locks.request === 'function') {
+    navigator.locks.request('pge-nav-' + seq + '-' + at, { ifAvailable: true }, lock => {
+      if (!lock) return;   // another tab has this click
+      act();
+      return new Promise(r => setTimeout(r, RL_NAV_FRESH_MS));
+    }).catch(() => act());
+    return;
+  }
+  act();
 }
 
 /* How long after the click a tab may still act on a request the plugin is
@@ -7730,6 +7781,10 @@ function rlClaimNav(seq, at) {
     if (last && typeof last === 'object') {
       const lastAt = Number(last.at) || 0, lastSeq = Number(last.seq) || 0;
       if (lastSeq === seq && lastAt === (at || 0)) return false;   // this very click, already taken
+      /* A bare number is a claim written by a page from before claims had a
+         time (still open in some tab, never reloaded). The same seq there is
+         this click, taken by that tab — acting as well showed it twice. */
+      if (lastAt === 0 && lastSeq === seq) return false;
       if (at > 0 && lastAt > 0) {
         if (at < lastAt || (at === lastAt && seq <= lastSeq)) return false;   // an older click
       } else if (!(at > 0) && lastSeq >= seq) {
@@ -7748,7 +7803,9 @@ function rlClaimNav(seq, at) {
 
 /* True if this tab should act on `seq` right now. The most-recently-focused
    tab acts immediately; any other records a deferral and lets the caller
-   retry after RL_NAV_YIELD_MS. */
+   retry after RL_NAV_YIELD_MS. Decides only: the claim itself is made in
+   rlActOnNav, under the click's lock — claimed here too, the second claim
+   found the click "already taken" and nothing was shown. */
 function rlTakeNav(seq, at) {
   let lastFocused = null;
   try { lastFocused = JSON.parse(localStorage.getItem(RL_TAB_FOCUS_KEY) || 'null'); } catch (e) {}
@@ -7768,7 +7825,7 @@ function rlTakeNav(seq, at) {
     rlNavDeferred.add(seq);
     return false;
   }
-  return rlClaimNav(seq, at);
+  return true;
 }
 
 /* Long-poll for chart clicks, alongside (not instead of) the 5s payload poll.
@@ -7783,6 +7840,9 @@ function rlTakeNav(seq, at) {
  * The plugin parks the request for up to 25s and then answers empty; either
  * way we reconnect immediately. Errors back off to the payload poll's cadence
  * so a plugin that is off does not spin. */
+/* See the pause at the bottom of rlNavLoop. Well inside the 1.5s window a
+   click the plugin is waiting about can still be taken in. */
+const RL_NAV_BUSY_MS = 400;
 let rlNavPolling = false;
 async function rlNavLoop() {
   if (rlNavPolling) return;
@@ -7803,19 +7863,23 @@ async function rlNavLoop() {
          so this loop is where anything that must keep happening behind the
          game belongs. */
       rlKeepFocusAlive();
-      if (rlNavRetry) { rlTakeDeferredNav(rlNavRetry.seq, rlNavRetry.item, rlNavRetry.at, rlNavRetry.ack); }
+      /* Only once the yield is over. A tab polling fast (see the pause below)
+         would otherwise retry within milliseconds and beat the tab it was
+         yielding to. */
+      if (rlNavRetry && Date.now() - rlNavRetry.deferredAt >= RL_NAV_YIELD_MS) {
+        rlTakeDeferredNav(rlNavRetry.seq, rlNavRetry.item, rlNavRetry.at, rlNavRetry.ack);
+      }
       rlHandleNavRequest(data && data.navRequest);
       /* Answered at once and nothing moved on: asking again straight away
-         gets the same answer, as fast as the loopback allows, forever. Two
-         ways in — the plugin parks at most four of these and a fifth tab is
-         told "nothing" without waiting; or the request is one this tab cannot
-         show (an item the site has no page for, like an untradeable — it is
-         left unbanked so a later mapping could still take it), so `since`
-         never passes it. Both burned a core in the browser and the client
-         until the next click. A pause is enough: the 5s payload poll keeps
-         carrying clicks meanwhile. */
+         gets the same answer, as fast as the loopback allows, for as long as
+         that lasts — the plugin parks at most four of these, so a fifth tab
+         is told "nothing" without waiting, and a tab whose item list is still
+         loading is handed the same click until it can look it up. A short
+         pause, not a long one: a pause of a full payload interval left that
+         fifth tab — often the one you were last looking at — unable to take a
+         click inside the plugin's ack window at all. */
       if (Date.now() - asked < 1000 && (rlLastNavSeq === null ? 0 : rlLastNavSeq) === since) {
-        await new Promise(r => setTimeout(r, RL_POLL_MS));
+        await new Promise(r => setTimeout(r, RL_NAV_BUSY_MS));
       }
     } catch (e) {
       /* Plugin off, bridge disabled, or an older plugin with no /nav
@@ -10467,7 +10531,13 @@ setItem._userPicked = false;
                   : eligible(randomLanding) ? randomLanding
                   : eligible(mapping.find(x => String(x.id) === LANDING_ID)) ? mapping.find(x => String(x.id) === LANDING_ID)
                   : mapping.find(x => x.name.toLowerCase() === "ruby");
-    if (landing) {
+    /* A chart click from the game can arrive while boot is still fetching
+       — the item list is in, the landing item is not drawn yet — and be
+       taken, acknowledged and drawn. Drawing the landing item now would
+       replace it: "sent X to your open tab" while the tab showed the page's
+       own item. A prerendered /item/ page always has a landing item, and a
+       tab ends up on one whenever it reloads, so this was not rare. */
+    if (landing && !rlNavShown) {
       setItem._userPicked = false;
       /* Only "itemize" the page (rewrite URL to /?q=Name, canonical to item,
          title to "<Item> - PocketGE") when the visitor came in with an
