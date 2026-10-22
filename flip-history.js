@@ -43,7 +43,13 @@
 
     pollTimer: null,
     bank: null,     // the /flips payload — wealth, not the ledger
+    portfolio: null,  // [[time, value], ...] oldest first, from /portfolio
+    portfolioAt: 0,   // when it was last fetched
+    pfRange: 'all',   // 1 | 7 | 30 | 365 days, or all
   };
+  /* The plugin samples every 15 minutes, so the poll's every five seconds
+     would ask for the same series a hundred and eighty times. */
+  var PORTFOLIO_EVERY_MS = 5 * 60000;
 
   var $ = function (sel) { return document.querySelector(sel); };
 
@@ -120,10 +126,17 @@
     el.hidden = false;
   }
 
+  /* Steps, not a sentence: the one thing someone landing here needs is what
+     to click, in order. It is off by default, which is the usual reason this
+     page finds nothing. */
   var OFFER_HELP =
-    'In RuneLite, open the <b>PocketGE Flip Tracker</b> settings and switch on ' +
-    '<b>Local website bridge</b>. It is off by default, which is the usual reason ' +
-    'this page finds nothing.';
+    'To link it:<ol class="fh-steps">' +
+    '<li>In RuneLite, open the <b>PocketGE</b> panel, click the <b>gear</b>, and under ' +
+      '<b>Website link</b> switch on <b>Local website bridge</b>.</li>' +
+    '<li>Keep RuneLite running and logged in on this computer.</li>' +
+    '<li>This page finds it by itself within a few seconds.</li>' +
+    '</ol>Then you get every flip, your bank, and your portfolio charted over time. ' +
+    'Nothing leaves your computer: this page reads the plugin on 127.0.0.1.';
 
   /* The second reason, and the one nobody can guess: the plugin's Bridge port
      is a setting with a 1024-65535 range, and this page was hardcoded to the
@@ -171,10 +184,130 @@
     }
   }
 
+  /* The portfolio's value over time. Its own endpoint, like /history: a
+     year of it is thousands of points and the poll has no use for them. A
+     404 is a plugin from before the series existed. */
+  async function loadPortfolio() {
+    state.portfolioAt = Date.now();
+    try {
+      var res = await fetch(bridge('/portfolio'), { cache: 'no-store', mode: 'cors' });
+      state.portfolioMissing = res.status === 404;
+      if (state.portfolioMissing) {
+        state.portfolio = null;
+        pfNote('Your PocketGE plugin does not record your portfolio yet — that comes with its next update ' +
+          'on the RuneLite Plugin Hub.');
+        renderPortfolio();
+        return;
+      }
+      if (!res.ok) return;
+      var data = await res.json();
+      state.portfolio = Array.isArray(data.points) ? data.points.filter(function (p) {
+        return Array.isArray(p) && isFinite(p[0]) && isFinite(p[1]) && p[1] > 0;
+      }) : [];
+      renderPortfolio();
+      scrollToPortfolio();
+    } catch (e) { /* bridge gone; the chart keeps what it has */ }
+  }
+
+  /* Arrived by the plugin's Portfolio value row: take them to it, once —
+     but only once it is on screen. The series can land before the ledger
+     has shown the page, and a jump to a hidden section goes nowhere. */
+  function scrollToPortfolio() {
+    if (location.hash !== '#portfolio' || state.pfScrolled) return;
+    var live = $('#fhLive'), head = $('#portfolio');
+    if (!head || !live || live.hidden || !head.offsetParent) return;
+    state.pfScrolled = true;
+    head.scrollIntoView({ block: 'start' });
+  }
+
+  function pfNote(text) {
+    var el = $('#fhPfNote');
+    if (!el) return;
+    el.textContent = text || '';
+    el.hidden = !text;
+  }
+
+  function renderPortfolio() {
+    var cv = $('#fhPortfolio');
+    if (!cv) return;
+    var wrap = cv.parentElement;
+    var cssW = Math.max(240, wrap.clientWidth);
+    var cssH = 220;
+    var dpr = window.devicePixelRatio || 1;
+    cv.width = Math.round(cssW * dpr);
+    cv.height = Math.round(cssH * dpr);
+    cv.style.width = cssW + 'px';
+    cv.style.height = cssH + 'px';
+    var g = cv.getContext('2d');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, cssW, cssH);
+    var all = state.portfolio || [];
+    var cutoff = state.pfRange === 'all' ? -Infinity : Date.now() - Number(state.pfRange) * 86400000;
+    var pts = [];
+    for (var i = 0; i < all.length; i++) {
+      if (all[i][0] >= cutoff) pts.push({ t: all[i][0], v: all[i][1] });
+    }
+    if (pts.length < 2) {
+      if (!state.portfolioMissing) pfNote(null);
+      g.fillStyle = '#8A8274';
+      g.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+      g.textAlign = 'center';
+      g.fillText(all.length < 2
+        ? 'The plugin notes your portfolio every 15 minutes while you play — the line starts at the second.'
+        : 'Nothing in this range yet.', cssW / 2, cssH / 2);
+      return;
+    }
+    var t0 = pts[0].t, t1 = pts[pts.length - 1].t;
+    if (t1 <= t0) t1 = t0 + 1;
+    /* Not from zero: a 148M portfolio moving 3M is the story, and an axis
+       from nothing would draw it as a flat line along the top. */
+    var lo = Infinity, hi = -Infinity;
+    for (var j = 0; j < pts.length; j++) { if (pts[j].v < lo) lo = pts[j].v; if (pts[j].v > hi) hi = pts[j].v; }
+    var pad = (hi - lo) * 0.08 || hi * 0.01 || 1;
+    lo -= pad; hi += pad;
+    var padL = 52, padR = 8, padT = 10, padB = 20;
+    var x = function (t) { return padL + (t - t0) / (t1 - t0) * (cssW - padL - padR); };
+    var y = function (v) { return padT + (hi - v) / (hi - lo) * (cssH - padT - padB); };
+
+    g.strokeStyle = 'rgba(217,211,199,0.10)';
+    g.fillStyle = '#8A8274';
+    g.font = '10px -apple-system, BlinkMacSystemFont, sans-serif';
+    g.textAlign = 'right';
+    g.lineWidth = 1;
+    for (var k = 0; k <= 4; k++) {
+      var vv = lo + (hi - lo) * (k / 4);
+      var yy = Math.round(y(vv)) + 0.5;
+      g.beginPath(); g.moveTo(padL, yy); g.lineTo(cssW - padR, yy); g.stroke();
+      g.fillText(abbrev(vv), padL - 6, yy + 3);
+    }
+    /* Gold, the colour the plugin's own Portfolio value row is in. */
+    g.beginPath();
+    for (var p = 0; p < pts.length; p++) {
+      var px = x(pts[p].t), py = y(pts[p].v);
+      if (p === 0) g.moveTo(px, py); else g.lineTo(px, py);
+    }
+    g.strokeStyle = '#E5C158'; g.lineWidth = 1.6; g.lineJoin = 'round'; g.stroke();
+    g.lineTo(x(pts[pts.length - 1].t), cssH - padB);
+    g.lineTo(x(pts[0].t), cssH - padB);
+    g.closePath();
+    g.fillStyle = 'rgba(229,193,88,0.10)';
+    g.fill();
+    g.fillStyle = '#8A8274';
+    g.textAlign = 'left';
+    g.fillText(when(t0).split(' ').slice(0, 3).join(' '), padL, cssH - 6);
+    g.textAlign = 'right';
+    g.fillText(when(t1).split(' ').slice(0, 3).join(' '), cssW - padR, cssH - 6);
+    /* The change over the range, said in words above the line. */
+    var first = pts[0].v, last = pts[pts.length - 1].v, d = last - first;
+    var pct = first > 0 ? (d / first) * 100 : 0;
+    pfNote(abbrev(last) + ' now · ' + signed(d) + ' (' + (d >= 0 ? '+' : '') + pct.toFixed(1) + '%) over this range');
+  }
+
   /* The poll exists only to notice that the ledger grew. It never fetches the
      ledger itself. */
   async function pollForGrowth() {
     loadBank();
+    if (Date.now() - state.portfolioAt >= PORTFOLIO_EVERY_MS) loadPortfolio();
     try {
       var res = await fetch(bridge('/flips'), { cache: 'no-store', mode: 'cors' });
       if (!res.ok) return;
@@ -475,7 +608,7 @@
           if (b) { b.classList.toggle('is-on', on); b.setAttribute('aria-selected', String(on)); }
           if (p) p.hidden = !on;
         });
-        if (pair[0] === 'tabProfit') renderChart();
+        if (pair[0] === 'tabProfit') { renderChart(); renderPortfolio(); }
       };
     });
   }
@@ -718,7 +851,9 @@
     renderHighlights();
     renderBank();
     renderChart();
+    renderPortfolio();
     renderTable();
+    scrollToPortfolio();
   }
 
   // ── wiring ──────────────────────────────────────────────────────────────
@@ -763,6 +898,10 @@
     if (fr) fr.addEventListener('change', function () {
       state.range = fr.value; state.page = 0; renderTable();
     });
+    var pr = $('#fhPfRange');
+    if (pr) pr.addEventListener('change', function () {
+      state.pfRange = pr.value; renderPortfolio();
+    });
     document.addEventListener('keydown', function (e) {
       if ((e.key === 'Enter' || e.key === ' ') && e.target.matches &&
           e.target.matches('#fhHead th[data-key]')) {
@@ -771,12 +910,16 @@
     });
     var rt;
     window.addEventListener('resize', function () {
-      clearTimeout(rt); rt = setTimeout(function () { if (state.loaded) renderChart(); }, 150);
+      clearTimeout(rt); rt = setTimeout(function () {
+        if (state.loaded) renderChart();
+        if (state.portfolio) renderPortfolio();
+      }, 150);
     });
 
     mountTabs();
     setStatus('wait', 'Looking for RuneLite on this computer…');
     loadBank();
+    loadPortfolio();
     loadHistory().then(function () {
       /* Polls regardless of whether the first load worked: the client may not
          be running yet, and this is also how the page notices a ledger that

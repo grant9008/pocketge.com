@@ -59,6 +59,8 @@
   .fh-status.fh-warn { border-left-color:var(--gold); background:rgba(255,179,0,0.08); }
   .fh-status.fh-off { border-left-color:var(--gold); background:rgba(255,179,0,0.08); }
   .fh-status b { color:var(--head); }
+  .fh-steps { margin:6px 0 6px 18px; padding:0; }
+  .fh-steps li { margin:2px 0; }
   /* The port, offered right where the failure is reported. On its own line so
      it reads as a thing to do rather than as more of the sentence above it. */
   .fh-port { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:10px; }
@@ -124,7 +126,14 @@
      for anyone who arrives by screen reader or lands on the panel directly. */
   .fh-panel-h { position:absolute; width:1px; height:1px; margin:-1px; padding:0;
     overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
-  #fhChart { display:block; width:100%; }
+  #fhChart, #fhPortfolio { display:block; width:100%; }
+  .fh-pf-head { display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin:18px 0 10px; scroll-margin-top:70px; }
+  .fh-pf-head .fh-sub-h { margin:0; }
+  .fh-pf-head select { background:var(--input); border:1px solid var(--border); border-radius:5px;
+    color:var(--text); font:inherit; font-size:12.5px; padding:5px 8px; }
+  .fh-pf-head select:focus { outline:none; border-color:var(--accent); }
+  .fh-pf-note { font-size:11.5px; color:var(--muted); margin:-10px 0 18px; }
 
   /* Eleven columns will not fit a phone and should not try. Its own scroller,
      so the PAGE never scrolls sideways — the rest of the site was just fixed
@@ -233,6 +242,21 @@
       <div class="fh-keys" id="fhKeys" hidden></div>
       <h3 class="fh-sub-h">Cumulative profit</h3>
       <div class="fh-chart-wrap"><canvas id="fhChart" height="220"></canvas></div>
+      <!-- Everything you hold, priced, over time: cash, bank, inventory and
+           what is sitting in your offers. Profit above is what the trades
+           made; this is whether the pile is actually growing. -->
+      <div class="fh-pf-head" id="portfolio">
+        <h3 class="fh-sub-h">Portfolio value</h3>
+        <select id="fhPfRange" aria-label="Portfolio time range">
+          <option value="1">Last day</option>
+          <option value="7">Last 7 days</option>
+          <option value="30">Last 30 days</option>
+          <option value="365">Last year</option>
+          <option value="all" selected>All time</option>
+        </select>
+      </div>
+      <div class="fh-chart-wrap"><canvas id="fhPortfolio" height="220"></canvas></div>
+      <p class="fh-pf-note" id="fhPfNote" hidden></p>
     </div>
 
     <div class="fh-panel" id="panelBank" role="tabpanel" aria-labelledby="tabBank" hidden>
@@ -293,6 +317,6 @@
 <script src="site-nav.js?v=eddd465f"></script>
 <script src="flip-group.js?v=87b26f4d"></script>
 <script src="bridge-port.js?v=7f972723"></script>
-<script src="flip-history.js?v=507dec5c"></script>
+<script src="flip-history.js?v=ca2be557"></script>
 </body>
 </html>
