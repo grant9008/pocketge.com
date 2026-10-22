@@ -172,6 +172,7 @@
       state.flips = Array.isArray(data.flips) ? data.flips : [];
       state.count = typeof data.count === 'number' ? data.count : state.flips.length;
       state.generatedAt = Number(data.generatedAt) || Date.now();
+      if (!state.loaded && !(state.portfolio && state.portfolio.length >= 2)) loadPortfolio();
       state.loaded = true;
       render();
       return true;
@@ -187,26 +188,41 @@
   /* The portfolio's value over time. Its own endpoint, like /history: a
      year of it is thousands of points and the poll has no use for them. A
      404 is a plugin from before the series existed. */
+  /* Whether the plugin has /portfolio at all. An older one answers 404
+     with no CORS header, which this page cannot read — the fetch just
+     fails — so the plugin says it in /flips instead, and a /flips without
+     the flag is a plugin from before the chart. */
+  function portfolioUnsupported() {
+    return state.bank != null && state.bank.portfolioHistory !== true;
+  }
+
+  /* Fetched again in five minutes once there is a line to draw, the
+     plugin's own pace. Until then every thirty seconds: the page may be
+     opened before RuneLite, or at the login screen, and a chart about to
+     start should show up when it does rather than five minutes later. */
+  function portfolioRetrySoon() {
+    state.portfolioAt = Date.now() - PORTFOLIO_EVERY_MS + 30000;
+  }
+
   async function loadPortfolio() {
-    state.portfolioAt = Date.now();
+    portfolioRetrySoon();
+    if (portfolioUnsupported()) { state.portfolio = null; renderPortfolio(); return; }
     try {
       var res = await fetch(bridge('/portfolio'), { cache: 'no-store', mode: 'cors' });
-      state.portfolioMissing = res.status === 404;
-      if (state.portfolioMissing) {
-        state.portfolio = null;
-        pfNote('Your PocketGE plugin does not record your portfolio yet — that comes with its next update ' +
-          'on the RuneLite Plugin Hub.');
-        renderPortfolio();
-        return;
-      }
       if (!res.ok) return;
       var data = await res.json();
+      state.portfolioRecording = data.recording !== false;
       state.portfolio = Array.isArray(data.points) ? data.points.filter(function (p) {
         return Array.isArray(p) && isFinite(p[0]) && isFinite(p[1]) && p[1] > 0;
       }) : [];
+      if (state.portfolio.length >= 2) state.portfolioAt = Date.now();
       renderPortfolio();
       scrollToPortfolio();
-    } catch (e) { /* bridge gone; the chart keeps what it has */ }
+    } catch (e) {
+      /* The bridge is not there, or is a plugin from before the chart;
+         /flips decides which, and the next poll tries again. */
+      if (portfolioUnsupported()) renderPortfolio();
+    }
   }
 
   /* Arrived by the plugin's Portfolio value row: take them to it, once —
@@ -227,6 +243,17 @@
     el.hidden = !text;
   }
 
+  /* A short word on the canvas when there is no line; the sentence goes in
+     the note under it, which wraps — canvas text does not, and a sentence
+     drawn across a phone-width chart lost both ends. */
+  function portfolioEmpty(g, cssW, cssH, word, note) {
+    g.fillStyle = '#8A8274';
+    g.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+    g.textAlign = 'center';
+    g.fillText(word, cssW / 2, cssH / 2);
+    pfNote(note);
+  }
+
   function renderPortfolio() {
     var cv = $('#fhPortfolio');
     if (!cv) return;
@@ -241,6 +268,14 @@
     var g = cv.getContext('2d');
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.clearRect(0, 0, cssW, cssH);
+    if (portfolioUnsupported()) {
+      portfolioEmpty(g, cssW, cssH, 'Not recorded yet',
+        'Your PocketGE plugin does not record your portfolio yet — that comes with its next update ' +
+        'on the RuneLite Plugin Hub.');
+      return;
+    }
+    var paused = state.portfolioRecording === false
+      ? 'Recorded while the plugin\'s Flip advisor is on — it needs live prices. ' : '';
     var all = state.portfolio || [];
     var cutoff = state.pfRange === 'all' ? -Infinity : Date.now() - Number(state.pfRange) * 86400000;
     var pts = [];
@@ -248,23 +283,23 @@
       if (all[i][0] >= cutoff) pts.push({ t: all[i][0], v: all[i][1] });
     }
     if (pts.length < 2) {
-      if (!state.portfolioMissing) pfNote(null);
-      g.fillStyle = '#8A8274';
-      g.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
-      g.textAlign = 'center';
-      g.fillText(all.length < 2
-        ? 'The plugin notes your portfolio every 15 minutes while you play — the line starts at the second.'
-        : 'Nothing in this range yet.', cssW / 2, cssH / 2);
+      if (all.length < 2) {
+        portfolioEmpty(g, cssW, cssH, 'No line yet', paused.trim() ||
+          'The plugin notes your portfolio every 15 minutes while you play. The line starts at the second.');
+      } else {
+        portfolioEmpty(g, cssW, cssH, 'Nothing in this range', paused.trim() || 'Nothing recorded in this range yet.');
+      }
       return;
     }
     var t0 = pts[0].t, t1 = pts[pts.length - 1].t;
     if (t1 <= t0) t1 = t0 + 1;
     /* Not from zero: a 148M portfolio moving 3M is the story, and an axis
-       from nothing would draw it as a flat line along the top. */
+       from nothing would draw it as a flat line along the top. Never below
+       zero either, which the padding under a low first point reached. */
     var lo = Infinity, hi = -Infinity;
     for (var j = 0; j < pts.length; j++) { if (pts[j].v < lo) lo = pts[j].v; if (pts[j].v > hi) hi = pts[j].v; }
     var pad = (hi - lo) * 0.08 || hi * 0.01 || 1;
-    lo -= pad; hi += pad;
+    lo = Math.max(0, lo - pad); hi += pad;
     var padL = 52, padR = 8, padT = 10, padB = 20;
     var x = function (t) { return padL + (t - t0) / (t1 - t0) * (cssW - padL - padR); };
     var y = function (v) { return padT + (hi - v) / (hi - lo) * (cssH - padT - padB); };
@@ -292,15 +327,21 @@
     g.closePath();
     g.fillStyle = 'rgba(229,193,88,0.10)';
     g.fill();
+    /* The ends, as dates — or with the time as well when the line covers
+       less than two days, where both ends are otherwise the same date. */
+    var label = function (t) {
+      return t1 - t0 < 2 * 86400000 ? when(t) : when(t).split(' ').slice(0, 3).join(' ');
+    };
     g.fillStyle = '#8A8274';
     g.textAlign = 'left';
-    g.fillText(when(t0).split(' ').slice(0, 3).join(' '), padL, cssH - 6);
+    g.fillText(label(t0), padL, cssH - 6);
     g.textAlign = 'right';
-    g.fillText(when(t1).split(' ').slice(0, 3).join(' '), cssW - padR, cssH - 6);
-    /* The change over the range, said in words above the line. */
+    g.fillText(label(t1), cssW - padR, cssH - 6);
+    /* The change over the range, said in words under the line. */
     var first = pts[0].v, last = pts[pts.length - 1].v, d = last - first;
     var pct = first > 0 ? (d / first) * 100 : 0;
-    pfNote(abbrev(last) + ' now · ' + signed(d) + ' (' + (d >= 0 ? '+' : '') + pct.toFixed(1) + '%) over this range');
+    pfNote(paused + abbrev(last) + ' latest · ' + signed(d) + ' (' + (d >= 0 ? '+' : '') + pct.toFixed(1) +
+      '%) over this range');
   }
 
   /* The poll exists only to notice that the ledger grew. It never fetches the
@@ -879,6 +920,7 @@
         if (saved != null) input.value = saved;
         setStatus('wait', 'Looking for RuneLite on 127.0.0.1:' + saved + '…');
         loadBank();
+        loadPortfolio();
         loadHistory();
       }
     });
@@ -911,8 +953,9 @@
     var rt;
     window.addEventListener('resize', function () {
       clearTimeout(rt); rt = setTimeout(function () {
-        if (state.loaded) renderChart();
-        if (state.portfolio) renderPortfolio();
+        /* Both, whenever the page is up: renderPortfolio pins its canvas to
+           a pixel width, and one left at the old width scrolls sideways. */
+        if (state.loaded) { renderChart(); renderPortfolio(); }
       }, 150);
     });
 
