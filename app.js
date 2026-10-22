@@ -887,6 +887,9 @@ const THEMES = [
     buy: '#F2EADB', buyRgb: '242, 234, 219', sell: '#7A8794', sellRgb: '122, 135, 148' },
 ];
 const THEME_KEY = 'ge_theme';
+/* The palette app.css's :root paints with, so the one that needs nothing
+   stored. High contrast since it replaced Terminal as the default. */
+const DEFAULT_THEME = 'contrast';
 
 function storedPalette() {
   try { const t = JSON.parse(localStorage.getItem(THEME_KEY)); return t && t.buy ? t : null; }
@@ -895,7 +898,7 @@ function storedPalette() {
 
 function currentThemeId() {
   const t = storedPalette();
-  return t && t.id ? t.id : 'terminal';
+  return t && t.id ? t.id : DEFAULT_THEME;
 }
 
 /* "255, 193, 7" from "#FFC107". Every tint on the page is rgba() of this, and
@@ -916,7 +919,7 @@ function hexToRgb(hex) {
    no id to look up. applyTheme() is the preset door onto this. */
 function applyPalette(t, persist) {
   const r = document.documentElement.style;
-  if (t.id === 'terminal') {
+  if (t.id === DEFAULT_THEME) {
     /* Clear rather than restate: the stylesheet's :root already holds these,
        and leaving an inline copy behind means a later edit to app.css does
        not reach anyone who ever opened this menu. */
@@ -929,7 +932,7 @@ function applyPalette(t, persist) {
   }
   if (persist) {
     try {
-      if (t.id === 'terminal') localStorage.removeItem(THEME_KEY);
+      if (t.id === DEFAULT_THEME) localStorage.removeItem(THEME_KEY);
       else localStorage.setItem(THEME_KEY, JSON.stringify(t));
     } catch (e) {}
   }
@@ -952,7 +955,7 @@ function applyPalette(t, persist) {
 }
 
 function applyTheme(id, persist) {
-  applyPalette(THEMES.find(x => x.id === id) || THEMES[0], persist);
+  applyPalette(THEMES.find(x => x.id === id) || THEMES.find(x => x.id === DEFAULT_THEME), persist);
 }
 
 /* A pair the visitor picked themselves. Stored resolved like every preset, so
@@ -1097,7 +1100,7 @@ function darken(hex, keep) {
 function paletteRgb(side) {
   const v = getComputedStyle(document.documentElement)
     .getPropertyValue(side === 'buy' ? '--buy-rgb' : '--sell-rgb').trim();
-  return v || (side === 'buy' ? '229, 184, 66' : '38, 169, 171');
+  return v || (side === 'buy' ? '255, 193, 7' : '41, 182, 246');
 }
 
 /* Built here rather than written into index.html so the markup cannot fall out
@@ -1139,7 +1142,7 @@ const PALETTE_POP_ID = 'palettePop';
 function paletteCustomPair() {
   const t = storedPalette();
   if (t && t.id === 'custom') return [t.buy, t.sell];
-  return [cssVar('--buy-color') || '#E5B842', cssVar('--sell-color') || '#26A9AB'];
+  return [cssVar('--buy-color') || '#FFC107', cssVar('--sell-color') || '#29B6F6'];
 }
 
 function buildPalettePop() {
@@ -1964,8 +1967,8 @@ async function buildShareCardCanvas() {
   /* HIGH is the sell colour, LOW the buy colour -- same rule as the badges in
      the watchlist, and read from the palette so a shared card shows the colours
      the sharer is actually looking at. */
-  const hl5Color = isHigh5d ? (cssVar('--sell-color') || '#26A9AB')
-                 : isLow5d  ? (cssVar('--buy-color')  || '#E5B842') : null;
+  const hl5Color = isHigh5d ? (cssVar('--sell-color') || '#29B6F6')
+                 : isLow5d  ? (cssVar('--buy-color')  || '#FFC107') : null;
   /* The two can disagree, and legitimately: a price can sit at the bottom of
      the last five days and still be high in the thirty-day range the Analyst
      Rating scores against. Both facts are true. The problem is that the card
@@ -2141,7 +2144,7 @@ async function buildShareCardCanvas() {
   /* Read, not hardcoded: the share card has to show the palette the user
      is actually looking at. (The PocketGE wordmark below stays brand gold.) */
   const shareTgtColor = cssVar(shareIsBuy ? '--buy-color' : '--sell-color') ||
-                        (shareIsBuy ? '#E5B842' : '#26A9AB');
+                        (shareIsBuy ? '#FFC107' : '#29B6F6');
 
   /* Shrink-to-fit, then ellipsise. Used for the Market Read line, which is a
      fixed sentence but a variable width once the font is applied. */

@@ -43,8 +43,8 @@ STYLE = """
      running Neon, which is the one thing a legend must not do. On :root the
      inline copy wins and these are the fallback. */
   :root {
-    --buy-color:#E5B842; --sell-color:#26A9AB;
-    --buy-rgb:229, 184, 66; --sell-rgb:38, 169, 171;
+    --buy-color:#FFC107; --sell-color:#29B6F6;
+    --buy-rgb:255, 193, 7; --sell-rgb:41, 182, 246;
   }
   .glossary-section { margin-top:22px; margin-bottom:8px; font-size:11px; font-weight:700;
     color:var(--text-muted); text-transform:uppercase; letter-spacing:0.6px; }

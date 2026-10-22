@@ -35,13 +35,17 @@
      just turned warm. It has to stay a value match: the whole point of this
      token is that headers sit under the data they label. */
   --text-structural: #948A78;
-  --buy-color: #E5B842;
-  --sell-color: #26A9AB;
+  /* High contrast, the default pair since the switch away from Terminal
+     (#E5B842 / #26A9AB): every visitor who never picked a theme, and every
+     one who picked Terminal back when it was the default (which saved
+     nothing), gets this. */
+  --buy-color: #FFC107;
+  --sell-color: #29B6F6;
   /* Same two colours as an "r, g, b" triplet, because rgba() cannot take
      a hex variable and every tint, glow and border of these is an alpha
      variant. setTheme() in app.js writes both, so they cannot drift. */
-  --buy-rgb: 229, 184, 66;
-  --sell-rgb: 38, 169, 171;
+  --buy-rgb: 255, 193, 7;
+  --sell-rgb: 41, 182, 246;
   --vol-buy: rgba(var(--buy-rgb), 0.35);
   --vol-sell: rgba(var(--sell-rgb), 0.35);
   --positive: #10B981;
