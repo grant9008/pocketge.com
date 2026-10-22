@@ -282,6 +282,9 @@
     for (var i = 0; i < all.length; i++) {
       if (all[i][0] >= cutoff) pts.push({ t: all[i][0], v: all[i][1] });
     }
+    /* Oldest first, whatever order they came in: the first and last points
+       are the axis ends. */
+    pts.sort(function (a, b) { return a.t - b.t; });
     if (pts.length < 2) {
       if (all.length < 2) {
         portfolioEmpty(g, cssW, cssH, 'No line yet', paused.trim() ||
@@ -559,8 +562,12 @@
       var res = await fetch(bridge('/flips'), { cache: 'no-store', mode: 'cors' });
       if (!res.ok) return;
       var d = await res.json();
+      var wasUnsupported = portfolioUnsupported();
       state.bank = d && typeof d === 'object' ? d : null;
       renderBank();
+      /* The chart's own fetch learns of a plugin from before it only on its
+         next try; /flips knows now. */
+      if (portfolioUnsupported() !== wasUnsupported) loadPortfolio();
     } catch (e) { /* no bridge: the section simply stays hidden */ }
   }
 
