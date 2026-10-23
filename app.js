@@ -8015,6 +8015,7 @@ async function rlPoll() {
    without asking for the file again. */
 let rlHistory = null;        // the full ledger, newest first, or null
 let rlHistoryCount = -1;     // flipCount the cached copy was built at
+let rlHistoryRevision = -1;  // the plugin's history revision it was built at
 let rlHistoryPage = 0;
 let rlHistoryOpen = false;
 let rlHistoryLoading = false;
@@ -8033,6 +8034,7 @@ async function rlFetchHistory() {
        sorting thousands of rows on each page turn is work for nothing. */
     rlHistory = flips.slice().reverse();
     rlHistoryCount = flips.length;
+    rlHistoryRevision = typeof data.revision === 'number' ? data.revision : -1;
   } catch (e) {
     rlHistory = null;
   } finally {
@@ -8047,7 +8049,10 @@ function rlOpenHistory() {
   rlHistoryOpen = true;
   rlHistoryPage = 0;
   const known = rlLast && rlLast.flipCount != null ? Number(rlLast.flipCount) : -1;
-  if (rlHistory === null || (known >= 0 && known !== rlHistoryCount)) {
+  /* A row corrected in the plugin keeps the count and moves this on. */
+  const rev = rlLast && rlLast.historyRevision != null ? Number(rlLast.historyRevision) : -1;
+  if (rlHistory === null || (known >= 0 && known !== rlHistoryCount)
+      || (rev >= 0 && rlHistoryRevision >= 0 && rev !== rlHistoryRevision)) {
     rlFetchHistory();
   }
   rlRenderModal(rlLast);

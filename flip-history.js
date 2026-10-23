@@ -32,6 +32,7 @@
   var state = {
     flips: [],        // as served: oldest first
     count: null,      // the `count` that came with this copy
+    revision: null,   // the plugin's history revision with it, if it sends one
     generatedAt: 0,
     loaded: false,
     sortKey: 'closed',
@@ -171,6 +172,7 @@
       var data = await res.json();
       state.flips = Array.isArray(data.flips) ? data.flips : [];
       state.count = typeof data.count === 'number' ? data.count : state.flips.length;
+      state.revision = typeof data.revision === 'number' ? data.revision : null;
       state.generatedAt = Number(data.generatedAt) || Date.now();
       if (!state.loaded && !(state.portfolio && state.portfolio.length >= 2)) loadPortfolio();
       state.loaded = true;
@@ -358,7 +360,11 @@
       var data = await res.json();
       var live = Number(data.flipCount);
       if (!isFinite(live)) return;
-      if (state.loaded && state.count != null && live > state.count) {
+      /* Grown, or a row corrected in place ("Correct what I paid…" in the
+         plugin), which keeps the count and moves the revision on. */
+      var rev = Number(data.historyRevision);
+      var corrected = state.revision != null && isFinite(rev) && rev !== state.revision;
+      if (state.loaded && state.count != null && (live > state.count || corrected)) {
         loadHistory();
       } else if (!state.loaded) {
         loadHistory();      // bridge came back after a failed first load
