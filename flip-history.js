@@ -363,7 +363,10 @@
       /* Grown, or a row corrected in place ("Correct what I paid…" in the
          plugin), which keeps the count and moves the revision on. */
       var rev = Number(data.historyRevision);
-      var corrected = state.revision != null && isFinite(rev) && rev !== state.revision;
+      /* A copy with no revision (from a plugin before 0.7.6) counts as stale
+         once the plugin reports one, so the first correction after an
+         upgrade is not missed. */
+      var corrected = isFinite(rev) && rev !== state.revision;
       if (state.loaded && state.count != null && (live > state.count || corrected)) {
         loadHistory();
       } else if (!state.loaded) {

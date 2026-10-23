@@ -8052,7 +8052,7 @@ function rlOpenHistory() {
   /* A row corrected in the plugin keeps the count and moves this on. */
   const rev = rlLast && rlLast.historyRevision != null ? Number(rlLast.historyRevision) : -1;
   if (rlHistory === null || (known >= 0 && known !== rlHistoryCount)
-      || (rev >= 0 && rlHistoryRevision >= 0 && rev !== rlHistoryRevision)) {
+      || (rev >= 0 && rev !== rlHistoryRevision)) {
     rlFetchHistory();
   }
   rlRenderModal(rlLast);
