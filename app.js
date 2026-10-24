@@ -4127,7 +4127,8 @@ function renderWatchlist() {
   const favs = mergedFavIds.map(id => favsById.get(String(id))).filter(Boolean);
 
   const dayLows = [], dayHighs = [], marginHigh1d = [], marginLow1d = [], movers = [];
-  const mover1dPct = {}; // id -> the day's change, live mid vs the mid 24h ago, for inline fav badges
+  const mover1dPct = {}; // id -> the day's change, live mid vs the mid 24h ago: the favorites' figure
+  const mover24Pct = {}; // id -> live mid vs /24h's average mid: the discovery lists' figure, as it always was
 
   activeItems.forEach(item => {
     const id = String(item.id);
@@ -4185,6 +4186,7 @@ function renderWatchlist() {
            on /24h. Junk-filtered on price, volume and a >=3% move so penny
            pumps don't dominate. */
         const pct = (curMid - avgMid) / avgMid * 100;
+        mover24Pct[id] = pct;
         /* Volume floor matches LOW_VOL_THRESHOLD (100k/day) — anything below
            that, a single seller's dump can fake a 5% drop. Restricting
            movers to high-volume names means a -5% on Coal or Adamantite bar
@@ -4214,14 +4216,20 @@ function renderWatchlist() {
     const id = String(item.id);
     const parts = [];
     if (columnPrefs.change) {
-      const pct = (overrides.pct != null) ? overrides.pct : mover1dPct[id];
+      /* Favorites: the day's change, as the 1D button gives it. The
+         discovery lists: live price against /24h's average, as they always
+         were — they reach items with no hourly candles, and a Biggest
+         Losers row is ranked on that figure. Each titled for what it is. */
+      const day = !!overrides.day;
+      const pct = (overrides.pct != null) ? overrides.pct : day ? mover1dPct[id] : mover24Pct[id];
+      const chgTitle = day ? 'Change on the day: live price vs 24 hours ago' : 'Live price vs its 24-hour average';
       if (pct == null) {
-        parts.push(`<span class="meta-piece meta-chg neutral" title="Change on the day: live price vs 24 hours ago">—</span>`);
+        parts.push(`<span class="meta-piece meta-chg neutral" title="${chgTitle}">—</span>`);
       } else {
         const cls = pct >= 1 ? 'up' : pct <= -1 ? 'down' : 'neutral';
         const rounded = pct.toFixed(1);
         const display = (rounded === '0.0' || rounded === '-0.0') ? '0.0%' : `${pct > 0 ? '+' : ''}${rounded}%`;
-        parts.push(`<span class="meta-piece meta-chg ${cls}" title="Change on the day: live price vs 24 hours ago">${display}</span>`);
+        parts.push(`<span class="meta-piece meta-chg ${cls}" title="${chgTitle}">${display}</span>`);
       }
     }
     if (columnPrefs.margin) {
@@ -4271,7 +4279,7 @@ function renderWatchlist() {
      value the category specifically tracks (mover %, average margin, etc.)
      so we don't recompute it from latest data when we already have it. */
   const plainEntries = (items) => items.map(item => ({ item, price: priceOf(item), sub: buildMeta(item) }));
-  const favEntries = (items) => items.map(item => ({ item, price: priceOf(item), sub: buildMeta(item, { favRemove: true }) }));
+  const favEntries = (items) => items.map(item => ({ item, price: priceOf(item), sub: buildMeta(item, { favRemove: true, day: true }) }));
   const marginEntries = (rows, tag) => rows.slice(0, 30).map(r => ({
     item: r.item, price: priceOf(r.item),
     sub: buildMeta(r.item, { margin: r.margin, marginLabel: tag === 'ea avg' ? '14-day average margin per item, after 2% GE tax' : 'Live margin per item, after 2% GE tax' })
@@ -4450,14 +4458,17 @@ function renderWatchlist() {
            highlight class entirely rather than stacking with it. Color
            still tells you which way it moved (green/gold up, red/magenta
            down), matching the RuneLite plugin's identical treatment. */
-        const spikePct = mover1dPct[id];
+        /* The same figure the row's CHG% shows: the day's on favorites, the
+           24h average's on the discovery lists. */
+        const spikePct = isFavGroup ? mover1dPct[id] : mover24Pct[id];
+        const spikeOn = isFavGroup ? 'on the day' : 'on its 24-hour average';
         if (spikePct != null && Math.abs(spikePct) >= 15) {
           hlClass = spikePct >= 0 ? 'at-spike-up' : 'at-spike-down';
         }
         const activeClass = selected?.id === item.id ? 'active' : '';
         const hlBadge =
-            hlClass === 'at-spike-up'   ? `<span class="hl-badge high5d" title="Spiking — up ${spikePct.toFixed(1)}% on the day.">🚀 ${spikePct >= 0 ? '+' : ''}${spikePct.toFixed(0)}%</span>`
-          : hlClass === 'at-spike-down' ? `<span class="hl-badge low5d" title="Spiking — down ${Math.abs(spikePct).toFixed(1)}% on the day.">💥 ${spikePct.toFixed(0)}%</span>`
+            hlClass === 'at-spike-up'   ? `<span class="hl-badge high5d" title="Spiking — up ${spikePct.toFixed(1)}% ${spikeOn}.">🚀 ${spikePct >= 0 ? '+' : ''}${spikePct.toFixed(0)}%</span>`
+          : hlClass === 'at-spike-down' ? `<span class="hl-badge low5d" title="Spiking — down ${Math.abs(spikePct).toFixed(1)}% ${spikeOn}.">💥 ${spikePct.toFixed(0)}%</span>`
           : hlClass === 'at-high5d' ? `<span class="hl-badge high5d" title="At or near the 5-DAY HIGH — notable peak across the last 5 days.">▲ 5D</span>`
           : hlClass === 'at-low5d'  ? `<span class="hl-badge low5d"  title="At or near the 5-DAY LOW — notable trough across the last 5 days.">▼ 5D</span>`
           : hlClass === 'at-high'   ? `<span class="hl-badge high" title="Currently at or above its 24-hour high. Sell now to catch the peak.">▲</span>`
