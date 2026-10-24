@@ -2950,10 +2950,13 @@ async function throttleMap(items, fn, concurrency) {
 const HILO_TTL_MS = 60 * 60 * 1000;          // the 5D scan reads 1h candles
 const HILO_FAIL_RETRY_MS = 10 * 60 * 1000;   // a failed item waits this long, not a full hour
 const STEADY_TTL_MS = 6 * 60 * 60 * 1000;    // 24h candles; the newest is partial, so not a whole day
-const HILO_STORE = 'ge_scan_hilo_v1';
+/* v2: entries carry mid1d. A v1 entry has none, and would leave its row with
+   no day's change until its hour ran out. */
+const HILO_STORE = 'ge_scan_hilo_v2';
 const STEADY_STORE = 'ge_scan_steady_v1_';
 
 function loadHiLoStore() {
+  try { localStorage.removeItem('ge_scan_hilo_v1'); } catch (e) {}
   try {
     const s = JSON.parse(localStorage.getItem(HILO_STORE) || 'null');
     if (!s || !s.data || !s.at) return;
@@ -3052,6 +3055,7 @@ async function scanDayExtremes(ids) {
       const now = Math.floor(Date.now() / 1000);
       const cut1d = now - 86400, cut5d = now - 5 * 86400;
       let hi = 0, lo = Infinity, hi5d = 0, lo5d = Infinity;
+      let firstT = Infinity, mid1d = 0;
       for (let i = 0; i < ts.labels.length; i++) {
         const t = ts.labels[i], H = ts.high[i], L = ts.low[i];
         if (t >= cut5d) {
@@ -3061,17 +3065,22 @@ async function scanDayExtremes(ids) {
         if (t >= cut1d) {
           if (H != null && H > hi) hi = H;
           if (L != null && L > 0 && L < lo) lo = L;
+          /* The first priced hour of the day: what the day's change is
+             measured from, as pctChange measures the 1D button's. */
+          const h = H != null && H > 0 ? H : 0, l = L != null && L > 0 ? L : 0;
+          if ((h > 0 || l > 0) && t < firstT) { firstT = t; mid1d = ((l || h) + (h || l)) / 2; }
         }
       }
       dayHiLoCache[id] = {
         hi: hi > 0 ? hi : 0,
         lo: lo < Infinity ? lo : 0,
         hi5d: hi5d > 0 ? hi5d : 0,
-        lo5d: lo5d < Infinity ? lo5d : 0
+        lo5d: lo5d < Infinity ? lo5d : 0,
+        mid1d
       };
       dayHiLoAt[id] = Date.now();
     } catch (e) {
-      dayHiLoCache[id] = { hi: 0, lo: 0, hi5d: 0, lo5d: 0 };
+      dayHiLoCache[id] = { hi: 0, lo: 0, hi5d: 0, lo5d: 0, mid1d: 0 };
       /* Back-dated so it expires in HILO_FAIL_RETRY_MS rather than an hour:
          a failure is retried, but not on the next render, and not by every
          page load during an outage. */
@@ -4118,7 +4127,7 @@ function renderWatchlist() {
   const favs = mergedFavIds.map(id => favsById.get(String(id))).filter(Boolean);
 
   const dayLows = [], dayHighs = [], marginHigh1d = [], marginLow1d = [], movers = [];
-  const mover1dPct = {}; // id -> % (live mid vs 24h avg mid), for inline fav badges
+  const mover1dPct = {}; // id -> the day's change, live mid vs the mid 24h ago, for inline fav badges
 
   activeItems.forEach(item => {
     const id = String(item.id);
@@ -4154,18 +4163,28 @@ function renderWatchlist() {
       }
     }
 
-    /* 1D movers — live mid price vs its 24h volume-weighted average mid. A
-       bulk-computable momentum read (no per-item fetch) that captures news
-       spikes / dumps the 5D position lists miss. Stored per-id for the inline
-       favorites badge; the discovery sections additionally junk-filter on
-       price, volume, and a >=3% move so penny pumps don't dominate. */
+    /* The row's change is the day's, as the 1D button gives it: the live
+       mid against the mid of the first priced hour in the last 24h, from
+       the hourly candles the 5D scan already holds (ex.mid1d). It was the
+       live mid against /24h's average, which is the last COMPLETE day's —
+       after a fall it still holds the day before, so Sunfire splinters
+       read -19% beside a 1D of +3.18%. No hourly candles yet: no figure,
+       rather than that one. */
+    if (node && node.high > 0 && node.low > 0 && ex && ex.mid1d > 0) {
+      mover1dPct[id] = ((node.high + node.low) / 2 - ex.mid1d) / ex.mid1d * 100;
+    }
     if (node && node.high > 0 && node.low > 0
         && p24 && p24.avgHighPrice > 0 && p24.avgLowPrice > 0) {
       const curMid = (node.high + node.low) / 2;
       const avgMid = (p24.avgHighPrice + p24.avgLowPrice) / 2;
       if (avgMid > 0) {
+        /* 1D movers for the discovery lists — live mid vs its 24h
+           volume-weighted average mid. A bulk-computable momentum read that
+           captures news spikes / dumps the 5D position lists miss; there are
+           no hourly candles for every item (one request each), so these stay
+           on /24h. Junk-filtered on price, volume and a >=3% move so penny
+           pumps don't dominate. */
         const pct = (curMid - avgMid) / avgMid * 100;
-        mover1dPct[id] = pct;
         /* Volume floor matches LOW_VOL_THRESHOLD (100k/day) — anything below
            that, a single seller's dump can fake a 5% drop. Restricting
            movers to high-volume names means a -5% on Coal or Adamantite bar
@@ -4197,12 +4216,12 @@ function renderWatchlist() {
     if (columnPrefs.change) {
       const pct = (overrides.pct != null) ? overrides.pct : mover1dPct[id];
       if (pct == null) {
-        parts.push(`<span class="meta-piece meta-chg neutral" title="Live price vs 24h average">—</span>`);
+        parts.push(`<span class="meta-piece meta-chg neutral" title="Change on the day: live price vs 24 hours ago">—</span>`);
       } else {
         const cls = pct >= 1 ? 'up' : pct <= -1 ? 'down' : 'neutral';
         const rounded = pct.toFixed(1);
         const display = (rounded === '0.0' || rounded === '-0.0') ? '0.0%' : `${pct > 0 ? '+' : ''}${rounded}%`;
-        parts.push(`<span class="meta-piece meta-chg ${cls}" title="Live price vs its 24-hour average">${display}</span>`);
+        parts.push(`<span class="meta-piece meta-chg ${cls}" title="Change on the day: live price vs 24 hours ago">${display}</span>`);
       }
     }
     if (columnPrefs.margin) {
@@ -4426,7 +4445,7 @@ function renderWatchlist() {
           else if (st === "high") hlClass = "at-high";
           else if (st === "low") hlClass = "at-low";
         }
-        /* Spike tier — a genuine ±15%+ move vs 24h typical, rarer and more
+        /* Spike tier — a genuine ±15%+ move on the day, rarer and more
            urgent than a routine 5D extreme, so it takes over the row's
            highlight class entirely rather than stacking with it. Color
            still tells you which way it moved (green/gold up, red/magenta
@@ -4437,8 +4456,8 @@ function renderWatchlist() {
         }
         const activeClass = selected?.id === item.id ? 'active' : '';
         const hlBadge =
-            hlClass === 'at-spike-up'   ? `<span class="hl-badge high5d" title="Spiking — up ${spikePct.toFixed(1)}% vs its 24h typical price.">🚀 ${spikePct >= 0 ? '+' : ''}${spikePct.toFixed(0)}%</span>`
-          : hlClass === 'at-spike-down' ? `<span class="hl-badge low5d" title="Spiking — down ${Math.abs(spikePct).toFixed(1)}% vs its 24h typical price.">💥 ${spikePct.toFixed(0)}%</span>`
+            hlClass === 'at-spike-up'   ? `<span class="hl-badge high5d" title="Spiking — up ${spikePct.toFixed(1)}% on the day.">🚀 ${spikePct >= 0 ? '+' : ''}${spikePct.toFixed(0)}%</span>`
+          : hlClass === 'at-spike-down' ? `<span class="hl-badge low5d" title="Spiking — down ${Math.abs(spikePct).toFixed(1)}% on the day.">💥 ${spikePct.toFixed(0)}%</span>`
           : hlClass === 'at-high5d' ? `<span class="hl-badge high5d" title="At or near the 5-DAY HIGH — notable peak across the last 5 days.">▲ 5D</span>`
           : hlClass === 'at-low5d'  ? `<span class="hl-badge low5d"  title="At or near the 5-DAY LOW — notable trough across the last 5 days.">▼ 5D</span>`
           : hlClass === 'at-high'   ? `<span class="hl-badge high" title="Currently at or above its 24-hour high. Sell now to catch the peak.">▲</span>`
