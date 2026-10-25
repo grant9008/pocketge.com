@@ -58,6 +58,16 @@
       "@type": "Question",
       "name": "Can free-to-play players make money High Alching in OSRS?",
       "acceptedAnswer": { "@type": "Answer", "text": "Yes — a subset of members items don't apply; filter this page to Free-to-play to see only items an F2P account can actually buy off the Grand Exchange and alch, ranked by live profit per cast." }
+    },
+    {
+      "@type": "Question",
+      "name": "What can I High Alch with a small budget?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Set Max buy price to what you can afford per item — 5k, 50k, whatever your cash stack divides into — and the list narrows to items you can actually buy and alch right now, still ranked by live profit per cast." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I use my own nature rune price in the calculator?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. The Nature rune price box starts at the live Grand Exchange price and you can type your own — runes bought in bulk below market make items profitable that are losses at the live price, and every profit figure on the page recalculates as you type." }
     }
   ]
 }
@@ -79,6 +89,8 @@
 
   <div class="callout">High alch values are fixed by Jagex and don't move with the market — buy prices do. That's the entire alching money-making loop: an item's alch value stays put while its GE price drifts below it, and the gap is your profit. The list below only shows items where that gap is currently positive.</div>
 
+  <p>Every alchable item with a live price is below — not a top ten. Cap the <strong>max buy price</strong> to what your cash stack affords, set a <strong>min profit</strong> floor, put in <strong>your own nature rune price</strong> if you bought them under market, and show as many rows as you want. Each row also carries the item's 4-hour buy limit, its daily volume and how long ago that buy price actually printed — a fat margin on a five-day-old price is usually one nobody will fill.</p>
+
   <div id="natureLine" class="nature-line"></div>
 
   <div class="tab-row" id="alchTabs">
@@ -86,6 +98,52 @@
     <button class="tab-btn" data-filter="f2p">Free-to-play</button>
     <button class="tab-btn" data-filter="members">Members</button>
   </div>
+  <div class="filter-row">
+    <label class="f-field">
+      <span>Search</span>
+      <input type="search" id="alchSearch" placeholder="Item name…" autocomplete="off" spellcheck="false">
+    </label>
+    <!-- The question this page is usually asked is "I have X gp, what can I
+         alch", so the cap is on the BUY price rather than on the profit.
+         Accepts 5k / 1.2m as well as plain digits, the same shorthand the
+         terminal's own price boxes take. -->
+    <label class="f-field">
+      <span>Max buy price</span>
+      <input type="text" id="alchMaxBuy" placeholder="any — try 5k" inputmode="decimal" autocomplete="off" spellcheck="false">
+    </label>
+    <!-- Both of the calculators people compare this one to put the nature rune
+         price in the user's hands, and they are right to: a rune bought in
+         bulk at 90 makes items profitable that are losses at the live 112, and
+         the whole list moves with it. Seeded with the live price, so leaving
+         it alone is the same answer as before. -->
+    <label class="f-field">
+      <span>Nature rune price</span>
+      <input type="text" id="alchNature" inputmode="decimal" autocomplete="off" spellcheck="false">
+    </label>
+    <label class="f-field">
+      <span>Min profit</span>
+      <input type="text" id="alchMinProfit" placeholder="any profit" inputmode="decimal" autocomplete="off" spellcheck="false">
+    </label>
+    <label class="f-field">
+      <span>Sort by</span>
+      <select id="alchSort">
+        <option value="profit">Profit per cast</option>
+        <option value="buy">Cheapest to buy</option>
+        <option value="vol">Most traded</option>
+        <option value="alch">Highest alch value</option>
+      </select>
+    </label>
+    <label class="f-field">
+      <span>Show</span>
+      <select id="alchCount">
+        <option value="25">25 items</option>
+        <option value="50" selected>50 items</option>
+        <option value="100">100 items</option>
+        <option value="0">Every item</option>
+      </select>
+    </label>
+  </div>
+  <div class="result-count" id="alchCountLine"></div>
   <div id="liveList" class="live-list">
     <div class="live-loading">Loading live alch profit…</div>
   </div>
@@ -102,6 +160,10 @@
   <p>Yes — 55 Magic, one nature rune per cast, plus whatever covers the spell's fire element (a fire staff or fire runes).</p>
   <h3>Can free-to-play players make money High Alching?</h3>
   <p>Yes — use the Free-to-play tab above to see only items an F2P account can actually buy and alch, ranked by live profit.</p>
+  <h3>What can I High Alch with a small budget?</h3>
+  <p>Set <strong>Max buy price</strong> to what you can afford per item — 5k, 50k, whatever your cash stack divides into — and the list narrows to items you can actually buy right now, still ranked by live profit per cast.</p>
+  <h3>Can I use my own nature rune price?</h3>
+  <p>Yes. The <strong>Nature rune price</strong> box starts at the live Grand Exchange price and you can type your own. Runes bought in bulk below market make items profitable that are losses at the live price, and every profit figure recalculates as you type.</p>
 
   <div class="footer">
     Values update live from the OSRS Wiki Grand Exchange API. PocketGE is a free, independent fan tool — not affiliated with Jagex Ltd. · <a href="/">Home</a> · <a href="/flipping-guide.html">Flipping Guide</a> · <a href="/high-vol-margins.html">High Volume Flips</a>
@@ -114,22 +176,88 @@
   const host = document.getElementById('liveList');
   const tabs = document.getElementById('alchTabs');
   const natureLine = document.getElementById('natureLine');
-  let allRows = null;
+  const searchEl = document.getElementById('alchSearch');
+  const maxBuyEl = document.getElementById('alchMaxBuy');
+  const minProfitEl = document.getElementById('alchMinProfit');
+  const natureEl = document.getElementById('alchNature');
+  const sortEl = document.getElementById('alchSort');
+  const countEl = document.getElementById('alchCount');
+  const countLine = document.getElementById('alchCountLine');
+  let allRows = null, liveNature = null, tab = 'all';
 
-  function render(filter) {
+  /* "5k", "1.2m", "250" and "1,000" all mean what they look like. Returns null
+     for an empty or unparseable box, which every caller reads as "no limit" —
+     a half-typed "1." must not blank the list while you are still typing. */
+  function parsePrice(raw) {
+    const t = String(raw || '').trim().toLowerCase().replace(/[, ]/g, '');
+    if (!t) return null;
+    const m = /^(\d*\.?\d+)([kmb])?$/.exec(t);
+    if (!m) return null;
+    const mult = m[2] === 'b' ? 1e9 : m[2] === 'm' ? 1e6 : m[2] === 'k' ? 1e3 : 1;
+    const n = parseFloat(m[1]) * mult;
+    return isFinite(n) && n > 0 ? n : null;
+  }
+
+  /* How long ago that buy price printed. A fat margin on a five-day-old price
+     is usually a price nobody will fill, which is exactly what this is for. */
+  function ago(ts) {
+    if (!ts) return '';
+    const s = Math.max(0, Math.floor(Date.now() / 1000) - ts);
+    if (s < 90) return 'just now';
+    if (s < 3600) return Math.round(s / 60) + 'm ago';
+    if (s < 86400) return Math.round(s / 3600) + 'h ago';
+    return Math.round(s / 86400) + 'd ago';
+  }
+
+  const SORTS = {
+    profit: (a, b) => b.profit - a.profit,
+    buy:    (a, b) => a.buy - b.buy,
+    vol:    (a, b) => b.vol - a.vol,
+    alch:   (a, b) => b.highalch - a.highalch,
+  };
+
+  function render() {
     if (!allRows) return;
-    const rows = allRows
-      .filter(r => filter === 'all' || (filter === 'members' ? r.item.members : !r.item.members))
-      .slice(0, 15);
-    if (!rows.length) { host.innerHTML = '<div class="live-loading">Nothing clears a profit right now in this category — check back shortly.</div>'; return; }
-    host.innerHTML = rows.map((r, i) => `
+    const q = searchEl.value.trim().toLowerCase();
+    const maxBuy = parsePrice(maxBuyEl.value);
+    const minProfit = parsePrice(minProfitEl.value);
+    const nature = parsePrice(natureEl.value) != null ? parsePrice(natureEl.value) : liveNature;
+    const limit = parseInt(countEl.value, 10) || 0;
+
+    natureLine.textContent = nature === liveNature
+      ? `Nature rune (live buy price): ${fmtGp(nature)} gp each — already subtracted from every profit figure below.`
+      : `Using your nature rune price of ${fmtGp(nature)} gp (live is ${fmtGp(liveNature)}) — subtracted from every profit figure below.`;
+
+    const matched = allRows
+      .map(r => ({ ...r, profit: r.highalch - nature - r.buy }))
+      .filter(r =>
+        r.profit > 0 &&
+        (minProfit == null || r.profit >= minProfit) &&
+        (tab === 'all' || (tab === 'members' ? r.item.members : !r.item.members)) &&
+        (!q || r.item.name.toLowerCase().includes(q)) &&
+        (maxBuy == null || r.buy <= maxBuy)
+      )
+      .sort(SORTS[sortEl.value] || SORTS.profit);
+
+    const shown = limit ? matched.slice(0, limit) : matched;
+
+    if (!matched.length) {
+      countLine.textContent = '';
+      host.innerHTML = '<div class="live-loading">Nothing matches those filters right now — widen the max buy price, lower the min profit, or clear the search.</div>';
+      return;
+    }
+    countLine.innerHTML = shown.length < matched.length
+      ? `Showing <b>${shown.length}</b> of <b>${matched.length}</b> items alching at a profit.`
+      : `<b>${matched.length}</b> item${matched.length === 1 ? '' : 's'} alching at a profit.`;
+
+    host.innerHTML = shown.map((r, i) => `
       <a class="live-row" href="${itemHref(r.item.name)}">
         <span class="lr-rank">${i + 1}</span>
         <img class="lr-icon" src="${itemIconUrl(r.item.id)}" alt="${r.item.name}" loading="lazy">
         <span class="lr-name">${r.item.name}</span>
         <span class="lr-stats">
-          <span class="lr-stat">Buy <b>${abbreviateNumber(r.buy)}</b></span>
-          <span class="lr-stat">Alchs for <b>${abbreviateNumber(r.highalch)}</b></span>
+          <span class="lr-stat">Buy <b>${abbreviateNumber(r.buy)}</b> · Alch <b>${abbreviateNumber(r.highalch)}</b></span>
+          <span class="lr-stat">${r.limit ? abbreviateNumber(r.limit) + '/4h · ' : ''}${r.vol ? abbreviateNumber(r.vol) + '/day' : 'barely traded'}<span class="lr-age"> · ${ago(r.at)}</span></span>
         </span>
         <span class="lr-margin">+${fmtGp(r.profit)} gp</span>
       </a>`).join('');
@@ -140,18 +268,25 @@
     if (!btn) return;
     tabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    render(btn.dataset.filter);
+    tab = btn.dataset.filter;
+    render();
   });
+  /* input, not change: the list answers while you type rather than when the
+     box loses focus. render() filters and sorts a few hundred rows already in
+     memory, so there is nothing worth debouncing. */
+  [searchEl, maxBuyEl, minProfitEl, natureEl].forEach(el => el.addEventListener('input', render));
+  [sortEl, countEl].forEach(el => el.addEventListener('change', render));
 
   try {
     const data = await loadFinderData();
     const { rows, natureCost } = computeHighAlchRows(data);
     allRows = rows;
-    if (natureCost) {
-      natureLine.textContent = `Nature rune (live buy price): ${fmtGp(natureCost)} gp each — already subtracted from every profit figure below.`;
-    }
+    liveNature = natureCost;
+    if (!liveNature) { host.innerHTML = '<div class="live-loading">Live prices are unavailable right now — <a href="/">open the tracker</a> instead.</div>'; return; }
+    natureEl.value = String(liveNature);
+    natureEl.placeholder = String(liveNature);
     if (!allRows.length) { host.innerHTML = '<div class="live-loading">Nothing clears a profit right now — check back shortly.</div>'; return; }
-    render('all');
+    render();
   } catch (e) {
     host.innerHTML = '<div class="live-loading">Live prices are unavailable right now — <a href="/">open the tracker</a> instead.</div>';
   }
