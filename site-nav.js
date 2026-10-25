@@ -89,7 +89,23 @@
     '.sn-link:hover{background:#0C0B09;color:#fff;text-decoration:none}',
     /* Current page marked rather than linked-to-itself, so the drawer always
        answers "where am I" as well as "where can I go". */
-    '.sn-link[aria-current="page"]{color:#C9A64D;font-weight:700;background:rgba(201,166,77,.08)}'
+    '.sn-link[aria-current="page"]{color:#C9A64D;font-weight:700;background:rgba(201,166,77,.08)}',
+    /* The drawer scrolls once the link list outgrows a short window, and it
+       was doing it with the browser's default light scrollbar — a white bar
+       down the edge of a panel that is otherwise #1B1815.
+       Scoped to .sn-drawer rather than set globally, because this stylesheet
+       is injected into fifteen pages and three of them (flip history, the
+       flipping guide, the plugin page) carry their own inline styles instead
+       of finder-page.css. A global rule here would be this file reaching
+       outside its own component on those.
+       Same shape as app.css's: the thumb is inset with a 2px border in the
+       surface behind it, which here is the drawer's panel rather than the
+       page, so it reads as a track rather than a bar laid on top. */
+    '.sn-drawer{scrollbar-width:thin;scrollbar-color:#3C352B transparent}',
+    '.sn-drawer::-webkit-scrollbar{width:10px}',
+    '.sn-drawer::-webkit-scrollbar-track{background:transparent}',
+    '.sn-drawer::-webkit-scrollbar-thumb{background:#3C352B;border-radius:6px;border:2px solid #1B1815}',
+    '.sn-drawer::-webkit-scrollbar-thumb:hover{background:#C9A64D}'
   ].join('');
 
   function ready(fn) {
