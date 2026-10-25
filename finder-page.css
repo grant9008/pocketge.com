@@ -2,6 +2,11 @@
 * { box-sizing: border-box; }
 body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Trebuchet MS',Roboto,sans-serif; -webkit-font-smoothing:antialiased; line-height:1.65; }
 .wrap { max-width: 760px; margin: 0 auto; padding: 28px 20px 64px; }
+/* 760px is a reading measure, chosen for pages that are mostly prose. A page
+   whose point is a seven-column table of live figures is not one of those —
+   at 760 the High Alch table had to drop columns that fit perfectly well on
+   the screen it was being read on. Opt-in, so the prose pages keep theirs. */
+.wrap.wide { max-width: 1120px; }
 .topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:24px; }
 .brand { display:flex; align-items:center; gap:8px; font-weight:800; color:var(--head); font-size:18px; text-decoration:none; }
 .brand img { width:26px; height:26px; image-rendering:pixelated; }
@@ -79,6 +84,52 @@ a:hover { text-decoration:underline; }
    the stats line has no room — at 430px "Buy / Alch / limit / volume / 11m
    ago" wraps and takes the row to three lines. */
 @media (max-width: 560px) { .lr-age { display:none; } }
+
+/* ── Sortable data table (High Alch calculator) ──────────────────────────
+   A real table, not the .live-row flex list the other finders use. Those
+   show one figure per row and a name; this shows six, and six things in a
+   flex row have no columns to line up under or sort by. Sorting lives in the
+   headers for the same reason — it was a <select> labelled "Sort by" off to
+   one side, which was asked "how do you sort by volume?" by someone looking
+   straight at it. A column you can click is the answer the question expects. */
+.table-wrap { margin-top:12px; border:1px solid var(--border); border-radius:8px; overflow-x:auto; }
+.data-table { width:100%; border-collapse:collapse; font-size:13.5px; }
+.data-table th, .data-table td { padding:9px 12px; text-align:left; white-space:nowrap; }
+.data-table thead th { background:#15120F; border-bottom:1px solid var(--border);
+  position:sticky; top:0; z-index:1; padding:0; }
+.data-table tbody tr { border-bottom:1px solid var(--border); background:var(--panel); }
+.data-table tbody tr:last-child { border-bottom:0; }
+.data-table tbody tr:hover { background:#221E1A; }
+.data-table td.num, .data-table th.num { text-align:right; }
+/* The whole header cell is the control, not a link inside it — a 9px-tall
+   target inside a 36px cell is a miss waiting to happen. */
+.th-sort { width:100%; height:100%; display:flex; align-items:center; gap:5px;
+  padding:10px 12px; background:none; border:0; color:var(--muted); cursor:pointer;
+  font:inherit; font-size:11.5px; font-weight:700; letter-spacing:.3px; text-transform:uppercase; }
+.data-table th.num .th-sort { justify-content:flex-end; }
+.th-sort:hover { color:var(--text); }
+.th-sort::after { content:'⇅'; font-size:10px; opacity:.45; }
+th[aria-sort] .th-sort { color:var(--accent); }
+th[aria-sort="descending"] .th-sort::after { content:'↓'; opacity:1; }
+th[aria-sort="ascending"]  .th-sort::after { content:'↑'; opacity:1; }
+.dt-rank { color:var(--muted); font-size:12px; width:1%; }
+.dt-item { display:flex; align-items:center; gap:9px; color:var(--head); font-weight:600; text-decoration:none; }
+.dt-item img { width:22px; height:22px; object-fit:contain; flex-shrink:0; }
+.dt-item:hover { color:var(--accent); }
+.dt-profit { color:var(--pos); font-weight:700; }
+.dt-dim { color:var(--muted); }
+.dt-empty { padding:20px; text-align:center; color:var(--muted); font-size:13.5px; }
+/* Columns drop in order of how little they decide: when the price printed,
+   then the buy limit, then the alch value — which is the one figure on the
+   row that never moves, so it is the one you least need to re-read. */
+@media (max-width: 900px) { .col-age { display:none; } }
+@media (max-width: 760px) { .col-limit { display:none; } }
+@media (max-width: 560px) {
+  .col-alch { display:none; }
+  .data-table th, .data-table td { padding:8px 8px; font-size:12.5px; }
+  .th-sort { padding:9px 8px; font-size:10.5px; }
+  .dt-item img { width:18px; height:18px; }
+}
 
 /* One live stat line above the list (e.g. the nature rune cost baked into
    every High Alch row's math) */
