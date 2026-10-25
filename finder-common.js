@@ -55,7 +55,13 @@ async function loadFinderData() {
 }
 
 function dailyVolume(id, data) {
-  let v = data.volumes && data.volumes[String(id)];
+  /* .data, not the response itself. The /volumes endpoint answers
+     {timestamp, data:{id: vol}}, so the old `data.volumes[id]` was undefined
+     for every id ever asked for and this silently fell through to the 24h
+     fallback on every page that calls it -- including the High/Low volume
+     margin split, which is keyed off this number. app.js reads
+     `volumes?.data?.[id]` and always has. */
+  let v = data.volumes?.data?.[String(id)];
   if (v == null) {
     const p = data.past24h.data[String(id)];
     v = p ? (p.highPriceVolume || 0) + (p.lowPriceVolume || 0) : 0;
@@ -120,6 +126,14 @@ const NATURE_RUNE_ID = 561;
  *  Returns { rows, natureCost } — natureCost is the same live figure baked
  *  into every row's math, surfaced separately so a page can show it once
  *  up top instead of repeating it on every line. */
+/* Every alchable item with a live buy price, and the raw numbers behind it --
+   NOT a filtered, sorted, profit-bearing list.
+   It used to do all three here, which was right while the page showed one
+   fixed top-15. The page now lets you set your own nature rune price, and
+   that moves the profit line: a rune bought at 90 makes items profitable that
+   are losses at 112. Deciding profitability in here would have meant those
+   items were already gone before the page could ask. So this returns the
+   facts and the caller does the arithmetic. */
 function computeHighAlchRows(data) {
   const natureNode = data.latest.data[String(NATURE_RUNE_ID)];
   const natureCost = natureNode && natureNode.low > 0 ? natureNode.low : null;
@@ -130,11 +144,15 @@ function computeHighAlchRows(data) {
     const id = String(item.id);
     const node = data.latest.data[id];
     if (!node || !(node.low > 0)) continue;
-    const profit = item.highalch - natureCost - node.low;
-    if (!(profit > 0)) continue;
-    out.push({ item, profit, buy: node.low, highalch: item.highalch, vol: dailyVolume(id, data) });
+    out.push({
+      item, buy: node.low, highalch: item.highalch,
+      limit: item.limit || 0,
+      /* When that buy price last actually printed. A tempting margin on a
+         price from five days ago is usually a price nobody will fill. */
+      at: node.lowTime || 0,
+      vol: dailyVolume(id, data),
+    });
   }
-  out.sort((a, b) => b.profit - a.profit);
   return { rows: out, natureCost };
 }
 
