@@ -36,6 +36,18 @@
 <style>
   :root { --bg:#0C0B09; --panel:#1B1815; --border:#2B2621; --text:#D0CABD; --head:#fff; --muted:#8A8274; --accent:#C9A64D; --gold:#FFB300; --pos:#1FB85C; --neg:#EF5350; --input:#151310; }
   * { box-sizing: border-box; }
+  /* Themed scrollbars, same as app.css does for the terminal. The browser
+     default is a light grey bar, which on these pages is a white stripe down
+     the edge of a #0C0B09 page — and since the High Alch table scrolls
+     sideways on a narrow screen, one across the bottom of it too.
+     WebKit/Blink use the pseudo-elements, Firefox the two properties. Mobile
+     native overlay scrollbars ignore both, which is fine: they fade out. */
+  * { scrollbar-width: thin; scrollbar-color: #3C352B transparent; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #3C352B; border-radius: 6px; border: 2px solid #0C0B09; }
+  ::-webkit-scrollbar-thumb:hover { background: #C9A64D; }
+  ::-webkit-scrollbar-corner { background: transparent; }
   body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Trebuchet MS',Roboto,sans-serif; -webkit-font-smoothing:antialiased; line-height:1.6; }
   .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
   .topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:20px; }
