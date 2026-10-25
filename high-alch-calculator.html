@@ -75,7 +75,7 @@
 <link rel="stylesheet" href="finder-page.css">
 </head>
 <body>
-<div class="wrap">
+<div class="wrap wide">
   <div class="topbar">
     <a class="brand" href="/"><img src="/favicon.png" alt="PocketGE logo">PocketGE</a>
     <a class="cta" href="/">Open the trading terminal →</a>
@@ -83,13 +83,6 @@
 
   <h1>OSRS High Alch Profit Calculator</h1>
   <p class="sub">Which items are actually worth High Level Alchemy right now, after the nature rune cost and the live Grand Exchange buy price — not a static list, recalculated from real-time prices every time this page loads.</p>
-
-  <h2>The math</h2>
-  <p>High Alch profit per cast is: <strong>the item's high alch value − one nature rune's live price − the item's live GE buy price</strong>. No 2% GE tax applies here — the coins come from casting the spell, not from a Grand Exchange sale, so what you see below is the full profit per cast.</p>
-
-  <div class="callout">High alch values are fixed by Jagex and don't move with the market — buy prices do. That's the entire alching money-making loop: an item's alch value stays put while its GE price drifts below it, and the gap is your profit. The list below only shows items where that gap is currently positive.</div>
-
-  <p>Every alchable item with a live price is below — not a top ten. Cap the <strong>max buy price</strong> to what your cash stack affords, set a <strong>min profit</strong> floor, put in <strong>your own nature rune price</strong> if you bought them under market, and show as many rows as you want. Each row also carries the item's 4-hour buy limit, its daily volume and how long ago that buy price actually printed — a fat margin on a five-day-old price is usually one nobody will fill.</p>
 
   <div id="natureLine" class="nature-line"></div>
 
@@ -125,15 +118,6 @@
       <input type="text" id="alchMinProfit" placeholder="any profit" inputmode="decimal" autocomplete="off" spellcheck="false">
     </label>
     <label class="f-field">
-      <span>Sort by</span>
-      <select id="alchSort">
-        <option value="profit">Profit per cast</option>
-        <option value="buy">Cheapest to buy</option>
-        <option value="vol">Most traded</option>
-        <option value="alch">Highest alch value</option>
-      </select>
-    </label>
-    <label class="f-field">
       <span>Show</span>
       <select id="alchCount">
         <option value="25">25 items</option>
@@ -144,9 +128,32 @@
     </label>
   </div>
   <div class="result-count" id="alchCountLine"></div>
-  <div id="liveList" class="live-list">
-    <div class="live-loading">Loading live alch profit…</div>
+  <div class="table-wrap">
+    <table class="data-table" id="alchTable">
+      <thead>
+        <tr>
+          <th class="dt-rank">#</th>
+          <th><button type="button" class="th-sort" data-sort="name">Item</button></th>
+          <th class="num"><button type="button" class="th-sort" data-sort="buy">Buy</button></th>
+          <th class="num col-alch"><button type="button" class="th-sort" data-sort="alch">Alch</button></th>
+          <th class="num"><button type="button" class="th-sort" data-sort="profit">Profit</button></th>
+          <th class="num col-limit"><button type="button" class="th-sort" data-sort="limit">Limit/4h</button></th>
+          <th class="num"><button type="button" class="th-sort" data-sort="vol">Volume</button></th>
+          <th class="num col-age"><button type="button" class="th-sort" data-sort="age">Updated</button></th>
+        </tr>
+      </thead>
+      <tbody id="alchBody">
+        <tr><td colspan="8" class="dt-empty">Loading live alch profit…</td></tr>
+      </tbody>
+    </table>
   </div>
+
+  <h2>The math</h2>
+  <p>High Alch profit per cast is: <strong>the item's high alch value − one nature rune's live price − the item's live GE buy price</strong>. No 2% GE tax applies here — the coins come from casting the spell, not from a Grand Exchange sale, so what you see below is the full profit per cast.</p>
+
+  <div class="callout">High alch values are fixed by Jagex and don't move with the market — buy prices do. That's the entire alching money-making loop: an item's alch value stays put while its GE price drifts below it, and the gap is your profit. The list below only shows items where that gap is currently positive.</div>
+
+  <p>Every alchable item with a live price is in the table above — not a top ten. Cap the <strong>max buy price</strong> to what your cash stack affords, set a <strong>min profit</strong> floor, put in <strong>your own nature rune price</strong> if you bought them under market, and show as many rows as you want. <strong>Click any column heading to sort by it</strong> — profit, buy price, alch value, 4-hour buy limit, daily volume, or how long ago that buy price actually printed. A fat margin on a five-day-old price is usually one nobody will fill.</p>
 
   <h2>Why this beats a static "best items to alch" list</h2>
   <p>Any list that isn't pulling live prices goes stale the moment the market moves — an item worth alching today can be a loss tomorrow if its buy price creeps up. This page (and PocketGE itself) recomputes against real-time Grand Exchange data instead of a fixed table, so what's shown is accurate for right now, not for whenever the page was last written.</p>
@@ -173,21 +180,25 @@
 <script src="finder-common.js"></script>
 <script>
 (async function () {
-  const host = document.getElementById('liveList');
+  const body = document.getElementById('alchBody');
+  const table = document.getElementById('alchTable');
   const tabs = document.getElementById('alchTabs');
   const natureLine = document.getElementById('natureLine');
   const searchEl = document.getElementById('alchSearch');
   const maxBuyEl = document.getElementById('alchMaxBuy');
   const minProfitEl = document.getElementById('alchMinProfit');
   const natureEl = document.getElementById('alchNature');
-  const sortEl = document.getElementById('alchSort');
   const countEl = document.getElementById('alchCount');
   const countLine = document.getElementById('alchCountLine');
+  const COLS = 8;
   let allRows = null, liveNature = null, tab = 'all';
+  /* dir is +1 ascending, -1 descending. Profit descending is the default
+     because "what is worth alching" is the question the page exists for. */
+  let sortKey = 'profit', sortDir = -1;
 
   /* "5k", "1.2m", "250" and "1,000" all mean what they look like. Returns null
      for an empty or unparseable box, which every caller reads as "no limit" —
-     a half-typed "1." must not blank the list while you are still typing. */
+     a half-typed "1." must not blank the table while you are still typing. */
   function parsePrice(raw) {
     const t = String(raw || '').trim().toLowerCase().replace(/[, ]/g, '');
     if (!t) return null;
@@ -201,7 +212,7 @@
   /* How long ago that buy price printed. A fat margin on a five-day-old price
      is usually a price nobody will fill, which is exactly what this is for. */
   function ago(ts) {
-    if (!ts) return '';
+    if (!ts) return '—';
     const s = Math.max(0, Math.floor(Date.now() / 1000) - ts);
     if (s < 90) return 'just now';
     if (s < 3600) return Math.round(s / 60) + 'm ago';
@@ -209,25 +220,48 @@
     return Math.round(s / 86400) + 'd ago';
   }
 
-  const SORTS = {
-    profit: (a, b) => b.profit - a.profit,
-    buy:    (a, b) => a.buy - b.buy,
-    vol:    (a, b) => b.vol - a.vol,
-    alch:   (a, b) => b.highalch - a.highalch,
+  /* One value per sortable column. `age` sorts on the timestamp, so
+     descending means most recently traded rather than the largest number of
+     days — which is what "Updated ↓" has to mean to be read correctly. */
+  const KEYS = {
+    name:   r => r.item.name.toLowerCase(),
+    buy:    r => r.buy,
+    alch:   r => r.highalch,
+    profit: r => r.profit,
+    limit:  r => r.limit,
+    vol:    r => r.vol,
+    age:    r => r.at,
   };
+  /* Numbers want biggest-first on the first click; a name wants A-Z. */
+  const FIRST_DIR = { name: 1 };
+
+  function esc(t) {
+    return String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  }
+
+  function paintHeaders() {
+    table.querySelectorAll('th').forEach(th => {
+      const btn = th.querySelector('.th-sort');
+      if (!btn) return;
+      if (btn.dataset.sort === sortKey) th.setAttribute('aria-sort', sortDir === 1 ? 'ascending' : 'descending');
+      else th.removeAttribute('aria-sort');
+    });
+  }
 
   function render() {
     if (!allRows) return;
     const q = searchEl.value.trim().toLowerCase();
     const maxBuy = parsePrice(maxBuyEl.value);
     const minProfit = parsePrice(minProfitEl.value);
-    const nature = parsePrice(natureEl.value) != null ? parsePrice(natureEl.value) : liveNature;
+    const typedNature = parsePrice(natureEl.value);
+    const nature = typedNature != null ? typedNature : liveNature;
     const limit = parseInt(countEl.value, 10) || 0;
 
     natureLine.textContent = nature === liveNature
       ? `Nature rune (live buy price): ${fmtGp(nature)} gp each — already subtracted from every profit figure below.`
       : `Using your nature rune price of ${fmtGp(nature)} gp (live is ${fmtGp(liveNature)}) — subtracted from every profit figure below.`;
 
+    const pick = KEYS[sortKey] || KEYS.profit;
     const matched = allRows
       .map(r => ({ ...r, profit: r.highalch - nature - r.buy }))
       .filter(r =>
@@ -237,31 +271,46 @@
         (!q || r.item.name.toLowerCase().includes(q)) &&
         (maxBuy == null || r.buy <= maxBuy)
       )
-      .sort(SORTS[sortEl.value] || SORTS.profit);
+      .sort((a, b) => {
+        const x = pick(a), y = pick(b);
+        if (x < y) return -sortDir;
+        if (x > y) return sortDir;
+        return b.profit - a.profit;   // stable, useful tiebreak
+      });
 
     const shown = limit ? matched.slice(0, limit) : matched;
+    paintHeaders();
 
     if (!matched.length) {
       countLine.textContent = '';
-      host.innerHTML = '<div class="live-loading">Nothing matches those filters right now — widen the max buy price, lower the min profit, or clear the search.</div>';
+      body.innerHTML = `<tr><td colspan="${COLS}" class="dt-empty">Nothing matches those filters right now — widen the max buy price, lower the min profit, or clear the search.</td></tr>`;
       return;
     }
     countLine.innerHTML = shown.length < matched.length
       ? `Showing <b>${shown.length}</b> of <b>${matched.length}</b> items alching at a profit.`
       : `<b>${matched.length}</b> item${matched.length === 1 ? '' : 's'} alching at a profit.`;
 
-    host.innerHTML = shown.map((r, i) => `
-      <a class="live-row" href="${itemHref(r.item.name)}">
-        <span class="lr-rank">${i + 1}</span>
-        <img class="lr-icon" src="${itemIconUrl(r.item.id)}" alt="${r.item.name}" loading="lazy">
-        <span class="lr-name">${r.item.name}</span>
-        <span class="lr-stats">
-          <span class="lr-stat">Buy <b>${abbreviateNumber(r.buy)}</b> · Alch <b>${abbreviateNumber(r.highalch)}</b></span>
-          <span class="lr-stat">${r.limit ? abbreviateNumber(r.limit) + '/4h · ' : ''}${r.vol ? abbreviateNumber(r.vol) + '/day' : 'barely traded'}<span class="lr-age"> · ${ago(r.at)}</span></span>
-        </span>
-        <span class="lr-margin">+${fmtGp(r.profit)} gp</span>
-      </a>`).join('');
+    body.innerHTML = shown.map((r, i) => `
+      <tr>
+        <td class="dt-rank">${i + 1}</td>
+        <td><a class="dt-item" href="${itemHref(r.item.name)}"><img src="${itemIconUrl(r.item.id)}" alt="" loading="lazy">${esc(r.item.name)}</a></td>
+        <td class="num">${fmtGp(r.buy)}</td>
+        <td class="num col-alch">${fmtGp(r.highalch)}</td>
+        <td class="num dt-profit">+${fmtGp(r.profit)}</td>
+        <td class="num col-limit">${r.limit ? abbreviateNumber(r.limit) : '<span class="dt-dim">—</span>'}</td>
+        <td class="num">${r.vol ? abbreviateNumber(r.vol) : '<span class="dt-dim">—</span>'}</td>
+        <td class="num col-age dt-dim">${ago(r.at)}</td>
+      </tr>`).join('');
   }
+
+  table.querySelector('thead').addEventListener('click', (e) => {
+    const btn = e.target.closest('.th-sort');
+    if (!btn) return;
+    const key = btn.dataset.sort;
+    if (key === sortKey) sortDir = -sortDir;
+    else { sortKey = key; sortDir = FIRST_DIR[key] || -1; }
+    render();
+  });
 
   tabs.addEventListener('click', (e) => {
     const btn = e.target.closest('.tab-btn');
@@ -271,24 +320,24 @@
     tab = btn.dataset.filter;
     render();
   });
-  /* input, not change: the list answers while you type rather than when the
+  /* input, not change: the table answers while you type rather than when the
      box loses focus. render() filters and sorts a few hundred rows already in
      memory, so there is nothing worth debouncing. */
   [searchEl, maxBuyEl, minProfitEl, natureEl].forEach(el => el.addEventListener('input', render));
-  [sortEl, countEl].forEach(el => el.addEventListener('change', render));
+  countEl.addEventListener('change', render);
 
   try {
     const data = await loadFinderData();
     const { rows, natureCost } = computeHighAlchRows(data);
     allRows = rows;
     liveNature = natureCost;
-    if (!liveNature) { host.innerHTML = '<div class="live-loading">Live prices are unavailable right now — <a href="/">open the tracker</a> instead.</div>'; return; }
+    if (!liveNature) { body.innerHTML = `<tr><td colspan="${COLS}" class="dt-empty">Live prices are unavailable right now — <a href="/">open the tracker</a> instead.</td></tr>`; return; }
     natureEl.value = String(liveNature);
     natureEl.placeholder = String(liveNature);
-    if (!allRows.length) { host.innerHTML = '<div class="live-loading">Nothing clears a profit right now — check back shortly.</div>'; return; }
+    if (!allRows.length) { body.innerHTML = `<tr><td colspan="${COLS}" class="dt-empty">Nothing clears a profit right now — check back shortly.</td></tr>`; return; }
     render();
   } catch (e) {
-    host.innerHTML = '<div class="live-loading">Live prices are unavailable right now — <a href="/">open the tracker</a> instead.</div>';
+    body.innerHTML = `<tr><td colspan="${COLS}" class="dt-empty">Live prices are unavailable right now — <a href="/">open the tracker</a> instead.</td></tr>`;
   }
 })();
 </script>
