@@ -531,23 +531,6 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 .support-link:hover { border-bottom-color: var(--accent-bright); }
 .support-foot { color: inherit; }
 
-/* Buy/sell palette picker in the drawer. Each swatch previews its own two
-   colours rather than naming them, because 'gold' and 'teal' mean less at a
-   glance than the colours themselves. */
-/* Breadcrumbs are gone: the nav, renderCrumbs/crumbTrail, and the
-   BreadcrumbList JSON-LD that described them. Removed by request — a row of
-   links nobody wanted, directly above the item name and in the thumb's path
-   on a phone.
-
-   This one rule stays, and it is load-bearing rather than tidy-up left behind.
-   The item pages under /item/ are prerendered and already published with the
-   old markup inside them, and the generator only rebuilds the top N by volume
-   (800 by default, against ~1,865 pages that exist), so the long tail keeps
-   its stale <nav class="crumbs"> for as long as those files sit there. Without
-   this they would render as a row of unstyled links on exactly the pages that
-   get the search traffic. It can go once every item page has been rebuilt. */
-.crumbs { display: none; }
-
 /* Quick links. Three placements, and which one applies is decided by the LEFT
    COLUMN's width rather than the window's — the sidebar splitter changes this
    row's width without the viewport moving at all, so a @media query would keep
@@ -630,7 +613,7 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
    the search box was crushed to 90px. Same condition the layout itself is keyed
    to, so the two cannot disagree about which one is running. */
 @media (max-width: 640px) { .hdr-links { display: none; } }
-}
+
 /* Phone on its side: the quick links go.
    `pointer: coarse` is load-bearing, not decoration: it is the exact condition
    the folded header layout itself is keyed to. A short desktop WINDOW matches
@@ -679,6 +662,9 @@ body.app-only .about-section, body.app-only .site-footer { display: none; }
 .pp-note.is-warn { color: var(--fav-gold); }
 .pp-note.is-ok { color: var(--positive); }
 
+/* Buy/sell palette picker in the drawer. Each swatch previews its own two
+   colours rather than naming them, because 'gold' and 'teal' mean less at a
+   glance than the colours themselves. */
 .theme-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 14px 10px; }
 .theme-swatch { display: flex; align-items: center; gap: 6px; padding: 5px 9px 5px 6px;
   background: transparent; border: 1px solid var(--border-main); border-radius: 6px;
